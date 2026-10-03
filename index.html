@@ -946,6 +946,144 @@
     background: var(--bg-canvas);
   }
   #apercuLegende { font-size: 12px; color: var(--text-muted); }
+
+  /* --- Jeu à deux en ligne (js/20-en-ligne.js) --- */
+  #controlBar { flex-wrap: wrap; justify-content: center; }
+  #enLigneMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100002;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #enLigneMenu.ouvert { display: flex; }
+  #enLignePanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 18px;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    text-align: center;
+  }
+  #enLignePanel h2 { margin: 0 0 8px 0; font-size: 18px; }
+  .en-ligne-aide, #enLigneEtat p { margin: 8px 0; font-size: 13px; color: var(--text-muted); }
+  #enLignePanel button {
+    padding: 8px 14px;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #enLignePanel button.en-ligne-principal { background: var(--accent); color: #14141f; font-weight: bold; }
+  #enLigneCreer { width: 100%; margin: 6px 0 14px 0; padding: 12px !important; font-size: 16px !important; }
+  .en-ligne-rejoindre { display: flex; gap: 8px; justify-content: center; }
+  #enLigneCodeSaisi {
+    width: 110px;
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg-page);
+    color: var(--text-color);
+  }
+  .en-ligne-code {
+    font-size: 44px;
+    font-weight: bold;
+    letter-spacing: 10px;
+    color: var(--accent);
+    margin: 10px 0 4px 0;
+    user-select: all;
+  }
+  #enLigneActions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+
+  /* écran de l'invité : il regarde la partie de l'hôte et pilote J2 */
+  #ecranInvite { display: none; }
+  body.invite-en-ligne #ecranInvite {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+    background: var(--bg-page);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.invite-en-ligne #layout,
+  body.invite-en-ligne #stickBase,
+  body.invite-en-ligne #padDirections,
+  body.invite-en-ligne .zone-tactile { display: none !important; }
+  #inviteHud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    justify-content: center;
+    font-size: 13px;
+    min-height: 18px;
+  }
+  #inviteVideoCadre {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+  #inviteVideo {
+    width: 300px;
+    height: 300px;
+    box-sizing: border-box;
+    object-fit: contain;
+    border: 2px solid var(--border-canvas);
+    border-radius: 4px;
+    background: var(--bg-canvas);
+    pointer-events: none;
+  }
+  #inviteMessage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.75);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    max-width: 80%;
+  }
+  #inviteBoutons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  #inviteBoutons button {
+    padding: 12px 14px;
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--text-color);
+    touch-action: none;
+  }
+  #inviteBoost { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #inviteAide { font-size: 11px; color: var(--text-muted); text-align: center; max-width: 520px; }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
@@ -978,6 +1116,7 @@
       <button id="muteBtn">🔊 Son</button>
       <button id="buffMenuBtn">🧪 Buffs</button>
       <button id="modeBtn">👤 Solo</button>
+      <button id="enLigneBtn">🌐 En ligne</button>
     </div>
     <div id="gamepadStatus"></div>
 
@@ -9157,6 +9296,513 @@ applyTheme('neon');
 majBoutonMode();
 init();
 initHighscores();
+// ============================================================
+// --- Jeu à deux en ligne (code de salle) ---
+// ============================================================
+// L'hôte fait tourner la partie en coop sur son appareil et envoie en direct l'image du plateau
+// à son ami (WebRTC, via la bibliothèque PeerJS chargée seulement quand on s'en sert).
+// L'invité ne fait tourner aucune partie : il regarde la vidéo et envoie ses commandes,
+// que l'hôte applique au joueur 2. Les deux écrans ne peuvent donc jamais être décalés.
+
+// la copie posée à côté du jeu en ligne d'abord, sinon le CDN (fichier ouvert directement)
+const sourcesPeerJS = ['peerjs.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'];
+const prefixeSalle = 'super-snake-v1-';
+const lettresCode = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // sans I ni O, qu'on confond avec 1 et 0
+const imagesParSecondeEnLigne = 30;
+
+let enLigne = null; // null, ou {role: 'hote' | 'invite', peer, conn, appel, code, ...}
+
+const enLigneBtn = document.getElementById('enLigneBtn');
+const enLignePanneau = document.createElement('div');
+enLignePanneau.id = 'enLigneMenu';
+enLignePanneau.setAttribute('role', 'dialog');
+enLignePanneau.innerHTML = `
+  <div id="enLignePanel">
+    <h2>🌐 Jouer à deux en ligne</h2>
+    <div id="enLigneAccueil">
+      <p class="en-ligne-aide">Crée une partie et donne le code à ton ami, ou tape le code qu'il t'a donné.</p>
+      <button id="enLigneCreer" class="en-ligne-principal">🎮 Créer une partie</button>
+      <div class="en-ligne-rejoindre">
+        <input id="enLigneCodeSaisi" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button id="enLigneRejoindre">Rejoindre</button>
+      </div>
+    </div>
+    <div id="enLigneEtat"></div>
+    <div id="enLigneActions">
+      <button id="enLigneQuitter">Arrêter</button>
+      <button id="enLigneFermer" class="en-ligne-principal">Fermer</button>
+    </div>
+  </div>`;
+document.body.appendChild(enLignePanneau);
+
+// écran de l'invité : la vidéo du plateau, les infos de la partie et les boutons
+const ecranInvite = document.createElement('div');
+ecranInvite.id = 'ecranInvite';
+ecranInvite.innerHTML = `
+  <div id="inviteHud"></div>
+  <div id="inviteVideoCadre">
+    <video id="inviteVideo" autoplay playsinline muted></video>
+    <div id="inviteMessage">Connexion…</div>
+  </div>
+  <div id="inviteBoutons">
+    <button id="inviteBoost">🚀 Boost / Jouer</button>
+    <button id="inviteBouclier">🛡️ Bouclier</button>
+    <button id="inviteTir">🎯 Tir</button>
+    <button id="invitePause">⏸️</button>
+    <button id="inviteQuitter">✖</button>
+  </div>
+  <div id="inviteAide">Glisse sur le plateau pour tourner, touche-le pour tirer à cet endroit.
+    Clavier : flèches ou ZQSD, Espace, Maj, Entrée. La manette marche aussi.</div>`;
+document.body.appendChild(ecranInvite);
+const inviteVideo = document.getElementById('inviteVideo');
+const inviteMessage = document.getElementById('inviteMessage');
+
+function etatEnLigne(texte, code) {
+  const zone = document.getElementById('enLigneEtat');
+  zone.textContent = '';
+  if (code) {
+    const grand = document.createElement('div');
+    grand.className = 'en-ligne-code';
+    grand.textContent = code;
+    zone.appendChild(grand);
+  }
+  const p = document.createElement('p');
+  p.textContent = texte;
+  zone.appendChild(p);
+}
+
+function majPanneauEnLigne() {
+  document.getElementById('enLigneAccueil').style.display = enLigne ? 'none' : '';
+  document.getElementById('enLigneQuitter').style.display = enLigne ? '' : 'none';
+  if (!enLigne) etatEnLigne('');
+  enLigneBtn.classList.toggle('active', !!(enLigne && enLigne.role === 'hote'));
+  enLigneBtn.textContent = enLigne && enLigne.role === 'hote' ? '🌐 En ligne : ' + enLigne.code : '🌐 En ligne';
+}
+
+function ouvrirMenuEnLigne() {
+  if (typeof fermerMenuTactile === 'function') fermerMenuTactile();
+  majPanneauEnLigne();
+  enLignePanneau.classList.add('ouvert');
+}
+
+function fermerMenuEnLigne() {
+  enLignePanneau.classList.remove('ouvert');
+  if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réappuie sur un bouton
+}
+
+enLigneBtn.addEventListener('click', ouvrirMenuEnLigne);
+document.getElementById('enLigneFermer').addEventListener('click', fermerMenuEnLigne);
+document.getElementById('enLigneQuitter').addEventListener('click', () => quitterEnLigne());
+document.getElementById('enLigneCreer').addEventListener('click', creerPartieEnLigne);
+document.getElementById('enLigneRejoindre').addEventListener('click', () => {
+  rejoindrePartieEnLigne(document.getElementById('enLigneCodeSaisi').value);
+});
+document.getElementById('enLigneCodeSaisi').addEventListener('input', (e) => {
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+});
+
+// tant que le panneau est ouvert, le clavier sert à taper le code, pas à jouer
+window.addEventListener('keydown', (e) => {
+  if (!enLignePanneau.classList.contains('ouvert')) return;
+  e.stopImmediatePropagation();
+  if (e.key === 'Escape') fermerMenuEnLigne();
+  else if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'enLigneCodeSaisi') {
+    rejoindrePartieEnLigne(document.activeElement.value);
+  }
+}, true);
+
+// --- Connexion ---
+
+let chargementPeerJS = null;
+function chargerPeerJS() {
+  if (window.Peer) return Promise.resolve();
+  if (!chargementPeerJS) {
+    const essayer = (i) => new Promise((ok, echec) => {
+      if (i >= sourcesPeerJS.length) return echec(new Error('chargement impossible'));
+      const s = document.createElement('script');
+      s.src = sourcesPeerJS[i];
+      s.onload = () => window.Peer ? ok() : essayer(i + 1).then(ok, echec);
+      s.onerror = () => { s.remove(); essayer(i + 1).then(ok, echec); };
+      document.head.appendChild(s);
+    });
+    chargementPeerJS = essayer(0).catch((e) => { chargementPeerJS = null; throw e; });
+  }
+  return chargementPeerJS;
+}
+
+// réglages du serveur de mise en relation (les tests en mettent un local)
+function optionsPeer() {
+  return Object.assign({debug: 0}, window.optionsPeerEnLigne || {});
+}
+
+function nouveauCode() {
+  let code = '';
+  for (let i = 0; i < 4; i++) code += lettresCode[Math.floor(Math.random() * lettresCode.length)];
+  return code;
+}
+
+function messageErreurPeer(err) {
+  const type = err && err.type;
+  if (type === 'peer-unavailable') return 'Aucune partie avec ce code. Vérifie les lettres.';
+  if (type === 'browser-incompatible') return 'Ce navigateur ne permet pas de jouer en ligne.';
+  if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
+    return 'Pas de connexion au service en ligne. Vérifie internet et réessaie.';
+  }
+  return 'La connexion a échoué. Réessaie.';
+}
+
+async function creerPartieEnLigne(essai = 0) {
+  if (enLigne) return;
+  etatEnLigne('Préparation…');
+  document.getElementById('enLigneAccueil').style.display = 'none';
+  try {
+    await chargerPeerJS();
+  } catch (e) {
+    etatEnLigne('Impossible de charger le jeu en ligne. Vérifie ta connexion internet.');
+    document.getElementById('enLigneAccueil').style.display = '';
+    return;
+  }
+  const code = nouveauCode();
+  const peer = new Peer(prefixeSalle + code, optionsPeer());
+  enLigne = {role: 'hote', peer, code, conn: null, appel: null, flux: null, dernierHud: ''};
+  majPanneauEnLigne();
+  etatEnLigne('Connexion au service…');
+
+  peer.on('open', () => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    if (!enCoop()) changerModeJeu('coop'); // l'ami joue le serpent J2
+    etatEnLigne('Donne ce code à ton ami. Il ouvre le jeu, clique sur « 🌐 En ligne » puis « Rejoindre ».', code);
+    majPanneauEnLigne();
+  });
+  peer.on('connection', (conn) => accueillirInvite(conn));
+  peer.on('error', (err) => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    if (err.type === 'unavailable-id' && essai < 5) { // code déjà pris : on en tire un autre
+      quitterEnLigne(true);
+      creerPartieEnLigne(essai + 1);
+      return;
+    }
+    if (enLigne.conn) return; // l'ami est connecté : une coupure du service ne gêne pas la partie
+    quitterEnLigne(true);
+    etatEnLigne(messageErreurPeer(err));
+  });
+}
+
+function accueillirInvite(conn) {
+  if (!enLigne || enLigne.role !== 'hote') return;
+  if (enLigne.conn && enLigne.conn.open) { // une seule place : J2
+    conn.on('open', () => { conn.send({t: 'plein'}); setTimeout(() => conn.close(), 500); });
+    return;
+  }
+  enLigne.conn = conn;
+  conn.on('open', () => {
+    if (!enLigne || enLigne.conn !== conn) return;
+    if (!enCoop()) changerModeJeu('coop');
+    if (!enLigne.flux) enLigne.flux = canvas.captureStream(imagesParSecondeEnLigne);
+    enLigne.appel = enLigne.peer.call(conn.peer, enLigne.flux);
+    enLigne.dernierHud = '';
+    etatEnLigne('✅ Ton ami est connecté : il joue le serpent J2. Lance la partie !', enLigne.code);
+    gamepadStatusEl.textContent = '🌐 Ami connecté (J2)';
+  });
+  conn.on('data', (m) => appliquerCommandeInvite(m));
+  conn.on('close', () => {
+    if (!enLigne || enLigne.conn !== conn) return;
+    enLigne.conn = null;
+    if (enLigne.appel) enLigne.appel.close();
+    enLigne.appel = null;
+    joueurs[1] && arreterBoost(joueurs[1]);
+    etatEnLigne('Ton ami s\'est déconnecté. Il peut revenir avec le même code.', enLigne.code);
+    gamepadStatusEl.textContent = '🌐 En attente de ton ami (code ' + enLigne.code + ')';
+  });
+}
+
+// commandes reçues de l'invité, appliquées au joueur 2
+function appliquerCommandeInvite(m) {
+  const j = joueurs[1];
+  if (!m || typeof m !== 'object' || !j || !enCoop()) return;
+  switch (m.t) {
+    case 'dir': {
+      const dx = Math.sign(+m.dx || 0), dy = Math.sign(+m.dy || 0);
+      if (Math.abs(dx) + Math.abs(dy) === 1) changerDirection(dx, dy, j);
+      break;
+    }
+    case 'action': actionPrincipale(j); break;
+    case 'relache': arreterBoost(j); break;
+    case 'bouclier': activerBouclier(j); break;
+    case 'tir': j.viseeAuto = true; tenterTir(j); break;
+    case 'vise': {
+      const x = +m.x, y = +m.y;
+      if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) break;
+      j.viseeAuto = false;
+      j.mouseX = x * canvas.width;
+      j.mouseY = y * canvas.height;
+      tenterTir(j);
+      break;
+    }
+    case 'pause': if (!gameOver && !waitingToStart) togglePause(); break;
+  }
+}
+
+// l'hôte envoie à l'invité le texte des infos (score, cœurs...) quand il change
+function envoyerHudEnLigne() {
+  if (!enLigne || enLigne.role !== 'hote' || !enLigne.conn || !enLigne.conn.open) return;
+  const textes = Array.from(document.querySelectorAll('#hud > div'))
+    .filter(el => el.textContent.trim() && getComputedStyle(el).display !== 'none')
+    .map(el => el.textContent.trim());
+  const cle = textes.join('\n');
+  if (cle === enLigne.dernierHud) return;
+  enLigne.dernierHud = cle;
+  enLigne.conn.send({t: 'hud', textes});
+}
+setInterval(envoyerHudEnLigne, 300);
+
+async function rejoindrePartieEnLigne(saisie) {
+  const code = String(saisie || '').toUpperCase().replace(/[^A-Z]/g, '');
+  if (code.length !== 4) {
+    etatEnLigne('Le code fait 4 lettres.');
+    return;
+  }
+  if (enLigne) return;
+  etatEnLigne('Connexion…');
+  try {
+    await chargerPeerJS();
+  } catch (e) {
+    etatEnLigne('Impossible de charger le jeu en ligne. Vérifie ta connexion internet.');
+    return;
+  }
+  const peer = new Peer(optionsPeer());
+  enLigne = {role: 'invite', peer, code, conn: null, appel: null, connecte: false};
+  majPanneauEnLigne();
+  etatEnLigne('Connexion à la partie ' + code + '…');
+
+  peer.on('open', () => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    const conn = peer.connect(prefixeSalle + code, {reliable: true});
+    enLigne.conn = conn;
+    // le service ne signale un code inconnu qu'au bout de plusieurs secondes : on n'attend pas plus de 12 s
+    setTimeout(() => {
+      if (enLigne && enLigne.conn === conn && !enLigne.connecte) {
+        quitterEnLigne(true);
+        etatEnLigne('Aucune partie avec ce code. Vérifie les lettres.');
+      }
+    }, 12000);
+    conn.on('open', () => {
+      if (!enLigne || enLigne.conn !== conn) return;
+      enLigne.connecte = true;
+      entrerEcranInvite();
+    });
+    conn.on('data', (m) => {
+      if (!m || typeof m !== 'object') return;
+      if (m.t === 'hud' && Array.isArray(m.textes)) afficherHudInvite(m.textes);
+      if (m.t === 'plein') {
+        quitterEnLigne(true);
+        etatEnLigne('Cette partie a déjà deux joueurs.');
+      }
+    });
+    conn.on('close', () => {
+      if (!enLigne || enLigne.conn !== conn) return;
+      inviteMessage.textContent = 'La partie est terminée ou la connexion est perdue.';
+      inviteMessage.style.display = '';
+    });
+  });
+  peer.on('call', (appel) => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    enLigne.appel = appel;
+    appel.answer();
+    appel.on('stream', (flux) => {
+      inviteVideo.srcObject = flux;
+      const lecture = inviteVideo.play();
+      if (lecture && lecture.catch) lecture.catch(() => {});
+      inviteMessage.style.display = 'none';
+    });
+  });
+  peer.on('error', (err) => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    if (enLigne.connecte) {
+      if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed') return;
+      inviteMessage.textContent = messageErreurPeer(err);
+      inviteMessage.style.display = '';
+      return;
+    }
+    quitterEnLigne(true);
+    etatEnLigne(messageErreurPeer(err));
+  });
+}
+
+function quitterEnLigne(garderPanneau) {
+  if (!enLigne) return;
+  const etait = enLigne;
+  enLigne = null;
+  try { if (etait.appel) etait.appel.close(); } catch (e) {}
+  try { if (etait.conn) etait.conn.close(); } catch (e) {}
+  try { etait.peer.destroy(); } catch (e) {}
+  if (etait.flux) etait.flux.getTracks().forEach(t => t.stop());
+  if (etait.role === 'hote') gamepadStatusEl.textContent = '';
+  if (etait.role === 'invite' && etait.connecte) {
+    location.reload(); // l'invité retrouve son jeu normal, proprement
+    return;
+  }
+  majPanneauEnLigne();
+  if (!garderPanneau) fermerMenuEnLigne();
+}
+
+window.addEventListener('beforeunload', () => {
+  if (enLigne) try { enLigne.peer.destroy(); } catch (e) {}
+});
+
+// --- Écran de l'invité ---
+
+function entrerEcranInvite() {
+  fermerMenuEnLigne();
+  // la partie locale s'arrête : l'invité ne fait que regarder et commander
+  if (animationFrameId) cancelAnimationFrame(animationFrameId);
+  animationFrameId = null;
+  if (!isPaused && !waitingToStart && !gameOver) isPaused = true;
+  document.body.classList.add('invite-en-ligne');
+  inviteMessage.textContent = 'Connecté ! L\'image de la partie arrive…';
+  inviteMessage.style.display = '';
+  ajusterVideoInvite();
+  requestAnimationFrame(lireManetteInvite);
+}
+
+// la vidéo prend le plus grand carré possible dans son cadre
+function ajusterVideoInvite() {
+  if (!enEcranInvite()) return;
+  const r = cadreVideo.getBoundingClientRect();
+  const cote = Math.floor(Math.max(0, Math.min(r.width, r.height)));
+  inviteVideo.style.width = inviteVideo.style.height = cote + 'px';
+}
+window.addEventListener('resize', ajusterVideoInvite);
+
+function afficherHudInvite(textes) {
+  const zone = document.getElementById('inviteHud');
+  zone.textContent = '';
+  textes.slice(0, 10).forEach(t => {
+    const div = document.createElement('div');
+    div.textContent = String(t).slice(0, 120);
+    zone.appendChild(div);
+  });
+}
+
+function envoyerAHote(message) {
+  if (enLigne && enLigne.role === 'invite' && enLigne.conn && enLigne.conn.open) enLigne.conn.send(message);
+}
+
+function enEcranInvite() {
+  return document.body.classList.contains('invite-en-ligne');
+}
+
+// clavier de l'invité : on capte les touches avant le jeu local (qui est arrêté)
+const directionsInvite = {
+  ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+  KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0], KeyD: [1, 0]
+};
+window.addEventListener('keydown', (e) => {
+  if (!enEcranInvite()) return;
+  e.stopImmediatePropagation();
+  const dir = directionsInvite[e.code] || directionsInvite[e.key];
+  if (dir) { e.preventDefault(); envoyerAHote({t: 'dir', dx: dir[0], dy: dir[1]}); return; }
+  if (e.repeat) return;
+  if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); envoyerAHote({t: 'action'}); }
+  else if (e.key === 'Shift') envoyerAHote({t: 'bouclier'});
+  else if (e.key === 'Enter' || e.code === 'KeyF' || e.key === 'Control') { e.preventDefault(); envoyerAHote({t: 'tir'}); }
+  else if (e.code === 'KeyP' || e.key === 'Escape') envoyerAHote({t: 'pause'});
+}, true);
+window.addEventListener('keyup', (e) => {
+  if (!enEcranInvite()) return;
+  e.stopImmediatePropagation();
+  if (e.key === ' ' || e.key === 'Spacebar') envoyerAHote({t: 'relache'});
+}, true);
+
+// boutons de l'invité
+function boutonInvite(id, appui, relache) {
+  const b = document.getElementById(id);
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); appui(); });
+  if (relache) {
+    b.addEventListener('pointerup', relache);
+    b.addEventListener('pointercancel', relache);
+    b.addEventListener('pointerleave', relache);
+  }
+}
+boutonInvite('inviteBoost', () => envoyerAHote({t: 'action'}), () => envoyerAHote({t: 'relache'}));
+boutonInvite('inviteBouclier', () => envoyerAHote({t: 'bouclier'}));
+boutonInvite('inviteTir', () => envoyerAHote({t: 'tir'}));
+boutonInvite('invitePause', () => envoyerAHote({t: 'pause'}));
+boutonInvite('inviteQuitter', () => quitterEnLigne());
+
+// doigt ou souris sur la vidéo : glisser = tourner (enchaînable), toucher = tirer à cet endroit
+let gesteInvite = null;
+const cadreVideo = document.getElementById('inviteVideoCadre');
+['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(type => {
+  ecranInvite.addEventListener(type, (e) => e.stopPropagation(), {passive: true}); // le tactile du jeu local ne voit rien
+});
+cadreVideo.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  gesteInvite = {id: e.pointerId, x: e.clientX, y: e.clientY, debut: performance.now(), aTourne: false};
+  try { cadreVideo.setPointerCapture(e.pointerId); } catch (err) {}
+});
+cadreVideo.addEventListener('pointermove', (e) => {
+  if (!gesteInvite || gesteInvite.id !== e.pointerId) return;
+  const dx = e.clientX - gesteInvite.x, dy = e.clientY - gesteInvite.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+  if (Math.abs(dx) > Math.abs(dy)) envoyerAHote({t: 'dir', dx: Math.sign(dx), dy: 0});
+  else envoyerAHote({t: 'dir', dx: 0, dy: Math.sign(dy)});
+  gesteInvite.x = e.clientX;
+  gesteInvite.y = e.clientY;
+  gesteInvite.aTourne = true;
+});
+function finGesteInvite(e) {
+  if (!gesteInvite || gesteInvite.id !== e.pointerId) return;
+  const g = gesteInvite;
+  gesteInvite = null;
+  if (g.aTourne || e.type === 'pointercancel' || performance.now() - g.debut > 400) return;
+  // position touchée dans l'image (la vidéo garde ses proportions, centrée dans son cadre)
+  const r = inviteVideo.getBoundingClientRect();
+  const vw = inviteVideo.videoWidth || 1, vh = inviteVideo.videoHeight || 1;
+  const echelle = Math.min(r.width / vw, r.height / vh);
+  const largeur = vw * echelle, hauteur = vh * echelle;
+  const x = (e.clientX - (r.left + (r.width - largeur) / 2)) / largeur;
+  const y = (e.clientY - (r.top + (r.height - hauteur) / 2)) / hauteur;
+  if (x >= 0 && x <= 1 && y >= 0 && y <= 1) envoyerAHote({t: 'vise', x, y});
+}
+cadreVideo.addEventListener('pointerup', finGesteInvite);
+cadreVideo.addEventListener('pointercancel', finGesteInvite);
+cadreVideo.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// manette de l'invité (la partie locale étant arrêtée, on la lit ici)
+let boutonsManetteInvite = [];
+let directionManetteInvite = '';
+function lireManetteInvite() {
+  if (!enEcranInvite()) return;
+  const pad = listerManettes()[0];
+  if (pad) {
+    const etat = pad.buttons.map(b => !!(b && (b.pressed || b.value > 0.5)));
+    const appui = i => etat[i] && !boutonsManetteInvite[i];
+    const relache = i => !etat[i] && boutonsManetteInvite[i];
+    let dx = 0, dy = 0;
+    if (etat[MANETTE.HAUT]) dy = -1;
+    else if (etat[MANETTE.BAS]) dy = 1;
+    else if (etat[MANETTE.GAUCHE]) dx = -1;
+    else if (etat[MANETTE.DROITE]) dx = 1;
+    else {
+      const sx = pad.axes[0] || 0, sy = pad.axes[1] || 0;
+      if (Math.max(Math.abs(sx), Math.abs(sy)) > zoneMorteStick) {
+        if (Math.abs(sx) > Math.abs(sy)) dx = Math.sign(sx);
+        else dy = Math.sign(sy);
+      }
+    }
+    const dir = dx + ',' + dy;
+    if (dir !== directionManetteInvite && (dx || dy)) envoyerAHote({t: 'dir', dx, dy});
+    directionManetteInvite = dir;
+    if (appui(MANETTE.A)) envoyerAHote({t: 'action'});
+    if (relache(MANETTE.A)) envoyerAHote({t: 'relache'});
+    if (appui(MANETTE.B) || appui(MANETTE.LB)) envoyerAHote({t: 'bouclier'});
+    if (appui(MANETTE.RT) || appui(MANETTE.RB) || appui(MANETTE.X)) envoyerAHote({t: 'tir'});
+    if (appui(MANETTE.START)) envoyerAHote({t: 'pause'});
+    boutonsManetteInvite = etat;
+  }
+  requestAnimationFrame(lireManetteInvite);
+}
 </script>
 
 <script>
