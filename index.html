@@ -9443,7 +9443,7 @@ function nouveauCode() {
 
 function messageErreurPeer(err) {
   const type = err && err.type;
-  if (type === 'peer-unavailable') return 'Aucune partie avec ce code. Vérifie les lettres.';
+  if (type === 'peer-unavailable') return 'Aucune partie avec ce code. Vérifie les lettres, et que le jeu de l\'hôte est resté ouvert à l\'écran.';
   if (type === 'browser-incompatible') return 'Ce navigateur ne permet pas de jouer en ligne.';
   if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
     return 'Pas de connexion au service en ligne. Vérifie internet et réessaie.';
@@ -9470,16 +9470,28 @@ async function creerPartieEnLigne(essai = 0) {
 
   peer.on('open', () => {
     if (!enLigne || enLigne.peer !== peer) return;
+    enLigne.ouvert = true;
     if (!enCoop()) changerModeJeu('coop'); // l'ami joue le serpent J2
-    etatEnLigne('Donne ce code à ton ami. Il ouvre le jeu, clique sur « 🌐 En ligne » puis « Rejoindre ».', code);
+    if (!enLigne.conn) etatEnLigne('Donne ce code à ton ami. Il ouvre le jeu, clique sur « 🌐 En ligne » puis « Rejoindre ». Garde le jeu ouvert à l\'écran pendant qu\'il se connecte.', code);
     majPanneauEnLigne();
   });
   peer.on('connection', (conn) => accueillirInvite(conn));
+  // téléphone en veille, appli changée pour envoyer le code, wifi qui saute : le service nous oublie.
+  // On se réinscrit avec le même code, sinon l'ami ne trouverait plus la partie.
+  peer.on('disconnected', () => {
+    if (!enLigne || enLigne.peer !== peer) return;
+    if (!enLigne.conn) etatEnLigne('Reconnexion au service…', code);
+    setTimeout(() => reconnecterHote(peer), 1000);
+  });
   peer.on('error', (err) => {
     if (!enLigne || enLigne.peer !== peer) return;
-    if (err.type === 'unavailable-id' && essai < 5) { // code déjà pris : on en tire un autre
+    if (err.type === 'unavailable-id' && !enLigne.ouvert && essai < 5) { // code déjà pris : on en tire un autre
       quitterEnLigne(true);
       creerPartieEnLigne(essai + 1);
+      return;
+    }
+    if (enLigne.ouvert && err.type !== 'browser-incompatible') { // la partie existe déjà : on retente, sans changer de code
+      setTimeout(() => reconnecterHote(peer), 3000);
       return;
     }
     if (enLigne.conn) return; // l'ami est connecté : une coupure du service ne gêne pas la partie
@@ -9487,6 +9499,14 @@ async function creerPartieEnLigne(essai = 0) {
     etatEnLigne(messageErreurPeer(err));
   });
 }
+
+function reconnecterHote(peer) {
+  if (!enLigne || enLigne.peer !== peer || peer.destroyed || !peer.disconnected) return;
+  try { peer.reconnect(); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && enLigne && enLigne.role === 'hote') reconnecterHote(enLigne.peer);
+});
 
 function accueillirInvite(conn) {
   if (!enLigne || enLigne.role !== 'hote') return;
@@ -9579,13 +9599,13 @@ async function rejoindrePartieEnLigne(saisie) {
     if (!enLigne || enLigne.peer !== peer) return;
     const conn = peer.connect(prefixeSalle + code, {reliable: true});
     enLigne.conn = conn;
-    // le service ne signale un code inconnu qu'au bout de plusieurs secondes : on n'attend pas plus de 12 s
+    // si la liaison directe entre les deux appareils ne s'établit pas, on ne laisse pas attendre indéfiniment
     setTimeout(() => {
       if (enLigne && enLigne.conn === conn && !enLigne.connecte) {
         quitterEnLigne(true);
-        etatEnLigne('Aucune partie avec ce code. Vérifie les lettres.');
+        etatEnLigne('La partie a été trouvée mais la liaison n\'arrive pas à s\'établir. Vérifie que le jeu de l\'hôte est ouvert à l\'écran, puis réessaie.');
       }
-    }, 12000);
+    }, 25000);
     conn.on('open', () => {
       if (!enLigne || enLigne.conn !== conn) return;
       enLigne.connecte = true;
