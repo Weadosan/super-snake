@@ -9300,17 +9300,19 @@ initHighscores();
 // --- Jeu à deux en ligne (code de salle) ---
 // ============================================================
 // L'hôte fait tourner la partie en coop sur son appareil et envoie en direct l'image du plateau
-// à son ami (WebRTC, via la bibliothèque PeerJS chargée seulement quand on s'en sert).
+// à son ami (WebRTC, via la bibliothèque Trystero chargée seulement quand on s'en sert).
 // L'invité ne fait tourner aucune partie : il regarde la vidéo et envoie ses commandes,
 // que l'hôte applique au joueur 2. Les deux écrans ne peuvent donc jamais être décalés.
 
-// la copie posée à côté du jeu en ligne d'abord, sinon le CDN (fichier ouvert directement)
-const sourcesPeerJS = ['peerjs.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'];
-const prefixeSalle = 'super-snake-v1-';
+const sourceTrysteroCDN = 'https://cdn.jsdelivr.net/npm/trystero@0.25.4/+esm';
+const idApplicationEnLigne = 'super-snake-weadosan-v1'; // les joueurs d'un même code se retrouvent dans ce jeu seulement
 const lettresCode = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // sans I ni O, qu'on confond avec 1 et 0
-const imagesParSecondeEnLigne = 30;
+const imagesParSecondeEnLigne = 24;
+// relais TURN (metered.ca) : fait passer la connexion quand les deux appareils ne peuvent pas se relier directement
+// (réseaux différents, 4G). Vide = pas de relais, connexion directe seulement.
+const relaisTurn = {app: '', cle: ''};
 
-let enLigne = null; // null, ou {role: 'hote' | 'invite', peer, conn, appel, code, ...}
+let enLigne = null; // null, ou {role: 'hote' | 'invite', salon, envoyer, code, ...}
 
 const enLigneBtn = document.getElementById('enLigneBtn');
 const enLignePanneau = document.createElement('div');
@@ -9412,27 +9414,45 @@ window.addEventListener('keydown', (e) => {
 }, true);
 
 // --- Connexion ---
+// Mise en relation par Trystero : les deux appareils se retrouvent dans un « salon » nommé par le code,
+// en passant par plusieurs relais publics gratuits (Nostr) à la fois. Si l'un est en panne, les autres suffisent.
 
-let chargementPeerJS = null;
-function chargerPeerJS() {
-  if (window.Peer) return Promise.resolve();
-  if (!chargementPeerJS) {
-    const essayer = (i) => new Promise((ok, echec) => {
-      if (i >= sourcesPeerJS.length) return echec(new Error('chargement impossible'));
+let chargementTrystero = null;
+function chargerTrystero() {
+  if (window.Trystero) return Promise.resolve();
+  if (!chargementTrystero) {
+    chargementTrystero = new Promise((ok, echec) => {
       const s = document.createElement('script');
-      s.src = sourcesPeerJS[i];
-      s.onload = () => window.Peer ? ok() : essayer(i + 1).then(ok, echec);
-      s.onerror = () => { s.remove(); essayer(i + 1).then(ok, echec); };
+      s.src = 'trystero.min.js'; // posé à côté du jeu en ligne (outils/publier.js)
+      s.onload = () => window.Trystero ? ok() : echec(new Error('Trystero absent'));
+      s.onerror = () => {
+        s.remove();
+        // fichier ouvert directement : on le prend sur un CDN
+        import(sourceTrysteroCDN).then(m => { window.Trystero = m; ok(); }, echec);
+      };
       document.head.appendChild(s);
-    });
-    chargementPeerJS = essayer(0).catch((e) => { chargementPeerJS = null; throw e; });
+    }).catch((e) => { chargementTrystero = null; throw e; });
   }
-  return chargementPeerJS;
+  return chargementTrystero;
 }
 
-// réglages du serveur de mise en relation (les tests en mettent un local)
-function optionsPeer() {
-  return Object.assign({debug: 0}, window.optionsPeerEnLigne || {});
+let serveursIceRelais = null;
+async function chargerRelais() {
+  if (serveursIceRelais || !relaisTurn.app || !relaisTurn.cle) return;
+  try {
+    const rep = await fetch('https://' + relaisTurn.app + '.metered.live/api/v1/turn/credentials?apiKey=' + encodeURIComponent(relaisTurn.cle));
+    const liste = await rep.json();
+    if (Array.isArray(liste) && liste.length) serveursIceRelais = liste.filter(s => String(s.urls).includes('turn'));
+  } catch (e) {
+    // relais injoignable : on tente quand même sans
+  }
+}
+
+// réglages de Trystero (les tests mettent un relais local dans window.optionsTrysteroEnLigne)
+function configTrystero() {
+  const config = {appId: idApplicationEnLigne};
+  if (serveursIceRelais && serveursIceRelais.length) config.turnConfig = serveursIceRelais;
+  return Object.assign(config, window.optionsTrysteroEnLigne || {});
 }
 
 function nouveauCode() {
@@ -9441,98 +9461,64 @@ function nouveauCode() {
   return code;
 }
 
-function messageErreurPeer(err) {
-  const type = err && err.type;
-  if (type === 'peer-unavailable') return 'Aucune partie avec ce code. Vérifie les lettres, et que le jeu de l\'hôte est resté ouvert à l\'écran.';
-  if (type === 'browser-incompatible') return 'Ce navigateur ne permet pas de jouer en ligne.';
-  if (type === 'network' || type === 'server-error' || type === 'socket-error' || type === 'socket-closed') {
-    return 'Pas de connexion au service en ligne. Vérifie internet et réessaie.';
-  }
-  return 'La connexion a échoué. Réessaie.';
+// canal des messages du jeu (commandes, infos) entre les deux appareils
+function canalJeu(salon) {
+  const action = salon.makeAction('jeu');
+  return {
+    envoyer: (message, id) => { action.send(message, {target: id}).catch(() => {}); },
+    recevoir: (fn) => { action.onMessage = (message, infos) => fn(message, infos && infos.peerId); }
+  };
 }
 
-async function creerPartieEnLigne(essai = 0) {
-  if (enLigne) return;
-  etatEnLigne('Préparation…');
-  document.getElementById('enLigneAccueil').style.display = 'none';
+async function preparerConnexion() {
   try {
-    await chargerPeerJS();
+    await Promise.all([chargerTrystero(), chargerRelais()]);
+    return true;
   } catch (e) {
     etatEnLigne('Impossible de charger le jeu en ligne. Vérifie ta connexion internet.');
     document.getElementById('enLigneAccueil').style.display = '';
-    return;
+    return false;
   }
+}
+
+async function creerPartieEnLigne() {
+  if (enLigne) return;
+  etatEnLigne('Préparation…');
+  document.getElementById('enLigneAccueil').style.display = 'none';
+  if (!await preparerConnexion() || enLigne) return;
   const code = nouveauCode();
-  const peer = new Peer(prefixeSalle + code, optionsPeer());
-  enLigne = {role: 'hote', peer, code, conn: null, appel: null, flux: null, dernierHud: ''};
+  const salon = window.Trystero.joinRoom(configTrystero(), code);
+  const {envoyer, recevoir} = canalJeu(salon);
+  enLigne = {role: 'hote', salon, envoyer, code, invite: null, flux: null, dernierHud: ''};
+  if (!enCoop()) changerModeJeu('coop'); // l'ami joue le serpent J2
   majPanneauEnLigne();
-  etatEnLigne('Connexion au service…');
+  etatEnLigne('Donne ce code à ton ami. Il ouvre le jeu, clique sur « 🌐 En ligne » puis « Rejoindre ». Garde le jeu ouvert pendant qu\'il se connecte.', code);
+  gamepadStatusEl.textContent = '🌐 En attente de ton ami (code ' + code + ')';
 
-  peer.on('open', () => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    enLigne.ouvert = true;
-    if (!enCoop()) changerModeJeu('coop'); // l'ami joue le serpent J2
-    if (!enLigne.conn) etatEnLigne('Donne ce code à ton ami. Il ouvre le jeu, clique sur « 🌐 En ligne » puis « Rejoindre ». Garde le jeu ouvert à l\'écran pendant qu\'il se connecte.', code);
-    majPanneauEnLigne();
-  });
-  peer.on('connection', (conn) => accueillirInvite(conn));
-  // téléphone en veille, appli changée pour envoyer le code, wifi qui saute : le service nous oublie.
-  // On se réinscrit avec le même code, sinon l'ami ne trouverait plus la partie.
-  peer.on('disconnected', () => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    if (!enLigne.conn) etatEnLigne('Reconnexion au service…', code);
-    setTimeout(() => reconnecterHote(peer), 1000);
-  });
-  peer.on('error', (err) => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    if (err.type === 'unavailable-id' && !enLigne.ouvert && essai < 5) { // code déjà pris : on en tire un autre
-      quitterEnLigne(true);
-      creerPartieEnLigne(essai + 1);
+  salon.onPeerJoin = (id) => {
+    if (!enLigne || enLigne.salon !== salon) return;
+    if (enLigne.invite && enLigne.invite !== id) { // une seule place : J2
+      envoyer({t: 'plein'}, id);
       return;
     }
-    if (enLigne.ouvert && err.type !== 'browser-incompatible') { // la partie existe déjà : on retente, sans changer de code
-      setTimeout(() => reconnecterHote(peer), 3000);
-      return;
-    }
-    if (enLigne.conn) return; // l'ami est connecté : une coupure du service ne gêne pas la partie
-    quitterEnLigne(true);
-    etatEnLigne(messageErreurPeer(err));
-  });
-}
-
-function reconnecterHote(peer) {
-  if (!enLigne || enLigne.peer !== peer || peer.destroyed || !peer.disconnected) return;
-  try { peer.reconnect(); } catch (e) {}
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && enLigne && enLigne.role === 'hote') reconnecterHote(enLigne.peer);
-});
-
-function accueillirInvite(conn) {
-  if (!enLigne || enLigne.role !== 'hote') return;
-  if (enLigne.conn && enLigne.conn.open) { // une seule place : J2
-    conn.on('open', () => { conn.send({t: 'plein'}); setTimeout(() => conn.close(), 500); });
-    return;
-  }
-  enLigne.conn = conn;
-  conn.on('open', () => {
-    if (!enLigne || enLigne.conn !== conn) return;
+    enLigne.invite = id;
     if (!enCoop()) changerModeJeu('coop');
     if (!enLigne.flux) enLigne.flux = canvas.captureStream(imagesParSecondeEnLigne);
-    enLigne.appel = enLigne.peer.call(conn.peer, enLigne.flux);
+    envoyer({t: 'hote'}, id);
+    salon.addStream(enLigne.flux, {target: id});
     enLigne.dernierHud = '';
-    etatEnLigne('✅ Ton ami est connecté : il joue le serpent J2. Lance la partie !', enLigne.code);
+    etatEnLigne('✅ Ton ami est connecté : il joue le serpent J2. Lance la partie !', code);
     gamepadStatusEl.textContent = '🌐 Ami connecté (J2)';
-  });
-  conn.on('data', (m) => appliquerCommandeInvite(m));
-  conn.on('close', () => {
-    if (!enLigne || enLigne.conn !== conn) return;
-    enLigne.conn = null;
-    if (enLigne.appel) enLigne.appel.close();
-    enLigne.appel = null;
-    joueurs[1] && arreterBoost(joueurs[1]);
-    etatEnLigne('Ton ami s\'est déconnecté. Il peut revenir avec le même code.', enLigne.code);
-    gamepadStatusEl.textContent = '🌐 En attente de ton ami (code ' + enLigne.code + ')';
+  };
+  salon.onPeerLeave = (id) => {
+    if (!enLigne || enLigne.salon !== salon || enLigne.invite !== id) return;
+    enLigne.invite = null;
+    if (joueurs[1]) arreterBoost(joueurs[1]);
+    etatEnLigne('Ton ami s\'est déconnecté. Il peut revenir avec le même code.', code);
+    gamepadStatusEl.textContent = '🌐 En attente de ton ami (code ' + code + ')';
+  };
+  recevoir((m, id) => {
+    if (enLigne && enLigne.salon === salon && id === enLigne.invite) appliquerCommandeInvite(m);
   });
 }
 
@@ -9565,14 +9551,14 @@ function appliquerCommandeInvite(m) {
 
 // l'hôte envoie à l'invité le texte des infos (score, cœurs...) quand il change
 function envoyerHudEnLigne() {
-  if (!enLigne || enLigne.role !== 'hote' || !enLigne.conn || !enLigne.conn.open) return;
+  if (!enLigne || enLigne.role !== 'hote' || !enLigne.invite) return;
   const textes = Array.from(document.querySelectorAll('#hud > div'))
     .filter(el => el.textContent.trim() && getComputedStyle(el).display !== 'none')
     .map(el => el.textContent.trim());
   const cle = textes.join('\n');
   if (cle === enLigne.dernierHud) return;
   enLigne.dernierHud = cle;
-  enLigne.conn.send({t: 'hud', textes});
+  enLigne.envoyer({t: 'hud', textes}, enLigne.invite);
 }
 setInterval(envoyerHudEnLigne, 300);
 
@@ -9584,78 +9570,59 @@ async function rejoindrePartieEnLigne(saisie) {
   }
   if (enLigne) return;
   etatEnLigne('Connexion…');
-  try {
-    await chargerPeerJS();
-  } catch (e) {
-    etatEnLigne('Impossible de charger le jeu en ligne. Vérifie ta connexion internet.');
-    return;
-  }
-  const peer = new Peer(optionsPeer());
-  enLigne = {role: 'invite', peer, code, conn: null, appel: null, connecte: false};
+  if (!await preparerConnexion() || enLigne) return;
+  const salon = window.Trystero.joinRoom(configTrystero(), code, {
+    onJoinError: () => {
+      if (!enLigne || enLigne.salon !== salon || enLigne.hote) return;
+      enLigne.erreurLiaison = true;
+    }
+  });
+  const {envoyer, recevoir} = canalJeu(salon);
+  enLigne = {role: 'invite', salon, envoyer, code, hote: null, connecte: false, erreurLiaison: false};
   majPanneauEnLigne();
-  etatEnLigne('Connexion à la partie ' + code + '…');
+  etatEnLigne('Recherche de la partie ' + code + '…');
 
-  peer.on('open', () => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    const conn = peer.connect(prefixeSalle + code, {reliable: true});
-    enLigne.conn = conn;
-    // si la liaison directe entre les deux appareils ne s'établit pas, on ne laisse pas attendre indéfiniment
-    setTimeout(() => {
-      if (enLigne && enLigne.conn === conn && !enLigne.connecte) {
-        quitterEnLigne(true);
-        etatEnLigne('La partie a été trouvée mais la liaison n\'arrive pas à s\'établir. Vérifie que le jeu de l\'hôte est ouvert à l\'écran, puis réessaie.');
-      }
-    }, 25000);
-    conn.on('open', () => {
-      if (!enLigne || enLigne.conn !== conn) return;
+  recevoir((m, id) => {
+    if (!enLigne || enLigne.salon !== salon || !m || typeof m !== 'object') return;
+    if (m.t === 'hote' && !enLigne.hote) {
+      enLigne.hote = id;
       enLigne.connecte = true;
       entrerEcranInvite();
-    });
-    conn.on('data', (m) => {
-      if (!m || typeof m !== 'object') return;
-      if (m.t === 'hud' && Array.isArray(m.textes)) afficherHudInvite(m.textes);
-      if (m.t === 'plein') {
-        quitterEnLigne(true);
-        etatEnLigne('Cette partie a déjà deux joueurs.');
-      }
-    });
-    conn.on('close', () => {
-      if (!enLigne || enLigne.conn !== conn) return;
-      inviteMessage.textContent = 'La partie est terminée ou la connexion est perdue.';
-      inviteMessage.style.display = '';
-    });
-  });
-  peer.on('call', (appel) => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    enLigne.appel = appel;
-    appel.answer();
-    appel.on('stream', (flux) => {
-      inviteVideo.srcObject = flux;
-      const lecture = inviteVideo.play();
-      if (lecture && lecture.catch) lecture.catch(() => {});
-      inviteMessage.style.display = 'none';
-    });
-  });
-  peer.on('error', (err) => {
-    if (!enLigne || enLigne.peer !== peer) return;
-    if (enLigne.connecte) {
-      if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed') return;
-      inviteMessage.textContent = messageErreurPeer(err);
-      inviteMessage.style.display = '';
-      return;
+    } else if (m.t === 'plein' && !enLigne.hote) {
+      quitterEnLigne(true);
+      etatEnLigne('Cette partie a déjà deux joueurs.');
+    } else if (m.t === 'hud' && id === enLigne.hote && Array.isArray(m.textes)) {
+      afficherHudInvite(m.textes);
     }
-    quitterEnLigne(true);
-    etatEnLigne(messageErreurPeer(err));
   });
+  salon.onPeerStream = (flux, id) => {
+    if (!enLigne || enLigne.salon !== salon || (enLigne.hote && id !== enLigne.hote)) return;
+    inviteVideo.srcObject = flux;
+    const lecture = inviteVideo.play();
+    if (lecture && lecture.catch) lecture.catch(() => {});
+    inviteMessage.style.display = 'none';
+  };
+  salon.onPeerLeave = (id) => {
+    if (!enLigne || enLigne.salon !== salon || id !== enLigne.hote) return;
+    inviteMessage.textContent = 'La partie est terminée ou la connexion est perdue.';
+    inviteMessage.style.display = '';
+  };
+  // personne ne répond : mauvais code, jeu de l'hôte fermé, ou réseaux qui n'arrivent pas à se relier
+  setTimeout(() => {
+    if (!enLigne || enLigne.salon !== salon || enLigne.hote) return;
+    const liaison = enLigne.erreurLiaison;
+    quitterEnLigne(true);
+    etatEnLigne(liaison
+      ? 'La partie a été trouvée mais vos deux réseaux n\'arrivent pas à se relier. Réessaie, ou essaie avec un autre réseau (partage de connexion du téléphone par exemple).'
+      : 'Aucune partie trouvée avec ce code. Vérifie les lettres, et que le jeu de l\'hôte est ouvert avec le code affiché.');
+  }, 30000);
 }
 
 function quitterEnLigne(garderPanneau) {
   if (!enLigne) return;
   const etait = enLigne;
   enLigne = null;
-  try { if (etait.appel) etait.appel.close(); } catch (e) {}
-  try { if (etait.conn) etait.conn.close(); } catch (e) {}
-  try { etait.peer.destroy(); } catch (e) {}
+  try { etait.salon.leave(); } catch (e) {}
   if (etait.flux) etait.flux.getTracks().forEach(t => t.stop());
   if (etait.role === 'hote') gamepadStatusEl.textContent = '';
   if (etait.role === 'invite' && etait.connecte) {
@@ -9667,7 +9634,7 @@ function quitterEnLigne(garderPanneau) {
 }
 
 window.addEventListener('beforeunload', () => {
-  if (enLigne) try { enLigne.peer.destroy(); } catch (e) {}
+  if (enLigne) try { enLigne.salon.leave(); } catch (e) {}
 });
 
 // --- Écran de l'invité ---
@@ -9705,7 +9672,7 @@ function afficherHudInvite(textes) {
 }
 
 function envoyerAHote(message) {
-  if (enLigne && enLigne.role === 'invite' && enLigne.conn && enLigne.conn.open) enLigne.conn.send(message);
+  if (enLigne && enLigne.role === 'invite' && enLigne.hote) enLigne.envoyer(message, enLigne.hote);
 }
 
 function enEcranInvite() {

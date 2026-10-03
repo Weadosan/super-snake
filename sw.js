@@ -1,5 +1,5 @@
-const CACHE = 'super-snake-202610031939';
-const FICHIERS = ['./', 'index.html', 'manifest.webmanifest', 'icone.svg', 'icone-192.png', 'icone-512.png', 'icone-180.png', 'peerjs.min.js'];
+const CACHE = 'super-snake-202610031955';
+const FICHIERS = ['./', 'index.html', 'manifest.webmanifest', 'icone.svg', 'icone-192.png', 'icone-512.png', 'icone-180.png', 'trystero.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
 });
