@@ -666,6 +666,18 @@
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #highscoreSidebar {
     display: none;
   }
+  /* catégories du menu ☰ (Thèmes, Skin des ennemis, Options) */
+  .titre-categorie { display: none; }
+  body.menu-tactile-ouvert .titre-categorie {
+    display: block;
+    width: min(360px, 100%);
+    margin: 12px 0 8px 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 15px;
+    text-align: center;
+    color: var(--accent);
+  }
   #menuTactileBarre {
     gap: 8px;
     flex-wrap: wrap;
@@ -1104,6 +1116,8 @@
     </div>
     <h1>🐍 Snake</h1>
 
+    <!-- titres des catégories : visibles seulement dans le menu ☰ -->
+    <h3 class="titre-categorie">🎨 Thèmes</h3>
     <div id="themeSelector">
       <button class="theme-btn active" data-theme="neon">Néon</button>
       <button class="theme-btn" data-theme="espace">Espace</button>
@@ -1111,16 +1125,7 @@
       <button class="theme-btn" data-theme="ocean">Océan</button>
     </div>
 
-    <div id="controlBar">
-      <button id="pauseBtn">⏸️ Pause</button>
-      <button id="muteBtn">🔊 Son</button>
-      <button id="buffMenuBtn">🧪 Buffs</button>
-      <button id="modeBtn">👤 Solo</button>
-      <button id="difficulteBtn">🟡 Normal</button>
-      <button id="enLigneBtn">🌐 En ligne</button>
-    </div>
-    <div id="gamepadStatus"></div>
-
+    <h3 class="titre-categorie">👾 Skin des ennemis</h3>
     <div id="enemySkinSelector">
       <button class="skin-btn active" data-skin="urchin">🦔 Oursin</button>
       <button class="skin-btn" data-skin="ghost">👻 Fantôme</button>
@@ -1134,6 +1139,17 @@
       <canvas id="apercuCarte" width="400" height="400"></canvas>
       <div id="apercuLegende"></div>
     </div>
+
+    <h3 class="titre-categorie">⚙️ Options</h3>
+    <div id="controlBar">
+      <button id="pauseBtn">⏸️ Pause</button>
+      <button id="muteBtn">🔊 Son</button>
+      <button id="buffMenuBtn">🧪 Buffs</button>
+      <button id="modeBtn">👤 Solo</button>
+      <button id="difficulteBtn">🟡 Normal</button>
+      <button id="enLigneBtn">🌐 En ligne</button>
+    </div>
+    <div id="gamepadStatus"></div>
 
     <div id="hud">
       <div id="score">Score : 0</div>
@@ -8818,6 +8834,12 @@ window.addEventListener('resize', appliquerDisposition);
 // --- Menu ☰ ---
 function ouvrirMenuTactile() {
   if (!waitingToStart && !gameOver && !isPaused && !countdownActive) togglePause();
+  // pendant le compte à rebours, la pause n'existe pas encore : on revient à l'écran de départ
+  // (le serpent n'a pas bougé), sinon la partie démarrerait derrière le menu
+  if (countdownActive) {
+    countdownActive = false;
+    waitingToStart = true;
+  }
   document.body.classList.add('menu-tactile-ouvert');
   demarrerApercu();
   document.getElementById('layout').scrollTop = 0;
