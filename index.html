@@ -227,7 +227,7 @@
     font-size: 12px;
     color: var(--text-muted);
   }
-  #killProgress {
+  #killProgress, #difficulteHud {
     margin-bottom: 4px;
     font-size: 12px;
     color: var(--text-muted);
@@ -808,7 +808,7 @@
     .theme-btn, .skin-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
     #score { font-size: 15px; margin-bottom: 2px; }
     #hearts { font-size: 16px; margin-bottom: 2px; }
-    #segmentCounter, #killProgress { display: inline; margin: 0 4px; }
+    #segmentCounter, #killProgress, #difficulteHud { display: inline; margin: 0 4px; }
     #shieldStatus { margin: 2px 0 4px 0; }
     #buffStatus { margin-bottom: 6px; }
     #game { width: min(400px, calc(100vw - 32px)); }
@@ -1116,6 +1116,7 @@
       <button id="muteBtn">🔊 Son</button>
       <button id="buffMenuBtn">🧪 Buffs</button>
       <button id="modeBtn">👤 Solo</button>
+      <button id="difficulteBtn">🟡 Normal</button>
       <button id="enLigneBtn">🌐 En ligne</button>
     </div>
     <div id="gamepadStatus"></div>
@@ -1139,6 +1140,7 @@
       <div id="hearts">❤️❤️❤️</div>
       <div id="segmentCounter">Segments : 3</div>
       <div id="killProgress">Ennemis tués : 0 / 25 (❤️ bonus)</div>
+      <div id="difficulteHud">Difficulté : Normal</div>
       <div id="shieldStatus">Bouclier (Maj) : Prêt</div>
       <div id="buffStatus"></div>
     </div>
@@ -1442,6 +1444,32 @@ function majLegendePommes() {
 }
 const tileCount = canvas.width / gridSize;
 
+// --- Difficulté (Facile / Normal / Difficile), mémorisée ; Difficile = le jeu d'origine ---
+// vitesse : du serpent et des ennemis ; chanceResistant : ennemis à 2 coups ;
+// killsCoeur : kills [min, max] avant un cœur bonus ; rayonCoeur : taille du cœur à attraper
+const niveauxDifficulte = {
+  facile: {nom: 'Facile', icone: '🟢', vitesse: 0.8, chanceResistant: 0, killsCoeur: [10, 15], rayonCoeur: 16},
+  normal: {nom: 'Normal', icone: '🟡', vitesse: 0.9, chanceResistant: 0.15, killsCoeur: [15, 25], rayonCoeur: 12},
+  difficile: {nom: 'Difficile', icone: '🔴', vitesse: 1, chanceResistant: 0.3, killsCoeur: [20, 30], rayonCoeur: 12}
+};
+const ordreDifficultes = ['facile', 'normal', 'difficile'];
+const cleStockageDifficulte = 'snakeDifficulte';
+let difficulte = chargerDifficulte();
+
+function chargerDifficulte() {
+  try {
+    const d = localStorage.getItem(cleStockageDifficulte);
+    if (niveauxDifficulte[d]) return d;
+  } catch (e) {
+    // stockage indisponible : difficulté par défaut
+  }
+  return 'normal';
+}
+
+function reglagesDifficulte() {
+  return niveauxDifficulte[difficulte];
+}
+
 // état propre à chaque serpent (snake, direction, vies, buffs, bouclier...) : voir 04-joueurs.js
 let food, score, gameOver;
 const maxLives = 3;
@@ -1583,14 +1611,16 @@ let shockwaves = []; // {x, y, radius, maxRadius, color, life, maxLife}
 let laserBeams = []; // {x1, y1, x2, y2, life, maxLife}
 
 function randomKillThreshold() {
-  return Math.floor(Math.random() * (30 - 20 + 1)) + 20; // entre 20 et 30 inclus
+  const [min, max] = reglagesDifficulte().killsCoeur; // Difficile : entre 20 et 30 inclus
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // --- Bouclier temporaire (touche Shift) ---
 const shieldDuration = 2000; // ms d'invulnérabilité
 const shieldCooldownDuration = 15000; // ms de recharge entre deux utilisations
 const invulnerabilityDuration = 1000; // ms de répit après un coup reçu
-const baseTickInterval = 144; // ms entre chaque déplacement logique, vitesse normale (ralenti de 20%)
+const tickIntervalDifficile = 144; // ms entre chaque déplacement logique en Difficile
+let baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // recalculé dans init()
 const boostFactor = 0.75; // espace maintenu = 25% plus rapide
 let animationFrameId = null;
 let previousFrameTime = 0;
@@ -2051,13 +2081,34 @@ function changerModeJeu(mode) {
   init();
 }
 
+// passe à la difficulté suivante (Facile, Normal, Difficile), la mémorise et relance une partie
+function changerDifficulte(niveau) {
+  if (!niveauxDifficulte[niveau]) {
+    niveau = ordreDifficultes[(ordreDifficultes.indexOf(difficulte) + 1) % ordreDifficultes.length];
+  }
+  difficulte = niveau;
+  try {
+    localStorage.setItem(cleStockageDifficulte, difficulte);
+  } catch (e) {
+    // stockage indisponible : la difficulté n'est simplement pas mémorisée
+  }
+  majBoutonMode();
+  initHighscores();
+  init();
+}
+
 function majBoutonMode() {
   const bouton = document.getElementById('modeBtn');
   bouton.textContent = enCoop() ? '👥 Coop (2 joueurs)' : '👤 Solo';
   bouton.classList.toggle('active', enCoop());
   bouton.title = enCoop() ? 'Repasser en solo' : 'Jouer à 2 en coopération';
   document.body.classList.toggle('mode-coop', enCoop());
-  document.getElementById('highscoreTitre').textContent = enCoop() ? '🏆 Meilleurs scores coop' : '🏆 Meilleurs scores';
+  const d = reglagesDifficulte();
+  document.getElementById('highscoreTitre').textContent = (enCoop() ? '🏆 Meilleurs scores coop' : '🏆 Meilleurs scores') + ' (' + d.nom + ')';
+  const boutonDiff = document.getElementById('difficulteBtn');
+  boutonDiff.textContent = d.icone + ' ' + d.nom;
+  boutonDiff.title = 'Difficulté : ' + d.nom + ' (cliquer pour changer, relance la partie)';
+  document.getElementById('difficulteHud').textContent = 'Difficulté : ' + d.nom;
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
 let audioCtx = null;
@@ -2663,6 +2714,7 @@ function spawnPopup(x, y, text, color) {
 
 function init() {
   // un serpent par joueur, avec ses vies, buffs, bouclier et commandes (voir 04-joueurs.js)
+  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // avant creerJoueurs
   creerJoueurs();
   score = 0;
   gameOver = false;
@@ -3137,6 +3189,7 @@ function announceBoss() {
 function spawnHeartPickup() {
   let x, y;
   const safeDistance = 130;
+  const heartPickupRadius = reglagesDifficulte().rayonCoeur; // plus gros en Facile
   let tries = 0;
   let tooClose = true;
 
@@ -3324,8 +3377,8 @@ function spawnEnemy(preAssignedPos) {
     : Math.max(minSpeedFactor, nearestDistance / slowZoneRadius);
 
   const angle = Math.random() * Math.PI * 2;
-  // 30% de chance d'obtenir un ennemi résistant (2 coups), sinon un ennemi normal (1 coup)
-  const isTough = Math.random() < 0.3;
+  // chance d'obtenir un ennemi résistant (2 coups) selon la difficulté (Difficile 30%, Facile aucun)
+  const isTough = Math.random() < reglagesDifficulte().chanceResistant;
   const newEnemy = {
     x, y,
     vx: Math.cos(angle) * enemySpeed * speedFactor,
@@ -3512,7 +3565,7 @@ function updateCombat(deltaMs) {
 
   // déplacement aléatoire des ennemis (rebond sur les murs + changements de direction)
   // le boss, lui, poursuit directement la tête du serpent le plus proche sans relâche
-  const lengthSpeedMultiplier = getEnemySpeedMultiplier();
+  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse;
 
   enemies.forEach(e => {
     if (performance.now() < (e.frozenUntil || 0)) return; // gelé : ne bouge pas
@@ -7881,19 +7934,24 @@ function showEndGameStats() {
 // --- Tableau des meilleurs scores (persistant via window.storage si disponible) ---
 const maxHighscores = 5;
 
+// meilleurs scores séparés par difficulté ; Difficile garde les clés d'origine (anciens scores)
+function cleHighscores(base) {
+  return difficulte === 'difficile' ? base : base + reglagesDifficulte().nom;
+}
+
 async function loadHighscores() {
   // essaie d'abord window.storage (si un jour publié comme artefact Claude),
   // sinon utilise localStorage, qui fonctionne dans un fichier HTML normal
   try {
     if (window.storage) {
-      const result = await window.storage.get(enCoop() ? 'highscoresCoop' : 'highscores', false);
+      const result = await window.storage.get(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), false);
       return result ? JSON.parse(result.value) : [];
     }
   } catch (err) {
     // ignore, on tente localStorage ensuite
   }
   try {
-    const raw = localStorage.getItem(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores');
+    const raw = localStorage.getItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'));
     return raw ? JSON.parse(raw) : [];
   } catch (err) {
     return []; // stockage totalement indisponible : pas de persistance possible
@@ -7903,14 +7961,14 @@ async function loadHighscores() {
 async function saveHighscoresList(list) {
   try {
     if (window.storage) {
-      await window.storage.set(enCoop() ? 'highscoresCoop' : 'highscores', JSON.stringify(list), false);
+      await window.storage.set(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), JSON.stringify(list), false);
       return;
     }
   } catch (err) {
     // ignore, on tente localStorage ensuite
   }
   try {
-    localStorage.setItem(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores', JSON.stringify(list));
+    localStorage.setItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'), JSON.stringify(list));
   } catch (err) {
     // stockage indisponible : le tableau reste seulement en mémoire pour cette session
   }
@@ -9291,6 +9349,9 @@ restartBtn.addEventListener('click', init);
 document.getElementById('modeBtn').addEventListener('click', () => {
   changerModeJeu(enCoop() ? 'solo' : 'coop');
 });
+
+// bouton de difficulté : Facile -> Normal -> Difficile, relance une partie
+document.getElementById('difficulteBtn').addEventListener('click', () => changerDifficulte());
 
 applyTheme('neon');
 majBoutonMode();
