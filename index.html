@@ -227,7 +227,7 @@
     font-size: 12px;
     color: var(--text-muted);
   }
-  #killProgress {
+  #killProgress, #difficulteHud {
     margin-bottom: 4px;
     font-size: 12px;
     color: var(--text-muted);
@@ -666,6 +666,18 @@
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #highscoreSidebar {
     display: none;
   }
+  /* catégories du menu ☰ (Thèmes, Skin des ennemis, Options) */
+  .titre-categorie { display: none; }
+  body.menu-tactile-ouvert .titre-categorie {
+    display: block;
+    width: min(360px, 100%);
+    margin: 12px 0 8px 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 15px;
+    text-align: center;
+    color: var(--accent);
+  }
   #menuTactileBarre {
     gap: 8px;
     flex-wrap: wrap;
@@ -808,7 +820,7 @@
     .theme-btn, .skin-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
     #score { font-size: 15px; margin-bottom: 2px; }
     #hearts { font-size: 16px; margin-bottom: 2px; }
-    #segmentCounter, #killProgress { display: inline; margin: 0 4px; }
+    #segmentCounter, #killProgress, #difficulteHud { display: inline; margin: 0 4px; }
     #shieldStatus { margin: 2px 0 4px 0; }
     #buffStatus { margin-bottom: 6px; }
     #game { width: min(400px, calc(100vw - 32px)); }
@@ -1104,6 +1116,8 @@
     </div>
     <h1>🐍 Snake</h1>
 
+    <!-- titres des catégories : visibles seulement dans le menu ☰ -->
+    <h3 class="titre-categorie">🎨 Thèmes</h3>
     <div id="themeSelector">
       <button class="theme-btn active" data-theme="neon">Néon</button>
       <button class="theme-btn" data-theme="espace">Espace</button>
@@ -1111,15 +1125,7 @@
       <button class="theme-btn" data-theme="ocean">Océan</button>
     </div>
 
-    <div id="controlBar">
-      <button id="pauseBtn">⏸️ Pause</button>
-      <button id="muteBtn">🔊 Son</button>
-      <button id="buffMenuBtn">🧪 Buffs</button>
-      <button id="modeBtn">👤 Solo</button>
-      <button id="enLigneBtn">🌐 En ligne</button>
-    </div>
-    <div id="gamepadStatus"></div>
-
+    <h3 class="titre-categorie">👾 Skin des ennemis</h3>
     <div id="enemySkinSelector">
       <button class="skin-btn active" data-skin="urchin">🦔 Oursin</button>
       <button class="skin-btn" data-skin="ghost">👻 Fantôme</button>
@@ -1134,11 +1140,23 @@
       <div id="apercuLegende"></div>
     </div>
 
+    <h3 class="titre-categorie">⚙️ Options</h3>
+    <div id="controlBar">
+      <button id="pauseBtn">⏸️ Pause</button>
+      <button id="muteBtn">🔊 Son</button>
+      <button id="buffMenuBtn">🧪 Buffs</button>
+      <button id="modeBtn">👤 Solo</button>
+      <button id="difficulteBtn">🟡 Normal</button>
+      <button id="enLigneBtn">🌐 En ligne</button>
+    </div>
+    <div id="gamepadStatus"></div>
+
     <div id="hud">
       <div id="score">Score : 0</div>
       <div id="hearts">❤️❤️❤️</div>
       <div id="segmentCounter">Segments : 3</div>
       <div id="killProgress">Ennemis tués : 0 / 25 (❤️ bonus)</div>
+      <div id="difficulteHud">Difficulté : Normal</div>
       <div id="shieldStatus">Bouclier (Maj) : Prêt</div>
       <div id="buffStatus"></div>
     </div>
@@ -1442,6 +1460,37 @@ function majLegendePommes() {
 }
 const tileCount = canvas.width / gridSize;
 
+// --- Difficulté (Facile / Normal / Difficile), mémorisée ; Difficile = le jeu d'origine ---
+// vitesse : du serpent et des ennemis ; chanceResistant : ennemis à 2 coups ;
+// killsCoeur : kills [min, max] avant un cœur bonus ; rayonCoeur : taille du cœur à attraper ;
+// pvBoss : coups pour tuer le boss ; dureeBuffs : multiplicateur de durée des buffs ;
+// chancePommeBleue : chance qu'un ennemi tué laisse une pomme bleue ; coutRollback : cœurs perdus par rollback
+const niveauxDifficulte = {
+  facile: {nom: 'Facile', icone: '🟢', vitesse: 0.8, chanceResistant: 0, killsCoeur: [10, 15], rayonCoeur: 16,
+    pvBoss: 6, dureeBuffs: 1.5, chancePommeBleue: 0.1, coutRollback: 2},
+  normal: {nom: 'Normal', icone: '🟡', vitesse: 0.9, chanceResistant: 0.15, killsCoeur: [15, 25], rayonCoeur: 12,
+    pvBoss: 10, dureeBuffs: 1, chancePommeBleue: 0.05, coutRollback: 3},
+  difficile: {nom: 'Difficile', icone: '🔴', vitesse: 1, chanceResistant: 0.3, killsCoeur: [20, 30], rayonCoeur: 12,
+    pvBoss: 10, dureeBuffs: 1, chancePommeBleue: 0.05, coutRollback: 3}
+};
+const ordreDifficultes = ['facile', 'normal', 'difficile'];
+const cleStockageDifficulte = 'snakeDifficulte';
+let difficulte = chargerDifficulte();
+
+function chargerDifficulte() {
+  try {
+    const d = localStorage.getItem(cleStockageDifficulte);
+    if (niveauxDifficulte[d]) return d;
+  } catch (e) {
+    // stockage indisponible : difficulté par défaut
+  }
+  return 'normal';
+}
+
+function reglagesDifficulte() {
+  return niveauxDifficulte[difficulte];
+}
+
 // état propre à chaque serpent (snake, direction, vies, buffs, bouclier...) : voir 04-joueurs.js
 let food, score, gameOver;
 const maxLives = 3;
@@ -1454,7 +1503,7 @@ const tongueDuration = 450;
 // --- Rollback (filet de sécurité si on a plus de 3 cœurs) ---
 const rollbackHistoryDuration = 2500;
 const rollbackRewindMs = 1000;
-const rollbackHeartCost = 3;
+// coût du rollback en cœurs : reglagesDifficulte().coutRollback (3, ou 2 en Facile)
 let slowMotionUntil = 0;
 let rollbackPlayback = null; // {frames, index, frameDuration, lastStepTime} pendant l'animation de marche arrière
 const slowMotionDuration = 1200;
@@ -1488,7 +1537,7 @@ const goldenAppleRadius = 9;
 
 // --- Pomme bleue (mobile, rare, donne un buff aléatoire) ---
 let blueApples = []; // liste de {x, y, vx, vy, radius, changeDirTimer, buffType} en coordonnées pixel
-const blueAppleChance = 0.05; // 5%
+// chance d'apparition : reglagesDifficulte().chancePommeBleue (5%, ou 10% en Facile)
 const blueAppleSpeed = 0.045;
 const blueAppleRadius = 9;
 
@@ -1566,14 +1615,18 @@ function tirerBuffAleatoire() {
   if (!buffsActifs.length) return null;
   return buffsActifs[Math.floor(Math.random() * buffsActifs.length)];
 }
-const freezeBuffDuration = 10000;
-const laserBuffDuration = 30000;
-const autoAimBuffDuration = 30000;
-const invincibleBuffDuration = 10000;
-const doublePointsBuffDuration = 30000;
+// durées de base des buffs (ms), multipliées par reglagesDifficulte().dureeBuffs (x1,5 en Facile)
+const dureesBuffs = {freeze: 10000, laser: 30000, autoaim: 30000, explode: 5000, invincible: 10000, doublepoints: 30000};
+function dureeBuff(type) {
+  return dureesBuffs[type] * reglagesDifficulte().dureeBuffs;
+}
+// remplace la durée écrite dans un texte (« 10s ») par la durée réelle du buff, ex. « 15s » en Facile
+function texteAvecDureeBuff(texte, type) {
+  return texte.replace(/\d+(,\d+)?s/, (dureeBuff(type) / 1000).toLocaleString('fr-FR') + 's');
+}
 
 let freezeIndicatorUntil = 0; // fenêtre active du gel : gèle aussi les ennemis qui apparaissent pendant ce délai
-const explosionZoneDuration = 5000; // durée pendant laquelle la zone reste "explosive"
+// durée pendant laquelle la zone reste "explosive" : dureeBuff('explode')
 let explosionActiveUntil = 0; // fenêtre active de l'explosion : détruit aussi les ennemis qui apparaissent pendant ce délai
 
 const autoFireInterval = 350; // ms entre deux tirs automatiques
@@ -1583,14 +1636,16 @@ let shockwaves = []; // {x, y, radius, maxRadius, color, life, maxLife}
 let laserBeams = []; // {x1, y1, x2, y2, life, maxLife}
 
 function randomKillThreshold() {
-  return Math.floor(Math.random() * (30 - 20 + 1)) + 20; // entre 20 et 30 inclus
+  const [min, max] = reglagesDifficulte().killsCoeur; // Difficile : entre 20 et 30 inclus
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // --- Bouclier temporaire (touche Shift) ---
 const shieldDuration = 2000; // ms d'invulnérabilité
 const shieldCooldownDuration = 15000; // ms de recharge entre deux utilisations
 const invulnerabilityDuration = 1000; // ms de répit après un coup reçu
-const baseTickInterval = 144; // ms entre chaque déplacement logique, vitesse normale (ralenti de 20%)
+const tickIntervalDifficile = 144; // ms entre chaque déplacement logique en Difficile
+let baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // recalculé dans init()
 const boostFactor = 0.75; // espace maintenu = 25% plus rapide
 let animationFrameId = null;
 let previousFrameTime = 0;
@@ -1628,7 +1683,7 @@ const bossWarningDuration = 1800; // ms d'annonce avant l'apparition
 let bossWarningUntil = 0;
 let bossSpawnPending = false;
 let bossSpawnPosition = null; // {x, y} : point d'apparition du boss, signalé pendant l'annonce
-const bossMaxHp = 10;
+// points de vie du boss : reglagesDifficulte().pvBoss (10, ou 6 en Facile)
 const bossRadius = 26;
 const bossSpeed = 0.045; // légèrement plus lent qu'un ennemi normal, mais poursuit sans relâche
 const bossColor = '#7a0000';
@@ -1723,7 +1778,8 @@ function triggerShake(magnitude) {
 // tente un rollback de 2s (annule la position/direction du serpent) au lieu d'une mort/dégât normal,
 // disponible uniquement si on a plus de 3 cœurs ; coûte 3 cœurs et déclenche un ralenti
 function tryRollback() {
-  if (lives <= 3) return false;
+  const coutRollback = reglagesDifficulte().coutRollback;
+  if (lives <= coutRollback) return false;
 
   const now = performance.now();
   const targetTime = now - rollbackRewindMs;
@@ -1735,7 +1791,7 @@ function tryRollback() {
   // on les rejoue en sens inverse (du plus récent au plus ancien) pour voir le serpent reculer
   const playbackFrames = framesInRange.slice().reverse();
 
-  lives -= rollbackHeartCost;
+  lives -= coutRollback;
   updateHeartsDisplay();
 
   invulnerableUntil = now + invulnerabilityDuration + rollbackRewindMs;
@@ -1755,7 +1811,7 @@ function tryRollback() {
 
   const headCx = snake[0].x * gridSize + gridSize / 2;
   const headCy = snake[0].y * gridSize + gridSize / 2;
-  spawnPopup(headCx, headCy, 'ROLLBACK -3❤️', '#40c4ff');
+  spawnPopup(headCx, headCy, 'ROLLBACK -' + coutRollback + '❤️', '#40c4ff');
   spawnParticles(headCx, headCy, '#40c4ff', 20);
   triggerShake(5);
   playRollbackSound();
@@ -2051,13 +2107,42 @@ function changerModeJeu(mode) {
   init();
 }
 
+// passe à la difficulté suivante (Facile, Normal, Difficile), la mémorise et relance une partie
+function changerDifficulte(niveau) {
+  if (!niveauxDifficulte[niveau]) {
+    niveau = ordreDifficultes[(ordreDifficultes.indexOf(difficulte) + 1) % ordreDifficultes.length];
+  }
+  difficulte = niveau;
+  try {
+    localStorage.setItem(cleStockageDifficulte, difficulte);
+  } catch (e) {
+    // stockage indisponible : la difficulté n'est simplement pas mémorisée
+  }
+  majBoutonMode();
+  initHighscores();
+  init();
+}
+
 function majBoutonMode() {
   const bouton = document.getElementById('modeBtn');
   bouton.textContent = enCoop() ? '👥 Coop (2 joueurs)' : '👤 Solo';
   bouton.classList.toggle('active', enCoop());
   bouton.title = enCoop() ? 'Repasser en solo' : 'Jouer à 2 en coopération';
   document.body.classList.toggle('mode-coop', enCoop());
-  document.getElementById('highscoreTitre').textContent = enCoop() ? '🏆 Meilleurs scores coop' : '🏆 Meilleurs scores';
+  const d = reglagesDifficulte();
+  document.getElementById('highscoreTitre').textContent = (enCoop() ? '🏆 Meilleurs scores coop' : '🏆 Meilleurs scores') + ' (' + d.nom + ')';
+  const boutonDiff = document.getElementById('difficulteBtn');
+  boutonDiff.textContent = d.icone + ' ' + d.nom;
+  boutonDiff.title = 'Difficulté : ' + d.nom + ' (cliquer pour changer, relance la partie)';
+  document.getElementById('difficulteHud').textContent = 'Difficulté : ' + d.nom;
+  // durées des buffs (plus longues en Facile) dans la légende et le menu des buffs
+  document.querySelectorAll('#legendList li[data-buff]').forEach(li => {
+    li.textContent = texteAvecDureeBuff(li.textContent, li.dataset.buff);
+  });
+  document.querySelectorAll('#buffMenuListe .buff-option').forEach(btn => {
+    const petit = btn.querySelector('small');
+    if (petit) petit.textContent = texteAvecDureeBuff(buffDescriptions[btn.dataset.buff].detail, btn.dataset.buff);
+  });
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
 let audioCtx = null;
@@ -2663,6 +2748,7 @@ function spawnPopup(x, y, text, color) {
 
 function init() {
   // un serpent par joueur, avec ses vies, buffs, bouclier et commandes (voir 04-joueurs.js)
+  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // avant creerJoueurs
   creerJoueurs();
   score = 0;
   gameOver = false;
@@ -3013,7 +3099,7 @@ function awardEnemyKill(e, facon) {
       radius: goldenAppleRadius,
       changeDirTimer: 800 + Math.random() * 1000
     });
-  } else if (!blueApples.length && buffsActifs.length && Math.random() < blueAppleChance) {
+  } else if (!blueApples.length && buffsActifs.length && Math.random() < reglagesDifficulte().chancePommeBleue) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
     const angle = Math.random() * Math.PI * 2;
     blueApples.push({
@@ -3060,7 +3146,7 @@ function applyRandomBuff(x, y, forcedType) {
 
   switch (type) {
     case 'freeze': {
-      freezeIndicatorUntil = Math.max(now, freezeIndicatorUntil) + freezeBuffDuration;
+      freezeIndicatorUntil = Math.max(now, freezeIndicatorUntil) + dureeBuff('freeze');
       enemies.forEach(e => {
         e.frozenUntil = freezeIndicatorUntil;
       });
@@ -3069,18 +3155,18 @@ function applyRandomBuff(x, y, forcedType) {
       break;
     }
     case 'laser': {
-      laserBuffUntil = Math.max(now, laserBuffUntil) + laserBuffDuration;
+      laserBuffUntil = Math.max(now, laserBuffUntil) + dureeBuff('laser');
       playBuffActivateSound();
       break;
     }
     case 'autoaim': {
-      autoAimBuffUntil = Math.max(now, autoAimBuffUntil) + autoAimBuffDuration;
+      autoAimBuffUntil = Math.max(now, autoAimBuffUntil) + dureeBuff('autoaim');
       autoFireCooldown = 0;
       playBuffActivateSound();
       break;
     }
     case 'explode': {
-      explosionActiveUntil = Math.max(now, explosionActiveUntil) + explosionZoneDuration;
+      explosionActiveUntil = Math.max(now, explosionActiveUntil) + dureeBuff('explode');
       const toKill = enemies.slice();
       enemies = [];
       toKill.forEach(e => awardEnemyKill(e));
@@ -3091,12 +3177,12 @@ function applyRandomBuff(x, y, forcedType) {
       break;
     }
     case 'invincible': {
-      buffInvincibleUntil = Math.max(now, buffInvincibleUntil) + invincibleBuffDuration;
+      buffInvincibleUntil = Math.max(now, buffInvincibleUntil) + dureeBuff('invincible');
       playBuffActivateSound();
       break;
     }
     case 'doublepoints': {
-      doublePointsUntil = Math.max(now, doublePointsUntil) + doublePointsBuffDuration;
+      doublePointsUntil = Math.max(now, doublePointsUntil) + dureeBuff('doublepoints');
       playBuffActivateSound();
       break;
     }
@@ -3137,6 +3223,7 @@ function announceBoss() {
 function spawnHeartPickup() {
   let x, y;
   const safeDistance = 130;
+  const heartPickupRadius = reglagesDifficulte().rayonCoeur; // plus gros en Facile
   let tries = 0;
   let tooClose = true;
 
@@ -3260,8 +3347,8 @@ function spawnBoss(forcedPos) {
     speedFactor: 1,
     radius: bossRadius,
     changeDirTimer: 0,
-    hp: bossMaxHp,
-    maxHp: bossMaxHp,
+    hp: reglagesDifficulte().pvBoss,
+    maxHp: reglagesDifficulte().pvBoss,
     color: bossColor,
     hitFlashUntil: 0,
     isBoss: true,
@@ -3324,8 +3411,8 @@ function spawnEnemy(preAssignedPos) {
     : Math.max(minSpeedFactor, nearestDistance / slowZoneRadius);
 
   const angle = Math.random() * Math.PI * 2;
-  // 30% de chance d'obtenir un ennemi résistant (2 coups), sinon un ennemi normal (1 coup)
-  const isTough = Math.random() < 0.3;
+  // chance d'obtenir un ennemi résistant (2 coups) selon la difficulté (Difficile 30%, Facile aucun)
+  const isTough = Math.random() < reglagesDifficulte().chanceResistant;
   const newEnemy = {
     x, y,
     vx: Math.cos(angle) * enemySpeed * speedFactor,
@@ -3512,7 +3599,7 @@ function updateCombat(deltaMs) {
 
   // déplacement aléatoire des ennemis (rebond sur les murs + changements de direction)
   // le boss, lui, poursuit directement la tête du serpent le plus proche sans relâche
-  const lengthSpeedMultiplier = getEnemySpeedMultiplier();
+  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse;
 
   enemies.forEach(e => {
     if (performance.now() < (e.frozenUntil || 0)) return; // gelé : ne bouge pas
@@ -5099,7 +5186,7 @@ function drawControlsTutorial() {
   const mouseY = shiftY + 26 + 28;
   drawMouseIcon(iconX, mouseY + 22, 30);
   ctx.fillText('Clic gauche : viser et tirer', labelX, mouseY + 18);
-  ctx.fillText('Clic droit : rollback (-3 ❤️)', labelX, mouseY + 38);
+  ctx.fillText('Clic droit : rollback (-' + reglagesDifficulte().coutRollback + ' ❤️)', labelX, mouseY + 38);
 
   // --- menu des buffs ---
   ctx.textAlign = 'center';
@@ -7881,19 +7968,24 @@ function showEndGameStats() {
 // --- Tableau des meilleurs scores (persistant via window.storage si disponible) ---
 const maxHighscores = 5;
 
+// meilleurs scores séparés par difficulté ; Difficile garde les clés d'origine (anciens scores)
+function cleHighscores(base) {
+  return difficulte === 'difficile' ? base : base + reglagesDifficulte().nom;
+}
+
 async function loadHighscores() {
   // essaie d'abord window.storage (si un jour publié comme artefact Claude),
   // sinon utilise localStorage, qui fonctionne dans un fichier HTML normal
   try {
     if (window.storage) {
-      const result = await window.storage.get(enCoop() ? 'highscoresCoop' : 'highscores', false);
+      const result = await window.storage.get(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), false);
       return result ? JSON.parse(result.value) : [];
     }
   } catch (err) {
     // ignore, on tente localStorage ensuite
   }
   try {
-    const raw = localStorage.getItem(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores');
+    const raw = localStorage.getItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'));
     return raw ? JSON.parse(raw) : [];
   } catch (err) {
     return []; // stockage totalement indisponible : pas de persistance possible
@@ -7903,14 +7995,14 @@ async function loadHighscores() {
 async function saveHighscoresList(list) {
   try {
     if (window.storage) {
-      await window.storage.set(enCoop() ? 'highscoresCoop' : 'highscores', JSON.stringify(list), false);
+      await window.storage.set(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), JSON.stringify(list), false);
       return;
     }
   } catch (err) {
     // ignore, on tente localStorage ensuite
   }
   try {
-    localStorage.setItem(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores', JSON.stringify(list));
+    localStorage.setItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'), JSON.stringify(list));
   } catch (err) {
     // stockage indisponible : le tableau reste seulement en mémoire pour cette session
   }
@@ -8034,7 +8126,7 @@ function changerDirection(dx, dy, j = joueurs[0]) {
   }
 }
 
-// clic droit : rembobine le serpent d'une seconde (mêmes règles que le rollback automatique : -3 cœurs, plus de 3 cœurs requis)
+// clic droit : rembobine le serpent d'une seconde (mêmes règles que le rollback automatique : coûte reglagesDifficulte().coutRollback cœurs, il doit en rester au moins 1)
 function rollbackManuel(j = joueurs[0]) {
   if (j !== joueurActif) return avecJoueur(j, () => rollbackManuel(j));
   if (gameOver || countdownActive || waitingToStart || isPaused || menuBuffsOuvert || j.elimine) return;
@@ -8043,7 +8135,7 @@ function rollbackManuel(j = joueurs[0]) {
   if (!tryRollback()) {
     const tete = snake[0];
     spawnPopup(tete.x * gridSize + gridSize / 2, tete.y * gridSize + gridSize / 2,
-      lives <= rollbackHeartCost ? 'Rollback : il faut 4 ❤️' : 'Rollback impossible', '#b0bec5');
+      lives <= reglagesDifficulte().coutRollback ? 'Rollback : il faut ' + (reglagesDifficulte().coutRollback + 1) + ' ❤️' : 'Rollback impossible', '#b0bec5');
   }
 }
 
@@ -8205,7 +8297,7 @@ function construireMenuBuffs() {
     btn.dataset.buff = type;
     btn.innerHTML =
       '<span class="buff-option-icone">' + d.icon + '</span>' +
-      '<span class="buff-option-texte">' + d.nom + '<small>' + d.detail + '</small></span>' +
+      '<span class="buff-option-texte">' + d.nom + '<small>' + texteAvecDureeBuff(d.detail, type) + '</small></span>' +
       '<span class="buff-interrupteur"></span>';
     btn.addEventListener('click', () => basculerBuff(type));
     buffMenuListeEl.appendChild(btn);
@@ -8493,8 +8585,8 @@ const ennemisApercu = [
   ...d,
   x: d.cx, y: d.cy, vx: 0, vy: 0,
   radius: d.boss ? bossRadius : d.dur ? enemyRadius + 2 : enemyRadius,
-  hp: d.boss ? bossMaxHp : d.dur ? 2 : 1,
-  maxHp: d.boss ? bossMaxHp : d.dur ? 2 : 1,
+  hp: d.boss ? reglagesDifficulte().pvBoss : d.dur ? 2 : 1,
+  maxHp: d.boss ? reglagesDifficulte().pvBoss : d.dur ? 2 : 1,
   isBoss: !!d.boss,
   hitFlashUntil: 0,
   frozenUntil: 0,
@@ -8760,6 +8852,12 @@ window.addEventListener('resize', appliquerDisposition);
 // --- Menu ☰ ---
 function ouvrirMenuTactile() {
   if (!waitingToStart && !gameOver && !isPaused && !countdownActive) togglePause();
+  // pendant le compte à rebours, la pause n'existe pas encore : on revient à l'écran de départ
+  // (le serpent n'a pas bougé), sinon la partie démarrerait derrière le menu
+  if (countdownActive) {
+    countdownActive = false;
+    waitingToStart = true;
+  }
   document.body.classList.add('menu-tactile-ouvert');
   demarrerApercu();
   document.getElementById('layout').scrollTop = 0;
@@ -9291,6 +9389,9 @@ restartBtn.addEventListener('click', init);
 document.getElementById('modeBtn').addEventListener('click', () => {
   changerModeJeu(enCoop() ? 'solo' : 'coop');
 });
+
+// bouton de difficulté : Facile -> Normal -> Difficile, relance une partie
+document.getElementById('difficulteBtn').addEventListener('click', () => changerDifficulte());
 
 applyTheme('neon');
 majBoutonMode();
