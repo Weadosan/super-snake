@@ -1736,6 +1736,11 @@ const turretFadeDuration = 600; // petit fondu d'apparition/disparition de la to
 let pendingSpawnWarning = null; // {x, y} : position annoncée 1s avant l'apparition d'un ennemi
 const spawnWarningDuration = 1000;
 
+// --- Coups reçus : blessure sur le serpent, marque là où l'ennemi est mort ---
+const dureeBlessure = 4000; // ms, la griffure s'efface pendant la dernière seconde
+let marquesImpact = []; // {x, y, couleur, debut}
+const dureeMarqueImpact = 1500;
+
 // --- Popups de score flottants ---
 let popups = [];
 
@@ -1836,6 +1841,7 @@ function tryRollback() {
 
   lives -= coutRollback;
   updateHeartsDisplay();
+  blessures = []; // le corps revient à un état d'avant les coups
 
   invulnerableUntil = now + invulnerabilityDuration + rollbackRewindMs;
   slowMotionUntil = now + slowMotionDuration;
@@ -1881,7 +1887,7 @@ const champsJoueur = [
   'turretPixelPos', 'mouseX', 'mouseY', 'autoAimAngle', 'autoFireCooldown',
   'laserBuffUntil', 'autoAimBuffUntil', 'buffInvincibleUntil', 'doublePointsUntil',
   'trailPoints', 'interpolatedPositionsCache', 'clignementJusqua', 'prochainClignement',
-  'viseeManuelleJusqua', 'cibleAuto', 'rollbackRecul', 'rollbackFin'
+  'viseeManuelleJusqua', 'cibleAuto', 'rollbackRecul', 'rollbackFin', 'blessures'
 ];
 
 // --- Mode de jeu (sauvegardé) ---
@@ -1955,7 +1961,8 @@ function nouveauJoueur(numero) {
     viseeManuelleJusqua: 0, // option Visée auto : le joueur a visé lui-même jusqu'à cet instant
     cibleAuto: null, // option Visée auto : ennemi accroché par le viseur
     rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
-    rollbackFin: -Infinity // fin de l'animation du dernier rollback
+    rollbackFin: -Infinity, // fin de l'animation du dernier rollback
+    blessures: [] // {index, debut, angle} : griffures sur le corps là où un ennemi a touché
   };
 }
 
@@ -2834,6 +2841,7 @@ function init() {
   enemies = [];
   popups = [];
   particles = [];
+  marquesImpact = [];
   shakeUntil = 0;
   flashEcran = null;
   ecranGameOver = null;
@@ -3899,14 +3907,14 @@ function collisionsEnnemisSerpent() {
   const isInvulnerable = now < invulnerableUntil || isShielded || isBuffInvincible;
 
   if (!isInvulnerable) {
-    const hitEnemies = new Set();
+    const hitEnemies = new Map(); // indice de l'ennemi -> indice du segment touché
     enemies.forEach((e, ei) => {
       if (!e.isBoss && estGele(e)) return; // gelé : inoffensif pour le corps
-      for (const segment of snake) {
-        const segCx = segment.x * gridSize + gridSize / 2;
-        const segCy = segment.y * gridSize + gridSize / 2;
+      for (let si = 0; si < snake.length; si++) {
+        const segCx = snake[si].x * gridSize + gridSize / 2;
+        const segCy = snake[si].y * gridSize + gridSize / 2;
         if (Math.hypot(e.x - segCx, e.y - segCy) < e.radius + gridSize / 2) {
-          hitEnemies.add(ei);
+          hitEnemies.set(ei, si);
           break;
         }
       }
@@ -3914,10 +3922,18 @@ function collisionsEnnemisSerpent() {
 
     if (hitEnemies.size) {
       addScore(-5);
-      const headCx = snake[0].x * gridSize + gridSize / 2;
-      const headCy = snake[0].y * gridSize + gridSize / 2;
-      spawnPopup(headCx, headCy, '-5', '#ff5252');
-      spawnParticles(headCx, headCy, '#ff5252', 14);
+      hitEnemies.forEach((si, ei) => {
+        const e = enemies[ei];
+        const segCx = snake[si].x * gridSize + gridSize / 2;
+        const segCy = snake[si].y * gridSize + gridSize / 2;
+        // blessure sur le segment touché (elle suit le corps), éclaboussure rouge à cet endroit
+        blessures.push({index: si, debut: now, angle: Math.atan2(segCy - e.y, segCx - e.x)});
+        spawnPopup(segCx, segCy, '-5', '#ff5252');
+        spawnParticles(segCx, segCy, '#ff5252', 14);
+        // l'ennemi meurt en touchant : on le signale là où il était
+        marquesImpact.push({x: e.x, y: e.y, couleur: e.color, debut: now});
+        spawnParticles(e.x, e.y, e.color, 10);
+      });
       triggerShake(6);
       if (snake.length > 1) snake.pop();
       enemies = enemies.filter((_, i) => !hitEnemies.has(i));
@@ -4082,6 +4098,11 @@ function tick() {
   }
 
   snake.unshift(head);
+  // les blessures restent sur le même morceau de corps, qui recule d'une case dans la liste
+  if (blessures.length) {
+    blessures.forEach(b => b.index++);
+    blessures = blessures.filter(b => performance.now() - b.debut < dureeBlessure);
+  }
   stats.maxSnakeLength = Math.max(stats.maxSnakeLength, snake.length);
   majCompteurSegments();
   checkEndgameTransition();
@@ -4145,7 +4166,9 @@ function togglePause() {
       j.doublePointsUntil += pausedDuration;
       j.laserBuffUntil += pausedDuration;
       j.autoAimBuffUntil += pausedDuration;
+      j.blessures.forEach(b => b.debut += pausedDuration);
     });
+    marquesImpact.forEach(m => m.debut += pausedDuration);
     previousFrameTime += pausedDuration;
     lastEnemySpawn += pausedDuration;
     freezeIndicatorUntil += pausedDuration;
@@ -4627,6 +4650,7 @@ function draw(t) {
   drawBossSpawnWarning();
   drawBossWarning();
   drawEnemies();
+  dessinerMarquesImpact();
   drawHeartPickup();
   drawLootApples();
   drawGoldenApple();
@@ -4653,6 +4677,82 @@ function draw(t) {
 
   dessinerFlashEcran();
   drawCountdown();
+}
+
+// griffures rouges sur les segments touchés par un ennemi (elles s'effacent pendant la dernière seconde)
+function dessinerBlessures(positions) {
+  const now = performance.now();
+  blessures.forEach(b => {
+    const pos = positions[b.index];
+    const age = now - b.debut;
+    if (!pos || age >= dureeBlessure) return;
+    const alpha = Math.min(1, (dureeBlessure - age) / 1000);
+    const cx = pos.x * gridSize + gridSize / 2;
+    const cy = pos.y * gridSize + gridSize / 2;
+    const s = gridSize / 2;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.translate(cx, cy);
+    ctx.rotate(b.angle + Math.PI / 2);
+    // tache sombre sous les griffures
+    ctx.fillStyle = 'rgba(110, 0, 10, 0.75)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s * 0.85, s * 0.65, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // trois griffures
+    ctx.strokeStyle = '#ff5252';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    for (let k = -1; k <= 1; k++) {
+      ctx.beginPath();
+      ctx.moveTo(k * s * 0.35 - s * 0.15, -s * 0.6);
+      ctx.lineTo(k * s * 0.35 + s * 0.15, s * 0.6);
+      ctx.stroke();
+    }
+    // petite goutte qui perle au début
+    if (age < 1200) {
+      ctx.fillStyle = '#d50000';
+      ctx.beginPath();
+      ctx.arc(s * 0.2, s * 0.6 + (age / 1200) * s * 0.4, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+// marque là où un ennemi est mort en touchant le serpent : onde rouge et croix qui s'effacent
+function dessinerMarquesImpact() {
+  const now = performance.now();
+  marquesImpact = marquesImpact.filter(m => now - m.debut < dureeMarqueImpact);
+  marquesImpact.forEach(m => {
+    const p = (now - m.debut) / dureeMarqueImpact;
+    const alpha = 1 - p;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    // deux ondes qui s'élargissent
+    ctx.lineWidth = 2;
+    for (let k = 0; k < 2; k++) {
+      const pk = Math.min(1, p * 1.6 - k * 0.3);
+      if (pk <= 0) continue;
+      ctx.strokeStyle = 'rgba(255, 23, 68, ' + (alpha * (1 - pk * 0.5)) + ')';
+      ctx.beginPath();
+      ctx.arc(0, 0, 8 + pk * 26, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // croix à l'endroit exact, couleur de l'ennemi cerclée de rouge
+    const t = 7 * (1 - p * 0.3);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(0, 0, 0, ' + (alpha * 0.6) + ')';
+    ctx.beginPath();
+    ctx.moveTo(-t, -t); ctx.lineTo(t, t); ctx.moveTo(t, -t); ctx.lineTo(-t, t);
+    ctx.stroke();
+    ctx.lineWidth = 2.5;
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = m.couleur || '#ff1744';
+    ctx.stroke();
+    ctx.restore();
+  });
 }
 
 // dessine le serpent du joueur actif (corps, tête, yeux, halos) et place sa tourelle
@@ -4737,6 +4837,7 @@ function dessinerSerpent(t) {
   drawEyes(headPos);
   drawTongue(headPos);
   ctx.globalAlpha = 1;
+  dessinerBlessures(positions); // bien visibles même quand le serpent clignote
 
   // halo du bouclier temporaire (Shift), pulsant, autour de toute la tête
   if (performance.now() < shieldActiveUntil) {
