@@ -1962,7 +1962,7 @@ function nouveauJoueur(numero) {
     cibleAuto: null, // option Visée auto : ennemi accroché par le viseur
     rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
     rollbackFin: -Infinity, // fin de l'animation du dernier rollback
-    blessures: [] // {index, debut, angle} : griffures sur le corps là où un ennemi a touché
+    blessures: [] // {x, y, debut, angle} : griffures sur la case du corps touchée par un ennemi
   };
 }
 
@@ -3927,7 +3927,7 @@ function collisionsEnnemisSerpent() {
         const segCx = snake[si].x * gridSize + gridSize / 2;
         const segCy = snake[si].y * gridSize + gridSize / 2;
         // blessure sur le segment touché (elle suit le corps), éclaboussure rouge à cet endroit
-        blessures.push({index: si, debut: now, angle: Math.atan2(segCy - e.y, segCx - e.x)});
+        blessures.push({x: snake[si].x, y: snake[si].y, debut: now, angle: Math.atan2(segCy - e.y, segCx - e.x)});
         spawnPopup(segCx, segCy, '-5', '#ff5252');
         spawnParticles(segCx, segCy, '#ff5252', 14);
         // l'ennemi meurt en touchant : on le signale là où il était
@@ -4098,10 +4098,10 @@ function tick() {
   }
 
   snake.unshift(head);
-  // les blessures restent sur le même morceau de corps, qui recule d'une case dans la liste
+  // une blessure reste sur sa case tant que le corps l'occupe (la queue l'emporte en passant)
   if (blessures.length) {
-    blessures.forEach(b => b.index++);
-    blessures = blessures.filter(b => performance.now() - b.debut < dureeBlessure);
+    blessures = blessures.filter(b => performance.now() - b.debut < dureeBlessure &&
+      snake.some(s => s.x === b.x && s.y === b.y));
   }
   stats.maxSnakeLength = Math.max(stats.maxSnakeLength, snake.length);
   majCompteurSegments();
@@ -4680,12 +4680,13 @@ function draw(t) {
 }
 
 // griffures rouges sur les segments touchés par un ennemi (elles s'effacent pendant la dernière seconde)
-function dessinerBlessures(positions) {
+// (dessinées sur leur case, immobiles : dans Snake, les cases du corps ne bougent pas, seules la tête et la queue avancent)
+function dessinerBlessures() {
   const now = performance.now();
   blessures.forEach(b => {
-    const pos = positions[b.index];
     const age = now - b.debut;
-    if (!pos || age >= dureeBlessure) return;
+    if (age >= dureeBlessure) return;
+    const pos = b;
     const alpha = Math.min(1, (dureeBlessure - age) / 1000);
     const cx = pos.x * gridSize + gridSize / 2;
     const cy = pos.y * gridSize + gridSize / 2;
@@ -4837,7 +4838,7 @@ function dessinerSerpent(t) {
   drawEyes(headPos);
   drawTongue(headPos);
   ctx.globalAlpha = 1;
-  dessinerBlessures(positions); // bien visibles même quand le serpent clignote
+  dessinerBlessures(); // bien visibles même quand le serpent clignote
 
   // halo du bouclier temporaire (Shift), pulsant, autour de toute la tête
   if (performance.now() < shieldActiveUntil) {
