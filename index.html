@@ -1505,8 +1505,11 @@ function chargerViseeAuto() {
 }
 
 // vrai si ce joueur a la visée automatique : J2 au clavier, ou l'option du mode Facile
+// (l'option se met en retrait 1,5s chaque fois que le joueur vise lui-même : souris, stick, manette)
+const dureeViseeManuelle = 1500;
 function viseeAutoActive(j) {
-  return j.viseeAuto || (optionViseeAuto && difficulte === 'facile');
+  if (j.viseeAuto) return true;
+  return optionViseeAuto && difficulte === 'facile' && performance.now() >= j.viseeManuelleJusqua;
 }
 
 // état propre à chaque serpent (snake, direction, vies, buffs, bouclier...) : voir 04-joueurs.js
@@ -1519,8 +1522,10 @@ let enemySkin = 'urchin'; // 'urchin', 'ghost', 'pixel', 'slime', 'bat', ou 'cir
 const tongueDuration = 450;
 
 // --- Rollback (filet de sécurité si on a plus de 3 cœurs) ---
-const rollbackHistoryDuration = 2500;
-const rollbackRewindMs = 1000;
+const rollbackHistoryDuration = 6000; // assez d'historique pour des rollbacks enchaînés
+const rollbackRewindMs = 1000; // recul du premier rollback, et durée de l'animation de marche arrière
+const rollbackReculMax = 5000; // rollbacks enchaînés : chacun remonte 1s de plus, jusqu'à 5s
+const rollbackFenetreEnchainement = 4000; // un rollback moins de 4s après la fin du précédent est « enchaîné »
 // coût du rollback en cœurs : reglagesDifficulte().coutRollback (3, ou 2 en Facile)
 let slowMotionUntil = 0;
 let rollbackPlayback = null; // {frames, index, frameDuration, lastStepTime} pendant l'animation de marche arrière
@@ -1800,7 +1805,12 @@ function tryRollback() {
   if (lives <= coutRollback) return false;
 
   const now = performance.now();
-  const targetTime = now - rollbackRewindMs;
+  // rollbacks enchaînés : chacun remonte plus loin que le précédent (1s, 2s, 3s... jusqu'à 5s)
+  const j = joueurActif;
+  const recul = now - j.rollbackFin < rollbackFenetreEnchainement
+    ? Math.min(j.rollbackRecul + rollbackRewindMs, rollbackReculMax)
+    : rollbackRewindMs;
+  const targetTime = now - recul;
 
   // récupère tous les instantanés de la fenêtre de rembobinage (du plus ancien au plus récent)
   const framesInRange = snakeHistory.filter(h => h.time >= targetTime);
@@ -1808,6 +1818,14 @@ function tryRollback() {
 
   // on les rejoue en sens inverse (du plus récent au plus ancien) pour voir le serpent reculer
   const playbackFrames = framesInRange.slice().reverse();
+  const instantRestaure = framesInRange[0].time;
+
+  // l'historique oublie le passage annulé, et le reste est recollé au moment de la reprise :
+  // un rollback suivant remonte donc avant ce point au lieu d'y revenir
+  const decalage = now + rollbackRewindMs - instantRestaure;
+  snakeHistory = snakeHistory.filter(h => h.time < instantRestaure).map(h => ({...h, time: h.time + decalage}));
+  j.rollbackRecul = recul;
+  j.rollbackFin = now + rollbackRewindMs;
 
   lives -= coutRollback;
   updateHeartsDisplay();
@@ -1829,7 +1847,7 @@ function tryRollback() {
 
   const headCx = snake[0].x * gridSize + gridSize / 2;
   const headCy = snake[0].y * gridSize + gridSize / 2;
-  spawnPopup(headCx, headCy, 'ROLLBACK -' + coutRollback + '❤️', '#40c4ff');
+  spawnPopup(headCx, headCy, 'ROLLBACK ' + (recul / 1000) + 's -' + coutRollback + '❤️', '#40c4ff');
   spawnParticles(headCx, headCy, '#40c4ff', 20);
   triggerShake(5);
   playRollbackSound();
@@ -1855,7 +1873,8 @@ const champsJoueur = [
   'boosting', 'tickInterval', 'lastTickTime',
   'turretPixelPos', 'mouseX', 'mouseY', 'autoAimAngle', 'autoFireCooldown',
   'laserBuffUntil', 'autoAimBuffUntil', 'buffInvincibleUntil', 'doublePointsUntil',
-  'trailPoints', 'interpolatedPositionsCache', 'clignementJusqua', 'prochainClignement'
+  'trailPoints', 'interpolatedPositionsCache', 'clignementJusqua', 'prochainClignement',
+  'viseeManuelleJusqua', 'rollbackRecul', 'rollbackFin'
 ];
 
 // --- Mode de jeu (sauvegardé) ---
@@ -1906,7 +1925,7 @@ function nouveauJoueur(numero) {
     lives: maxLives,
     pendingGrowth: 0, // nombre de prochains ticks où la queue ne doit pas être retirée (croissance différée)
     tongueUntil: 0,
-    snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~2.5 dernières secondes
+    snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~6 dernières secondes
     invulnerableUntil: 0, // timestamp jusqu'à laquelle les touches ennemies sont ignorées
     shieldActiveUntil: 0,
     shieldReadyAt: 0,
@@ -1925,7 +1944,10 @@ function nouveauJoueur(numero) {
     trailPoints: [],
     interpolatedPositionsCache: [],
     clignementJusqua: 0,
-    prochainClignement: 0
+    prochainClignement: 0,
+    viseeManuelleJusqua: 0, // visée auto (option Facile) en retrait jusqu'à cet instant
+    rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
+    rollbackFin: -Infinity // fin de l'animation du dernier rollback
   };
 }
 
@@ -8188,6 +8210,7 @@ canvas.addEventListener('mousemove', (e) => {
   const pos = positionDansCanvas(e.clientX, e.clientY);
   mouseX = pos.x;
   mouseY = pos.y;
+  viseeManuelleJusqua = performance.now() + dureeViseeManuelle; // on vise soi-même : la visée auto attend
   if (modeEntree === 'manette') modeEntree = 'clavier';
 });
 
@@ -8576,6 +8599,7 @@ function lireUneManette(pad, numero, now) {
     if (tourelle && Math.hypot(rx, ry) > zoneMorteVisee) {
       const angle = Math.atan2(ry, rx);
       joueur.viseeAuto = false; // le joueur vise lui-même
+      joueur.viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
       joueur.mouseX = Math.max(0, Math.min(canvas.width, tourelle.x + Math.cos(angle) * distanceViseeManette));
       joueur.mouseY = Math.max(0, Math.min(canvas.height, tourelle.y + Math.sin(angle) * distanceViseeManette));
     }
@@ -9288,6 +9312,7 @@ function appliquerStick(now) {
     if (!turretPixelPos) return;
     mouseX = Math.max(0, Math.min(canvas.width, turretPixelPos.x + Math.cos(angle) * distanceViseeTactile));
     mouseY = Math.max(0, Math.min(canvas.height, turretPixelPos.y + Math.sin(angle) * distanceViseeTactile));
+    viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
   });
   if (distance / rayonStick >= seuilTirStick && partieTactileEnCours() && now >= prochainTirStick) {
     prochainTirStick = now + cadenceTirStick;
@@ -9676,6 +9701,7 @@ function appliquerCommandeInvite(m) {
       const x = +m.x, y = +m.y;
       if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) break;
       j.viseeAuto = false;
+      j.viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
       j.mouseX = x * canvas.width;
       j.mouseY = y * canvas.height;
       tenterTir(j);
