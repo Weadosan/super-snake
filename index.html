@@ -1147,6 +1147,7 @@
       <button id="buffMenuBtn">🧪 Buffs</button>
       <button id="modeBtn">👤 Solo</button>
       <button id="difficulteBtn">🟡 Normal</button>
+      <button id="viseeAutoBtn">🎯 Visée auto : non</button>
       <button id="enLigneBtn">🌐 En ligne</button>
     </div>
     <div id="gamepadStatus"></div>
@@ -1489,6 +1490,23 @@ function chargerDifficulte() {
 
 function reglagesDifficulte() {
   return niveauxDifficulte[difficulte];
+}
+
+// option du mode Facile : la tourelle vise seule l'ennemi le plus proche, le joueur tire lui-même (mémorisée)
+const cleStockageViseeAuto = 'snakeViseeAuto';
+let optionViseeAuto = chargerViseeAuto();
+
+function chargerViseeAuto() {
+  try {
+    return localStorage.getItem(cleStockageViseeAuto) === 'oui';
+  } catch (e) {
+    return false;
+  }
+}
+
+// vrai si ce joueur a la visée automatique : J2 au clavier, ou l'option du mode Facile
+function viseeAutoActive(j) {
+  return j.viseeAuto || (optionViseeAuto && difficulte === 'facile');
 }
 
 // état propre à chaque serpent (snake, direction, vies, buffs, bouclier...) : voir 04-joueurs.js
@@ -2135,6 +2153,12 @@ function majBoutonMode() {
   boutonDiff.textContent = d.icone + ' ' + d.nom;
   boutonDiff.title = 'Difficulté : ' + d.nom + ' (cliquer pour changer, relance la partie)';
   document.getElementById('difficulteHud').textContent = 'Difficulté : ' + d.nom;
+  // option visée auto : proposée seulement en Facile
+  const boutonVisee = document.getElementById('viseeAutoBtn');
+  boutonVisee.style.display = difficulte === 'facile' ? '' : 'none';
+  boutonVisee.textContent = '🎯 Visée auto : ' + (optionViseeAuto ? 'oui' : 'non');
+  boutonVisee.classList.toggle('active', optionViseeAuto);
+  boutonVisee.title = 'La tourelle vise seule l\'ennemi le plus proche, tu tires toi-même';
   // durées des buffs (plus longues en Facile) dans la légende et le menu des buffs
   document.querySelectorAll('#legendList li[data-buff]').forEach(li => {
     li.textContent = texteAvecDureeBuff(li.textContent, li.dataset.buff);
@@ -3711,7 +3735,7 @@ function updateCombat(deltaMs) {
 
     // visée automatique du joueur 2 au clavier : le point visé suit l'ennemi le plus proche,
     // ou regarde devant le serpent s'il n'y a aucun ennemi
-    if (j.viseeAuto && turretPixelPos) {
+    if (viseeAutoActive(j) && turretPixelPos) {
       const cible = ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y);
       if (cible) {
         mouseX = cible.x;
@@ -5185,7 +5209,7 @@ function drawControlsTutorial() {
   // --- Souris : viser / tirer / rollback ---
   const mouseY = shiftY + 26 + 28;
   drawMouseIcon(iconX, mouseY + 22, 30);
-  ctx.fillText('Clic gauche : viser et tirer', labelX, mouseY + 18);
+  ctx.fillText(viseeAutoActive(joueurs[0]) ? 'Clic gauche : tirer (visée auto)' : 'Clic gauche : viser et tirer', labelX, mouseY + 18);
   ctx.fillText('Clic droit : rollback (-' + reglagesDifficulte().coutRollback + ' ❤️)', labelX, mouseY + 38);
 
   // --- menu des buffs ---
@@ -8146,7 +8170,7 @@ function tenterTir(j = joueurs[0]) {
   if (direction.x === 0 && direction.y === 0) return; // pas de tir tant que le serpent n'a pas bougé
   if (score <= 0) return; // pas assez de points pour tirer
   // visée automatique (joueur 2 au clavier) : on anticipe le mouvement de l'ennemi visé
-  const cible = j.viseeAuto ? ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y) : null;
+  const cible = viseeAutoActive(j) ? ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y) : null;
   fireProjectile(cible ? angleVersEnnemi(cible) : undefined);
 }
 
@@ -9392,6 +9416,17 @@ document.getElementById('modeBtn').addEventListener('click', () => {
 
 // bouton de difficulté : Facile -> Normal -> Difficile, relance une partie
 document.getElementById('difficulteBtn').addEventListener('click', () => changerDifficulte());
+
+// option du mode Facile : visée automatique (sans relancer la partie)
+document.getElementById('viseeAutoBtn').addEventListener('click', () => {
+  optionViseeAuto = !optionViseeAuto;
+  try {
+    localStorage.setItem(cleStockageViseeAuto, optionViseeAuto ? 'oui' : 'non');
+  } catch (e) {
+    // stockage indisponible : l'option vaut pour cette session seulement
+  }
+  majBoutonMode();
+});
 
 applyTheme('neon');
 majBoutonMode();
