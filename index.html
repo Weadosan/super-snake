@@ -1504,13 +1504,20 @@ function chargerViseeAuto() {
   }
 }
 
-// vrai si ce joueur a la visée automatique : J2 au clavier, ou l'option du mode Facile
-// (l'option se met en retrait 1,5s chaque fois que le joueur vise lui-même : souris, stick, manette)
-const dureeViseeManuelle = 1500;
-function viseeAutoActive(j) {
-  if (j.viseeAuto) return true;
-  return optionViseeAuto && difficulte === 'facile' && performance.now() >= j.viseeManuelleJusqua;
+function optionViseeAutoActive() {
+  return optionViseeAuto && difficulte === 'facile';
 }
+
+// vrai si ce joueur a une visée automatique : J2 au clavier, ou l'option du mode Facile
+function viseeAutoActive(j) {
+  return j.viseeAuto || optionViseeAutoActive();
+}
+
+// option Visée auto : le viseur s'accroche à l'ennemi proche du curseur (ou du stick) ;
+// sans ennemi près du curseur on tire là où on vise, et si on ne vise plus depuis 1,5s
+// la tourelle reprend l'ennemi le plus proche d'elle
+const dureeViseeManuelle = 1500;
+const rayonAimantVisee = 90; // px autour du curseur
 
 // état propre à chaque serpent (snake, direction, vies, buffs, bouclier...) : voir 04-joueurs.js
 let food, score, gameOver;
@@ -1874,7 +1881,7 @@ const champsJoueur = [
   'turretPixelPos', 'mouseX', 'mouseY', 'autoAimAngle', 'autoFireCooldown',
   'laserBuffUntil', 'autoAimBuffUntil', 'buffInvincibleUntil', 'doublePointsUntil',
   'trailPoints', 'interpolatedPositionsCache', 'clignementJusqua', 'prochainClignement',
-  'viseeManuelleJusqua', 'rollbackRecul', 'rollbackFin'
+  'viseeManuelleJusqua', 'cibleAuto', 'rollbackRecul', 'rollbackFin'
 ];
 
 // --- Mode de jeu (sauvegardé) ---
@@ -1945,7 +1952,8 @@ function nouveauJoueur(numero) {
     interpolatedPositionsCache: [],
     clignementJusqua: 0,
     prochainClignement: 0,
-    viseeManuelleJusqua: 0, // visée auto (option Facile) en retrait jusqu'à cet instant
+    viseeManuelleJusqua: 0, // option Visée auto : le joueur a visé lui-même jusqu'à cet instant
+    cibleAuto: null, // option Visée auto : ennemi accroché par le viseur
     rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
     rollbackFin: -Infinity // fin de l'animation du dernier rollback
   };
@@ -3755,9 +3763,12 @@ function updateCombat(deltaMs) {
       autoAimAngle = null;
     }
 
+    // option Visée auto (Facile) : ennemi sur lequel le viseur est accroché
+    cibleAuto = optionViseeAutoActive() && !j.viseeAuto && turretPixelPos ? ennemiAimante() : null;
+
     // visée automatique du joueur 2 au clavier : le point visé suit l'ennemi le plus proche,
     // ou regarde devant le serpent s'il n'y a aucun ennemi
-    if (viseeAutoActive(j) && turretPixelPos) {
+    if (j.viseeAuto && turretPixelPos) {
       const cible = ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y);
       if (cible) {
         mouseX = cible.x;
@@ -3829,6 +3840,14 @@ function updateCombat(deltaMs) {
 }
 
 // renvoie l'ennemi le plus proche d'un point (null s'il n'y en a aucun)
+// option Visée auto : ennemi près du curseur du joueur actif, sinon (s'il ne vise plus) le plus proche de la tourelle
+function ennemiAimante() {
+  const pres = ennemiLePlusProche(mouseX, mouseY);
+  if (pres && Math.hypot(pres.x - mouseX, pres.y - mouseY) <= rayonAimantVisee + pres.radius) return pres;
+  if (performance.now() < viseeManuelleJusqua) return null; // il vise un endroit précis : on le laisse faire
+  return ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y);
+}
+
 function ennemiLePlusProche(x, y) {
   let nearest = null;
   let nearestDist = Infinity;
@@ -7391,9 +7410,13 @@ function drawTurret() {
   const hasAutoAimSkin = now < autoAimBuffUntil;
   const isAutoAiming = hasAutoAimSkin && autoAimAngle !== null;
 
+  // option Visée auto : le viseur se place sur l'ennemi accroché
+  const accroche = cibleAuto && enemies.includes(cibleAuto) ? cibleAuto : null;
+  const viseX = accroche ? accroche.x : mouseX;
+  const viseY = accroche ? accroche.y : mouseY;
   const angle = isAutoAiming
     ? autoAimAngle
-    : Math.atan2(mouseY - turretPixelPos.y, mouseX - turretPixelPos.x);
+    : Math.atan2(viseY - turretPixelPos.y, viseX - turretPixelPos.x);
   const barrelLength = gridSize * 0.9;
 
   // laser de visée manuel : uniquement affiché quand le joueur vise lui-même (pas en auto-visée)
@@ -7407,13 +7430,13 @@ function drawTurret() {
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(tipX, tipY);
-    ctx.lineTo(mouseX, mouseY);
+    ctx.lineTo(viseX, viseY);
     ctx.stroke();
     ctx.restore();
 
     ctx.fillStyle = hasLaserSkin ? 'rgba(255, 109, 0, 0.9)' : currentTheme.laserColor;
     ctx.beginPath();
-    ctx.arc(mouseX, mouseY, 3, 0, Math.PI * 2);
+    ctx.arc(viseX, viseY, accroche ? 5 : 3, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -8192,7 +8215,9 @@ function tenterTir(j = joueurs[0]) {
   if (direction.x === 0 && direction.y === 0) return; // pas de tir tant que le serpent n'a pas bougé
   if (score <= 0) return; // pas assez de points pour tirer
   // visée automatique (joueur 2 au clavier) : on anticipe le mouvement de l'ennemi visé
-  const cible = viseeAutoActive(j) ? ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y) : null;
+  // option Visée auto (Facile) : le viseur accroche l'ennemi proche du curseur
+  const cible = j.viseeAuto ? ennemiLePlusProche(turretPixelPos.x, turretPixelPos.y)
+    : optionViseeAutoActive() ? ennemiAimante() : null;
   fireProjectile(cible ? angleVersEnnemi(cible) : undefined);
 }
 
