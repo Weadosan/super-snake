@@ -1737,7 +1737,12 @@ let pendingSpawnWarning = null; // {x, y} : position annoncée 1s avant l'appari
 const spawnWarningDuration = 1000;
 
 // --- Coups reçus : blessure sur le serpent, marque là où l'ennemi est mort ---
-const dureeBlessure = 4000; // ms, la griffure s'efface pendant la dernière seconde
+const maxBlessures = 40; // cicatrices gardées au maximum sur un serpent
+// retire n segments du bout de la queue : les cicatrices portées par ces segments disparaissent avec eux
+function retirerBlessuresQueue(n) {
+  if (n <= 0 || !blessures.length) return;
+  blessures = blessures.map(b => ({...b, k: b.k - n})).filter(b => b.k >= 0);
+}
 let marquesImpact = []; // {x, y, couleur, debut}
 const dureeMarqueImpact = 1500;
 
@@ -1841,7 +1846,6 @@ function tryRollback() {
 
   lives -= coutRollback;
   updateHeartsDisplay();
-  blessures = []; // le corps revient à un état d'avant les coups
 
   invulnerableUntil = now + invulnerabilityDuration + rollbackRewindMs;
   slowMotionUntil = now + slowMotionDuration;
@@ -1962,7 +1966,7 @@ function nouveauJoueur(numero) {
     cibleAuto: null, // option Visée auto : ennemi accroché par le viseur
     rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
     rollbackFin: -Infinity, // fin de l'animation du dernier rollback
-    blessures: [] // {x, y, debut, angle} : griffures sur la case du corps touchée par un ennemi
+    blessures: [] // {k, debut, cote} : cicatrices définitives, k = rang du segment compté depuis le bout de la queue
   };
 }
 
@@ -2116,6 +2120,7 @@ function reanimerJoueur(j) {
   j.directionLockedThisTick = false;
   j.pendingGrowth = 0;
   j.snakeHistory = [];
+  j.blessures = []; // nouveau serpent : pas de cicatrice
   j.trailPoints = [];
   j.interpolatedPositionsCache = [];
   j.invulnerableUntil = now + 2000; // petit répit pour reprendre ses repères
@@ -3927,7 +3932,10 @@ function collisionsEnnemisSerpent() {
         const segCx = snake[si].x * gridSize + gridSize / 2;
         const segCy = snake[si].y * gridSize + gridSize / 2;
         // blessure sur le segment touché (elle suit le corps), éclaboussure rouge à cet endroit
-        blessures.push({x: snake[si].x, y: snake[si].y, debut: now, angle: Math.atan2(segCy - e.y, segCx - e.x)});
+        // cicatrice définitive sur ce morceau du corps : repérée depuis la queue, elle avance avec le serpent
+        const cote = Math.sign((e.x - segCx) * (snake[0].y - segCy) - (e.y - segCy) * (snake[0].x - segCx)) || 1;
+        blessures.push({k: snake.length - 1 - si, debut: now, cote});
+        if (blessures.length > maxBlessures) blessures.shift();
         spawnPopup(segCx, segCy, '-5', '#ff5252');
         spawnParticles(segCx, segCy, '#ff5252', 14);
         // l'ennemi meurt en touchant : on le signale là où il était
@@ -3935,7 +3943,10 @@ function collisionsEnnemisSerpent() {
         spawnParticles(e.x, e.y, e.color, 10);
       });
       triggerShake(6);
-      if (snake.length > 1) snake.pop();
+      if (snake.length > 1) {
+        snake.pop();
+        retirerBlessuresQueue(1);
+      }
       enemies = enemies.filter((_, i) => !hitEnemies.has(i));
 
       lives -= 1;
@@ -4048,6 +4059,7 @@ function tick() {
   if (selfHitIndex > 0 && !isCurrentlyInvulnerable) {
     const segmentsLost = snake.length - selfHitIndex;
     snake = snake.slice(0, selfHitIndex);
+    retirerBlessuresQueue(segmentsLost); // les cicatrices de la partie perdue partent avec elle
 
     const penalty = 10 * segmentsLost;
     addScore(-penalty);
@@ -4098,11 +4110,6 @@ function tick() {
   }
 
   snake.unshift(head);
-  // une blessure reste sur sa case tant que le corps l'occupe (la queue l'emporte en passant)
-  if (blessures.length) {
-    blessures = blessures.filter(b => performance.now() - b.debut < dureeBlessure &&
-      snake.some(s => s.x === b.x && s.y === b.y));
-  }
   stats.maxSnakeLength = Math.max(stats.maxSnakeLength, snake.length);
   majCompteurSegments();
   checkEndgameTransition();
@@ -4679,42 +4686,47 @@ function draw(t) {
   drawCountdown();
 }
 
-// griffures rouges sur les segments touchés par un ennemi (elles s'effacent pendant la dernière seconde)
-// (dessinées sur leur case, immobiles : dans Snake, les cases du corps ne bougent pas, seules la tête et la queue avancent)
-function dessinerBlessures() {
+// cicatrices définitives sur les segments touchés par un ennemi : chacune reste sur son morceau
+// de corps (même rang depuis la queue) et avance donc avec le serpent ; la plaie saigne au début
+function dessinerBlessures(positions) {
   const now = performance.now();
+  const n = positions.length;
   blessures.forEach(b => {
+    const i = n - 1 - b.k;
+    if (i < 0 || i >= n) return;
+    const pos = positions[i];
+    const prev = positions[Math.max(0, i - 1)];
+    const next = positions[Math.min(n - 1, i + 1)];
+    const angleCorps = Math.atan2(next.y - prev.y, next.x - prev.x) || 0;
     const age = now - b.debut;
-    if (age >= dureeBlessure) return;
-    const pos = b;
-    const alpha = Math.min(1, (dureeBlessure - age) / 1000);
+    const fraiche = Math.max(0, 1 - age / 2500); // 1 juste après le coup, 0 quand c'est cicatrisé
     const cx = pos.x * gridSize + gridSize / 2;
     const cy = pos.y * gridSize + gridSize / 2;
     const s = gridSize / 2;
     ctx.save();
-    ctx.globalAlpha *= alpha;
     ctx.translate(cx, cy);
-    ctx.rotate(b.angle + Math.PI / 2);
-    // tache sombre sous les griffures
-    ctx.fillStyle = 'rgba(110, 0, 10, 0.75)';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, s * 0.85, s * 0.65, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // trois griffures
-    ctx.strokeStyle = '#ff5252';
-    ctx.lineWidth = 2.2;
+    ctx.rotate(angleCorps);
+    // trois griffures en travers du corps, du côté où l'ennemi a frappé
     ctx.lineCap = 'round';
-    for (let k = -1; k <= 1; k++) {
-      ctx.beginPath();
-      ctx.moveTo(k * s * 0.35 - s * 0.15, -s * 0.6);
-      ctx.lineTo(k * s * 0.35 + s * 0.15, s * 0.6);
-      ctx.stroke();
+    for (let passe = 0; passe < 2; passe++) {
+      ctx.strokeStyle = passe === 0 ? 'rgba(60, 0, 8, 0.7)' : (fraiche > 0 ? '#ff1744' : '#b71c1c');
+      ctx.lineWidth = passe === 0 ? 3.2 : 1.7;
+      for (let m = -1; m <= 1; m++) {
+        ctx.beginPath();
+        ctx.moveTo(m * s * 0.38 - s * 0.18, -s * 0.62 * b.cote);
+        ctx.lineTo(m * s * 0.38 + s * 0.18, s * 0.35 * b.cote);
+        ctx.stroke();
+      }
     }
-    // petite goutte qui perle au début
-    if (age < 1200) {
-      ctx.fillStyle = '#d50000';
+    // plaie fraîche : halo rouge et goutte qui perle, puis il ne reste que la cicatrice
+    if (fraiche > 0) {
+      ctx.fillStyle = 'rgba(213, 0, 0, ' + (0.35 * fraiche) + ')';
       ctx.beginPath();
-      ctx.arc(s * 0.2, s * 0.6 + (age / 1200) * s * 0.4, 1.6, 0, Math.PI * 2);
+      ctx.arc(0, 0, s * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(213, 0, 0, ' + fraiche + ')';
+      ctx.beginPath();
+      ctx.arc(s * 0.2, (s * 0.4 + (1 - fraiche) * s * 0.4) * b.cote, 1.6, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -4838,7 +4850,7 @@ function dessinerSerpent(t) {
   drawEyes(headPos);
   drawTongue(headPos);
   ctx.globalAlpha = 1;
-  dessinerBlessures(); // bien visibles même quand le serpent clignote
+  dessinerBlessures(positions); // bien visibles même quand le serpent clignote
 
   // halo du bouclier temporaire (Shift), pulsant, autour de toute la tête
   if (performance.now() < shieldActiveUntil) {
