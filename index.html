@@ -8300,10 +8300,17 @@ function changerDirection(dx, dy, j = joueurs[0]) {
   if (isPaused || menuBuffsOuvert || j.elimine) return;
   if (waitingToStart || countdownActive) return; // pas de changement de direction avant le début de la partie
   if (directionLockedThisTick) return; // un seul virage accepté entre deux déplacements
-  if (dy !== 0 && direction.y === 0) {
+  // sens de référence : le déplacement en cours, sinon (juste après le départ, avant le 1er pas)
+  // le sens déjà choisi ou l'orientation du corps ; on ne peut jamais repartir vers sa propre queue
+  let sens = direction;
+  if (sens.x === 0 && sens.y === 0) sens = nextDirection;
+  if (sens.x === 0 && sens.y === 0 && snake.length > 1) {
+    sens = {x: Math.sign(snake[0].x - snake[1].x), y: Math.sign(snake[0].y - snake[1].y)};
+  }
+  if (dy !== 0 && sens.y === 0) {
     nextDirection = {x: 0, y: dy};
     directionLockedThisTick = true;
-  } else if (dx !== 0 && direction.x === 0) {
+  } else if (dx !== 0 && sens.x === 0) {
     nextDirection = {x: dx, y: 0};
     directionLockedThisTick = true;
   }
