@@ -1736,6 +1736,16 @@ const turretFadeDuration = 600; // petit fondu d'apparition/disparition de la to
 let pendingSpawnWarning = null; // {x, y} : position annoncée 1s avant l'apparition d'un ennemi
 const spawnWarningDuration = 1000;
 
+// --- Coups reçus : blessure sur le serpent, marque là où l'ennemi est mort ---
+const maxBlessures = 40; // cicatrices gardées au maximum sur un serpent
+// retire n segments du bout de la queue : les cicatrices portées par ces segments disparaissent avec eux
+function retirerBlessuresQueue(n) {
+  if (n <= 0 || !blessures.length) return;
+  blessures = blessures.map(b => ({...b, k: b.k - n})).filter(b => b.k >= 0);
+}
+let marquesImpact = []; // {x, y, couleur, debut}
+const dureeMarqueImpact = 1500;
+
 // --- Popups de score flottants ---
 let popups = [];
 
@@ -1881,7 +1891,7 @@ const champsJoueur = [
   'turretPixelPos', 'mouseX', 'mouseY', 'autoAimAngle', 'autoFireCooldown',
   'laserBuffUntil', 'autoAimBuffUntil', 'buffInvincibleUntil', 'doublePointsUntil',
   'trailPoints', 'interpolatedPositionsCache', 'clignementJusqua', 'prochainClignement',
-  'viseeManuelleJusqua', 'cibleAuto', 'rollbackRecul', 'rollbackFin'
+  'viseeManuelleJusqua', 'cibleAuto', 'rollbackRecul', 'rollbackFin', 'blessures'
 ];
 
 // --- Mode de jeu (sauvegardé) ---
@@ -1955,7 +1965,8 @@ function nouveauJoueur(numero) {
     viseeManuelleJusqua: 0, // option Visée auto : le joueur a visé lui-même jusqu'à cet instant
     cibleAuto: null, // option Visée auto : ennemi accroché par le viseur
     rollbackRecul: 0, // recul (ms) du dernier rollback, pour enchaîner plus loin
-    rollbackFin: -Infinity // fin de l'animation du dernier rollback
+    rollbackFin: -Infinity, // fin de l'animation du dernier rollback
+    blessures: [] // {k, debut, cote} : cicatrices définitives, k = rang du segment compté depuis le bout de la queue
   };
 }
 
@@ -2109,6 +2120,7 @@ function reanimerJoueur(j) {
   j.directionLockedThisTick = false;
   j.pendingGrowth = 0;
   j.snakeHistory = [];
+  j.blessures = []; // nouveau serpent : pas de cicatrice
   j.trailPoints = [];
   j.interpolatedPositionsCache = [];
   j.invulnerableUntil = now + 2000; // petit répit pour reprendre ses repères
@@ -2834,6 +2846,7 @@ function init() {
   enemies = [];
   popups = [];
   particles = [];
+  marquesImpact = [];
   shakeUntil = 0;
   flashEcran = null;
   ecranGameOver = null;
@@ -3899,14 +3912,14 @@ function collisionsEnnemisSerpent() {
   const isInvulnerable = now < invulnerableUntil || isShielded || isBuffInvincible;
 
   if (!isInvulnerable) {
-    const hitEnemies = new Set();
+    const hitEnemies = new Map(); // indice de l'ennemi -> indice du segment touché
     enemies.forEach((e, ei) => {
       if (!e.isBoss && estGele(e)) return; // gelé : inoffensif pour le corps
-      for (const segment of snake) {
-        const segCx = segment.x * gridSize + gridSize / 2;
-        const segCy = segment.y * gridSize + gridSize / 2;
+      for (let si = 0; si < snake.length; si++) {
+        const segCx = snake[si].x * gridSize + gridSize / 2;
+        const segCy = snake[si].y * gridSize + gridSize / 2;
         if (Math.hypot(e.x - segCx, e.y - segCy) < e.radius + gridSize / 2) {
-          hitEnemies.add(ei);
+          hitEnemies.set(ei, si);
           break;
         }
       }
@@ -3914,12 +3927,26 @@ function collisionsEnnemisSerpent() {
 
     if (hitEnemies.size) {
       addScore(-5);
-      const headCx = snake[0].x * gridSize + gridSize / 2;
-      const headCy = snake[0].y * gridSize + gridSize / 2;
-      spawnPopup(headCx, headCy, '-5', '#ff5252');
-      spawnParticles(headCx, headCy, '#ff5252', 14);
+      hitEnemies.forEach((si, ei) => {
+        const e = enemies[ei];
+        const segCx = snake[si].x * gridSize + gridSize / 2;
+        const segCy = snake[si].y * gridSize + gridSize / 2;
+        // blessure sur le segment touché (elle suit le corps), éclaboussure rouge à cet endroit
+        // cicatrice définitive sur ce morceau du corps : repérée depuis la queue, elle avance avec le serpent
+        const cote = Math.sign((e.x - segCx) * (snake[0].y - segCy) - (e.y - segCy) * (snake[0].x - segCx)) || 1;
+        blessures.push({k: snake.length - 1 - si, debut: now, cote});
+        if (blessures.length > maxBlessures) blessures.shift();
+        spawnPopup(segCx, segCy, '-5', '#ff5252');
+        spawnParticles(segCx, segCy, '#ff5252', 14);
+        // l'ennemi meurt en touchant : on le signale là où il était
+        marquesImpact.push({x: e.x, y: e.y, couleur: e.color, debut: now});
+        spawnParticles(e.x, e.y, e.color, 10);
+      });
       triggerShake(6);
-      if (snake.length > 1) snake.pop();
+      if (snake.length > 1) {
+        snake.pop();
+        retirerBlessuresQueue(1);
+      }
       enemies = enemies.filter((_, i) => !hitEnemies.has(i));
 
       lives -= 1;
@@ -4032,6 +4059,7 @@ function tick() {
   if (selfHitIndex > 0 && !isCurrentlyInvulnerable) {
     const segmentsLost = snake.length - selfHitIndex;
     snake = snake.slice(0, selfHitIndex);
+    retirerBlessuresQueue(segmentsLost); // les cicatrices de la partie perdue partent avec elle
 
     const penalty = 10 * segmentsLost;
     addScore(-penalty);
@@ -4145,7 +4173,9 @@ function togglePause() {
       j.doublePointsUntil += pausedDuration;
       j.laserBuffUntil += pausedDuration;
       j.autoAimBuffUntil += pausedDuration;
+      j.blessures.forEach(b => b.debut += pausedDuration);
     });
+    marquesImpact.forEach(m => m.debut += pausedDuration);
     previousFrameTime += pausedDuration;
     lastEnemySpawn += pausedDuration;
     freezeIndicatorUntil += pausedDuration;
@@ -4627,6 +4657,7 @@ function draw(t) {
   drawBossSpawnWarning();
   drawBossWarning();
   drawEnemies();
+  dessinerMarquesImpact();
   drawHeartPickup();
   drawLootApples();
   drawGoldenApple();
@@ -4653,6 +4684,88 @@ function draw(t) {
 
   dessinerFlashEcran();
   drawCountdown();
+}
+
+// cicatrices définitives sur les segments touchés par un ennemi : chacune reste sur son morceau
+// de corps (même rang depuis la queue) et avance donc avec le serpent ; la plaie saigne au début
+function dessinerBlessures(positions) {
+  const now = performance.now();
+  const n = positions.length;
+  blessures.forEach(b => {
+    const i = n - 1 - b.k;
+    if (i < 0 || i >= n) return;
+    const pos = positions[i];
+    const prev = positions[Math.max(0, i - 1)];
+    const next = positions[Math.min(n - 1, i + 1)];
+    const angleCorps = Math.atan2(next.y - prev.y, next.x - prev.x) || 0;
+    const age = now - b.debut;
+    const fraiche = Math.max(0, 1 - age / 2500); // 1 juste après le coup, 0 quand c'est cicatrisé
+    const cx = pos.x * gridSize + gridSize / 2;
+    const cy = pos.y * gridSize + gridSize / 2;
+    const s = gridSize / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angleCorps);
+    // trois griffures en travers du corps, du côté où l'ennemi a frappé
+    ctx.lineCap = 'round';
+    for (let passe = 0; passe < 2; passe++) {
+      ctx.strokeStyle = passe === 0 ? 'rgba(60, 0, 8, 0.7)' : (fraiche > 0 ? '#ff1744' : '#b71c1c');
+      ctx.lineWidth = passe === 0 ? 3.2 : 1.7;
+      for (let m = -1; m <= 1; m++) {
+        ctx.beginPath();
+        ctx.moveTo(m * s * 0.38 - s * 0.18, -s * 0.62 * b.cote);
+        ctx.lineTo(m * s * 0.38 + s * 0.18, s * 0.35 * b.cote);
+        ctx.stroke();
+      }
+    }
+    // plaie fraîche : halo rouge et goutte qui perle, puis il ne reste que la cicatrice
+    if (fraiche > 0) {
+      ctx.fillStyle = 'rgba(213, 0, 0, ' + (0.35 * fraiche) + ')';
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(213, 0, 0, ' + fraiche + ')';
+      ctx.beginPath();
+      ctx.arc(s * 0.2, (s * 0.4 + (1 - fraiche) * s * 0.4) * b.cote, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+// marque là où un ennemi est mort en touchant le serpent : onde rouge et croix qui s'effacent
+function dessinerMarquesImpact() {
+  const now = performance.now();
+  marquesImpact = marquesImpact.filter(m => now - m.debut < dureeMarqueImpact);
+  marquesImpact.forEach(m => {
+    const p = (now - m.debut) / dureeMarqueImpact;
+    const alpha = 1 - p;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    // deux ondes qui s'élargissent
+    ctx.lineWidth = 2;
+    for (let k = 0; k < 2; k++) {
+      const pk = Math.min(1, p * 1.6 - k * 0.3);
+      if (pk <= 0) continue;
+      ctx.strokeStyle = 'rgba(255, 23, 68, ' + (alpha * (1 - pk * 0.5)) + ')';
+      ctx.beginPath();
+      ctx.arc(0, 0, 8 + pk * 26, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // croix à l'endroit exact, couleur de l'ennemi cerclée de rouge
+    const t = 7 * (1 - p * 0.3);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(0, 0, 0, ' + (alpha * 0.6) + ')';
+    ctx.beginPath();
+    ctx.moveTo(-t, -t); ctx.lineTo(t, t); ctx.moveTo(t, -t); ctx.lineTo(-t, t);
+    ctx.stroke();
+    ctx.lineWidth = 2.5;
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = m.couleur || '#ff1744';
+    ctx.stroke();
+    ctx.restore();
+  });
 }
 
 // dessine le serpent du joueur actif (corps, tête, yeux, halos) et place sa tourelle
@@ -4737,6 +4850,7 @@ function dessinerSerpent(t) {
   drawEyes(headPos);
   drawTongue(headPos);
   ctx.globalAlpha = 1;
+  dessinerBlessures(positions); // bien visibles même quand le serpent clignote
 
   // halo du bouclier temporaire (Shift), pulsant, autour de toute la tête
   if (performance.now() < shieldActiveUntil) {
@@ -8186,10 +8300,17 @@ function changerDirection(dx, dy, j = joueurs[0]) {
   if (isPaused || menuBuffsOuvert || j.elimine) return;
   if (waitingToStart || countdownActive) return; // pas de changement de direction avant le début de la partie
   if (directionLockedThisTick) return; // un seul virage accepté entre deux déplacements
-  if (dy !== 0 && direction.y === 0) {
+  // sens de référence : le déplacement en cours, sinon (juste après le départ, avant le 1er pas)
+  // le sens déjà choisi ou l'orientation du corps ; on ne peut jamais repartir vers sa propre queue
+  let sens = direction;
+  if (sens.x === 0 && sens.y === 0) sens = nextDirection;
+  if (sens.x === 0 && sens.y === 0 && snake.length > 1) {
+    sens = {x: Math.sign(snake[0].x - snake[1].x), y: Math.sign(snake[0].y - snake[1].y)};
+  }
+  if (dy !== 0 && sens.y === 0) {
     nextDirection = {x: 0, y: dy};
     directionLockedThisTick = true;
-  } else if (dx !== 0 && direction.x === 0) {
+  } else if (dx !== 0 && sens.x === 0) {
     nextDirection = {x: dx, y: 0};
     directionLockedThisTick = true;
   }
