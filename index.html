@@ -794,6 +794,28 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     #aideBtn { top: 6px; right: 52px; }
   }
   body.mode-tactile #aideBtn { display: none; }
+  /* bouton Options (js/18-options.js), sous le bouton Aide */
+  #optionsJeuBtn {
+    position: absolute;
+    top: 96px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #optionsJeuBtn:hover { background: var(--accent); }
+  @media (max-width: 600px) {
+    #optionsJeuBtn { top: 6px; right: 98px; }
+  }
+  body.mode-tactile #optionsJeuBtn { display: none; }
   /* ordinateur, page épurée comme sur téléphone : les réglages sont dans le menu ☰ */
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
@@ -1422,6 +1444,117 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     border-radius: 10px;
     font-size: 12px;
   }
+
+  /* --- Plateau à la taille de l'écran (ordinateur, js/18-options.js) --- */
+  body.plateau-adapte:not(.mode-tactile) #game {
+    width: var(--cote-plateau, min(400px, calc(100vw - 48px)));
+  }
+  /* textes, boutons et fenêtres agrandis en 1440p / 4K */
+  body.plateau-adapte h1,
+  body.plateau-adapte #hud,
+  body.plateau-adapte #gamepadStatus,
+  body.plateau-adapte #restart,
+  body.plateau-adapte #message,
+  body.plateau-adapte #statsPanel,
+  body.plateau-adapte #optionsBtn,
+  body.plateau-adapte #aideBtn,
+  body.plateau-adapte #optionsJeuBtn,
+  body.plateau-adapte #aidePanel,
+  body.plateau-adapte #succesPanel,
+  body.plateau-adapte #optionsPanel,
+  body.plateau-adapte #buffMenuPanel,
+  body.plateau-adapte #enLignePanel,
+  body.plateau-adapte #succesBannieres,
+  body.plateau-adapte.menu-tactile-ouvert #gameColumn {
+    zoom: var(--zoom-interface, 1);
+  }
+  body.plateau-adapte.menu-tactile-ouvert h1,
+  body.plateau-adapte.menu-tactile-ouvert #hud { zoom: 1; }
+  /* écran large : infos à gauche, plateau sur toute la hauteur */
+  body.plateau-large:not(.menu-tactile-ouvert) #gameColumn {
+    display: grid;
+    grid-template-columns: var(--colonne-infos, 250px) auto;
+    grid-template-rows: repeat(14, auto) 1fr;
+    column-gap: 24px;
+    align-items: start;
+    justify-items: center;
+  }
+  body.plateau-large:not(.menu-tactile-ouvert) #gameColumn > * { grid-column: 1; }
+  body.plateau-large:not(.menu-tactile-ouvert) #plateauConteneur {
+    grid-column: 2;
+    grid-row: 1 / 16;
+    margin-right: calc(56px * var(--zoom-interface, 1));
+  }
+  body.plateau-large:not(.menu-tactile-ouvert) h1 { margin-top: 0; }
+  body.plateau-large:not(.menu-tactile-ouvert) #statsPanel { width: 100%; }
+  body.plateau-large:not(.menu-tactile-ouvert) #message { text-align: center; }
+
+  /* --- Options (js/18-options.js) --- */
+  #optionsMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #optionsMenu.ouvert { display: flex; }
+  #optionsPanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #optionsPanel h2 { margin: 0 0 8px 0; font-size: 18px; text-align: center; }
+  #optionsContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
+  #optionsContenu h3 { margin: 14px 0 8px 0; font-size: 15px; color: var(--accent); }
+  #optionsContenu h3:first-child { margin-top: 0; }
+  #optionsContenu h4 { margin: 10px 0 4px 0; font-size: 13px; color: var(--text-muted); font-weight: normal; }
+  .options-ligne {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .options-ligne input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .options-valeur { width: 42px; text-align: right; color: var(--text-muted); }
+  .options-note { font-size: 12px; color: var(--text-muted); margin: 2px 0 8px 0; min-height: 0; }
+  .options-ligne button, #optionsActions button {
+    padding: 6px 10px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .options-ligne button:hover, #optionsActions button:hover { border-color: var(--accent); }
+  .options-ligne button.actif { border: 2px solid var(--accent); background: rgba(255, 255, 255, 0.08); }
+  .options-choix { display: flex; gap: 4px; }
+  .options-touche { margin-bottom: 4px; }
+  .options-touche button { min-width: 120px; font-weight: bold; }
+  .options-touche button.modifiee { color: var(--accent); }
+  .options-touche button.en-attente {
+    border: 2px solid #ffd54f;
+    color: #ffd54f;
+    animation: buffExpireFlash 1s infinite;
+  }
+  #optionsActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  #optionsFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; border: none !important; }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
@@ -1475,6 +1608,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button id="difficulteBtn">🟡 Normal</button>
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
       <button id="enLigneBtn">🌐 En ligne</button>
+      <button id="optionsMenuBtn">⚙️ Options</button>
       <button id="aideMenuBtn">❓ Aide</button>
       <button id="succesBtn">🏆 Succès</button>
       <button id="tutoBtn">🎓 Tutoriel</button>
@@ -1496,6 +1630,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <!-- bouton Options sur ordinateur (sur téléphone, c'est le bouton ☰ placé avec les commandes) -->
       <button id="optionsBtn" title="Options">☰</button>
       <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
+      <button id="optionsJeuBtn" title="Options : volume, plein écran, touches (O)">⚙️</button>
     </div>
     <div id="touchControls">
       <button class="touch-btn" id="touchBoost">🚀 Boost</button>
@@ -3131,6 +3266,35 @@ const highscoreListEl = document.getElementById('highscoreList');
 
 const gridSize = 20;
 
+// réglages du menu ⚙️ Options (js/18-options.js), gardés ensemble dans le navigateur
+const cleStockageOptions = 'snakeOptions';
+let optionsSauvees = {};
+try {
+  optionsSauvees = JSON.parse(localStorage.getItem(cleStockageOptions)) || {};
+} catch (e) {
+  // stockage indisponible : réglages par défaut
+}
+function lireOption(nom, defaut) {
+  return optionsSauvees[nom] !== undefined ? optionsSauvees[nom] : defaut;
+}
+function ecrireOption(nom, valeur) {
+  optionsSauvees[nom] = valeur;
+  try {
+    localStorage.setItem(cleStockageOptions, JSON.stringify(optionsSauvees));
+  } catch (e) {
+    // stockage indisponible : le réglage vaut pour cette session seulement
+  }
+}
+
+// taille logique du plateau (coordonnées du jeu), toujours 400 x 400 ; l'image réelle du canvas est
+// echelleRendu fois plus grande pour rester nette sur grand écran (js/18-options.js)
+const largeurPlateau = canvas.width, hauteurPlateau = canvas.height;
+let echelleRendu = 1;
+// finesse des images gardées en mémoire (sprites, fond) : l'échelle du rendu arrondie au demi supérieur
+function echelleCaches() {
+  return Math.max(1, Math.ceil(echelleRendu * 2) / 2);
+}
+
 // --- Thèmes graphiques ---
 const themes = {
   neon: {
@@ -3319,7 +3483,7 @@ function majLegendePommes() {
     li.appendChild(document.createTextNode(' ' + nomPomme(type) + texte));
   });
 }
-const tileCount = canvas.width / gridSize;
+const tileCount = largeurPlateau / gridSize;
 
 // --- Difficulté (Facile / Normal / Difficile), mémorisée ; Difficile = le jeu d'origine ---
 // vitesse : du serpent et des ennemis ; chanceResistant : ennemis à 2 coups ;
@@ -3812,7 +3976,7 @@ function nouveauJoueur(numero) {
     tickInterval: baseTickInterval,
     lastTickTime: performance.now(),
     turretPixelPos: {x: 0, y: 0},
-    mouseX: canvas.width / 2,
+    mouseX: largeurPlateau / 2,
     mouseY: 0,
     autoAimAngle: null,
     autoFireCooldown: 0,
@@ -3947,7 +4111,7 @@ function eliminerJoueur() {
   if (!joueursEnJeu().length) {
     endGame();
   } else {
-    spawnPopup(canvas.width / 2, canvas.height / 2, 'Un ❤️ réanime ' + j.nom + ' !', '#ff6b6b');
+    spawnPopup(largeurPlateau / 2, hauteurPlateau / 2, 'Un ❤️ réanime ' + j.nom + ' !', '#ff6b6b');
   }
 }
 
@@ -4079,7 +4243,9 @@ function majBoutonMode() {
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
 let audioCtx = null;
-let isMuted = false;
+let isMuted = lireOption('muet', false);
+let volumeEffets = lireOption('volumeEffets', 100); // 0 à 100, menu ⚙️ Options (js/18-options.js)
+let sortieAudio = null; // tous les sons passent par ce gain, réglé par volumeEffets
 const boostAudioB64 = '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VVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZO6A8t01yGMMMzIAAA0gAAABCJSvFUYYTcAAADSAAAAEVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGTgj/AsAEQoAAAIAAANIAAAAQAAAf4AAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQZN2P8AAAf4AAAAgAAA0gAAABAAAB/gAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBk3Y/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGTdj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQZN2P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBk3Y/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGTdj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 let boostAudioBuffer = null;
 
@@ -4103,9 +4269,17 @@ function loadBoostSound() {
 function getAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sortieAudio = audioCtx.createGain();
+    sortieAudio.connect(audioCtx.destination);
+    majVolumeAudio();
     loadBoostSound();
   }
   return audioCtx;
+}
+
+// volume perçu à peu près linéaire : le gain suit le carré du curseur (100 = volume d'origine)
+function majVolumeAudio() {
+  if (sortieAudio) sortieAudio.gain.value = Math.pow(volumeEffets / 100, 2);
 }
 
 function playShootSound() {
@@ -4122,7 +4296,7 @@ function playShootSound() {
   gain.gain.setValueAtTime(0.12, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.12);
 }
@@ -4145,7 +4319,7 @@ function playTirEspace() {
   gain.gain.setValueAtTime(0.12, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start(t);
   lfo.start(t);
   osc.stop(t + 0.18);
@@ -4171,7 +4345,7 @@ function playTirLave() {
   gain.gain.value = 0.35;
   source.connect(filtre);
   filtre.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   source.start(t);
   const osc = ctx.createOscillator();
   const g2 = ctx.createGain();
@@ -4181,7 +4355,7 @@ function playTirLave() {
   g2.gain.setValueAtTime(0.18, t);
   g2.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
   osc.connect(g2);
-  g2.connect(ctx.destination);
+  g2.connect(sortieAudio);
   osc.start(t);
   osc.stop(t + 0.14);
 }
@@ -4200,7 +4374,7 @@ function playTirOcean() {
     gain.gain.exponentialRampToValueAtTime(volume, t + decalage + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + decalage + 0.09);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(t + decalage);
     osc.stop(t + decalage + 0.1);
   });
@@ -4224,7 +4398,7 @@ function playLaserSound() {
   gain.gain.setValueAtTime(0.1, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.08);
 }
@@ -4244,7 +4418,7 @@ function playExplosionSound() {
   gain.gain.setValueAtTime(0.3, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
   noise.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   noise.start();
 }
 
@@ -4260,7 +4434,7 @@ function playHitSound() {
   gain.gain.setValueAtTime(0.15, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.09);
 }
@@ -4281,7 +4455,7 @@ function jouerBruitFiltre(duree, typeFiltre, frequence, volume) {
   gain.gain.value = volume;
   source.connect(filtre);
   filtre.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   source.start();
 }
 
@@ -4297,7 +4471,7 @@ function jouerTintement(frequence, debut, volume) {
     gain.gain.setValueAtTime(volume / (i + 1), t);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(t);
     osc.stop(t + 0.16);
   });
@@ -4332,7 +4506,7 @@ function playIceCrunchSound() {
   gain.gain.setValueAtTime(0.35, t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start(t);
   osc.stop(t + 0.21);
   jouerTintement(1800, 0.04, 0.04);
@@ -4357,7 +4531,7 @@ function playHeartPickupSound() {
     gain.gain.linearRampToValueAtTime(0.18, startTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.35);
   });
@@ -4377,7 +4551,7 @@ function playLoseHeartSound() {
     gain.gain.setValueAtTime(0.15, startTime);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.18);
   });
@@ -4396,7 +4570,7 @@ function playRollbackSound() {
   gain.gain.setValueAtTime(0.18, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.55);
 }
@@ -4414,7 +4588,7 @@ function playShieldSound() {
   gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.3);
 }
@@ -4432,7 +4606,7 @@ function playApplePickupSound() {
   gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.015);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.12);
 }
@@ -4452,7 +4626,7 @@ function playGoldenApplePickupSound() {
     gain.gain.linearRampToValueAtTime(0.22, startTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.3);
   });
@@ -4472,7 +4646,7 @@ function playFreezeSound() {
     gain.gain.setValueAtTime(0.15, startTime);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.4);
   });
@@ -4493,7 +4667,7 @@ function playBossWarningSound() {
     gain.gain.linearRampToValueAtTime(0.22, startTime + 0.05);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.3);
   }
@@ -4514,7 +4688,7 @@ function playEndgameTransitionSound(enemiesPresent) {
     gain.gain.linearRampToValueAtTime(0.2, startTime + 0.03);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.35);
   });
@@ -4533,7 +4707,7 @@ function playBuffActivateSound() {
   gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.05);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.35);
 }
@@ -4558,7 +4732,7 @@ function playExplosionBuffSound() {
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
   noise.connect(filter);
   filter.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   noise.start();
 
   const osc = ctx.createOscillator();
@@ -4569,7 +4743,7 @@ function playExplosionBuffSound() {
   oscGain.gain.setValueAtTime(0.3, ctx.currentTime);
   oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
   osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
+  oscGain.connect(sortieAudio);
   osc.start();
   osc.stop(ctx.currentTime + 0.3);
 }
@@ -4593,7 +4767,7 @@ function playEnemySpawnSound() {
   gain.gain.exponentialRampToValueAtTime(0.07, t + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   osc.start(t);
   osc.stop(t + 0.1);
 }
@@ -4612,7 +4786,7 @@ function playGameOverSound() {
     gain.gain.setValueAtTime(0.2, startTime);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.3);
   });
@@ -4633,7 +4807,7 @@ function playVictorySound() {
     gain.gain.linearRampToValueAtTime(0.22, startTime + 0.03);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(startTime);
     osc.stop(startTime + 0.5);
   });
@@ -4658,7 +4832,7 @@ function playFireworkPopSound() {
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
   noise.connect(filter);
   filter.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   noise.start();
 }
 
@@ -4671,7 +4845,7 @@ function playBoostSound() {
   source.buffer = boostAudioBuffer;
   gain.gain.value = 0.6;
   source.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(sortieAudio);
   source.start();
 }
 
@@ -4831,9 +5005,9 @@ function updateShieldDisplay() {
     shieldStatusEl.textContent = '🛡️ Bouclier ACTIF : ' + remaining + 's';
   } else if (now < shieldReadyAt) {
     const remaining = Math.ceil((shieldReadyAt - now) / 1000);
-    shieldStatusEl.textContent = 'Bouclier (Maj) : recharge ' + remaining + 's';
+    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : recharge ' + remaining + 's';
   } else {
-    shieldStatusEl.textContent = 'Bouclier (Maj) : Prêt';
+    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : Prêt';
   }
 }
 
@@ -4926,8 +5100,8 @@ function placeFood() {
 
 // butin garanti du boss : une pomme bleue contenant le buff x2, une pomme en or, et 5 pommes bonus
 function dropBossLoot(x, y) {
-  const clampX = v => Math.max(12, Math.min(canvas.width - 12, v));
-  const clampY = v => Math.max(12, Math.min(canvas.height - 12, v));
+  const clampX = v => Math.max(12, Math.min(largeurPlateau - 12, v));
+  const clampY = v => Math.max(12, Math.min(hauteurPlateau - 12, v));
 
   // place un point à bonne distance à la fois du point de mort ET du serpent actuel,
   // pour éviter qu'il soit ramassé instantanément si le boss meurt au contact
@@ -5176,8 +5350,8 @@ function spawnHeartPickup() {
   let tooClose = true;
 
   do {
-    x = Math.random() * (canvas.width - 2 * heartPickupRadius) + heartPickupRadius;
-    y = Math.random() * (canvas.height - 2 * heartPickupRadius) + heartPickupRadius;
+    x = Math.random() * (largeurPlateau - 2 * heartPickupRadius) + heartPickupRadius;
+    y = Math.random() * (hauteurPlateau - 2 * heartPickupRadius) + heartPickupRadius;
     tries++;
 
     tooClose = tousLesSegments().some(segment => {
@@ -5314,8 +5488,8 @@ function pickEnemySpawnPosition() {
   const segments = tousLesSegments();
 
   for (let tries = 0; tries < 80; tries++) {
-    const x = Math.random() * (canvas.width - 2 * enemyRadius) + enemyRadius;
-    const y = Math.random() * (canvas.height - 2 * enemyRadius) + enemyRadius;
+    const x = Math.random() * (largeurPlateau - 2 * enemyRadius) + enemyRadius;
+    const y = Math.random() * (hauteurPlateau - 2 * enemyRadius) + enemyRadius;
 
     const minDistToSnake = Math.min(...segments.map(segment => {
       const segCx = segment.x * gridSize + gridSize / 2;
@@ -5416,7 +5590,7 @@ function damageEnemyByIndex(index) {
 
 // tir laser instantané (hitscan) : pas de temps de trajet, touche immédiatement le premier ennemi sur la trajectoire
 function fireLaser(angle) {
-  const maxRange = Math.hypot(canvas.width, canvas.height);
+  const maxRange = Math.hypot(largeurPlateau, hauteurPlateau);
   const dirX = Math.cos(angle);
   const dirY = Math.sin(angle);
 
@@ -5545,8 +5719,8 @@ function updateCombat(deltaMs) {
     p.y += p.vy * deltaMs;
   });
   projectiles = projectiles.filter(p =>
-    p.x > -20 && p.x < canvas.width + 20 &&
-    p.y > -20 && p.y < canvas.height + 20
+    p.x > -20 && p.x < largeurPlateau + 20 &&
+    p.y > -20 && p.y < hauteurPlateau + 20
   );
 
   // déplacement aléatoire des ennemis (rebond sur les murs + changements de direction)
@@ -5571,11 +5745,11 @@ function updateCombat(deltaMs) {
     e.y += e.vy * deltaMs * lengthSpeedMultiplier;
 
     if (!e.isBoss) {
-      if (e.x < e.radius || e.x > canvas.width - e.radius) e.vx *= -1;
-      if (e.y < e.radius || e.y > canvas.height - e.radius) e.vy *= -1;
+      if (e.x < e.radius || e.x > largeurPlateau - e.radius) e.vx *= -1;
+      if (e.y < e.radius || e.y > hauteurPlateau - e.radius) e.vy *= -1;
     }
-    e.x = Math.max(e.radius, Math.min(canvas.width - e.radius, e.x));
-    e.y = Math.max(e.radius, Math.min(canvas.height - e.radius, e.y));
+    e.x = Math.max(e.radius, Math.min(largeurPlateau - e.radius, e.x));
+    e.y = Math.max(e.radius, Math.min(hauteurPlateau - e.radius, e.y));
 
     if (!e.isBoss) {
       e.changeDirTimer -= deltaMs;
@@ -5593,10 +5767,10 @@ function updateCombat(deltaMs) {
     pomme.x += pomme.vx * deltaMs;
     pomme.y += pomme.vy * deltaMs;
 
-    if (pomme.x < pomme.radius || pomme.x > canvas.width - pomme.radius) pomme.vx *= -1;
-    if (pomme.y < pomme.radius || pomme.y > canvas.height - pomme.radius) pomme.vy *= -1;
-    pomme.x = Math.max(pomme.radius, Math.min(canvas.width - pomme.radius, pomme.x));
-    pomme.y = Math.max(pomme.radius, Math.min(canvas.height - pomme.radius, pomme.y));
+    if (pomme.x < pomme.radius || pomme.x > largeurPlateau - pomme.radius) pomme.vx *= -1;
+    if (pomme.y < pomme.radius || pomme.y > hauteurPlateau - pomme.radius) pomme.vy *= -1;
+    pomme.x = Math.max(pomme.radius, Math.min(largeurPlateau - pomme.radius, pomme.x));
+    pomme.y = Math.max(pomme.radius, Math.min(hauteurPlateau - pomme.radius, pomme.y));
 
     pomme.changeDirTimer -= deltaMs;
     if (pomme.changeDirTimer <= 0) {
@@ -6090,8 +6264,14 @@ function togglePause() {
 
 function toggleMute() {
   isMuted = !isMuted;
+  ecrireOption('muet', isMuted);
+  majBoutonMuet();
+}
+
+function majBoutonMuet() {
   muteBtn.textContent = isMuted ? '🔇 Muet' : '🔊 Son';
   muteBtn.classList.toggle('active', isMuted);
+  if (typeof majMenuOptions === 'function') majMenuOptions();
 }
 
 pauseBtn.addEventListener('click', togglePause);
@@ -6106,6 +6286,7 @@ muteBtn.addEventListener('click', toggleMute);
 
 function renderLoop(now) {
   lireManette(now);
+  ctx.setTransform(echelleRendu, 0, 0, echelleRendu, 0, 0); // coordonnées 400 x 400, image à la taille de l'écran
 
   if (isPaused) {
     draw(1);
@@ -6401,13 +6582,15 @@ let bodySpriteCache = {};
 
 function getBodySprite(baseColor, withScales) {
   const size = gridSize - 2;
-  const cacheKey = currentThemeName + '|' + baseColor + '|' + withScales;
+  const echelle = echelleCaches();
+  const cacheKey = currentThemeName + '|' + baseColor + '|' + withScales + '|' + echelle;
   if (bodySpriteCache[cacheKey]) return bodySpriteCache[cacheKey];
 
   const spriteCanvas = document.createElement('canvas');
-  spriteCanvas.width = size;
-  spriteCanvas.height = size;
+  spriteCanvas.width = size * echelle; // plus de pixels sur grand écran, dessiné ensuite à la taille du segment
+  spriteCanvas.height = size * echelle;
   const sctx = spriteCanvas.getContext('2d');
+  sctx.scale(echelle, echelle);
 
   if (!currentTheme.glow) {
     sctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
@@ -6540,7 +6723,7 @@ function draw(t) {
   }
 
   ctx.fillStyle = currentTheme.canvasBg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
 
   drawBackgroundPattern();
   dessinerDecorAnime();
@@ -6917,7 +7100,7 @@ function dessinerPommeVivante() {
 
 // crée une particule d'ambiance selon le thème ; depuisBord : apparaît hors écran (bas ou haut)
 function creerParticuleAmbiance(depuisBord) {
-  const w = canvas.width, h = canvas.height;
+  const w = largeurPlateau, h = hauteurPlateau;
   const p = {x: Math.random() * w, y: Math.random() * h, phase: Math.random() * Math.PI * 2};
   if (currentThemeName === 'espace') {
     // étoiles qui défilent vers le bas (les plus grosses vont plus vite : effet de profondeur)
@@ -6962,7 +7145,7 @@ function dessinerParticulesAmbiance() {
   if (isPaused) dt = 0;
   if (enRalenti()) dt *= slowMotionFactor;
 
-  const w = canvas.width, h = canvas.height;
+  const w = largeurPlateau, h = hauteurPlateau;
   const theme = currentThemeName;
   ctx.save();
   for (let i = 0; i < particulesAmbiance.length; i++) {
@@ -7026,7 +7209,7 @@ function dessinerFlashEcran() {
   ctx.save();
   ctx.globalAlpha = 0.28 * (1 - progress);
   ctx.fillStyle = flashEcran.couleur;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
   ctx.restore();
 }
 
@@ -7040,7 +7223,7 @@ function drawSlowMotionOverlay() {
   const entree = Math.min(1, progress / 0.15);
   const sortie = progress > 0.75 ? 1 - (progress - 0.75) / 0.25 : 1;
   const force = Math.min(entree, sortie);
-  const w = canvas.width, h = canvas.height;
+  const w = largeurPlateau, h = hauteurPlateau;
 
   // vignette bleue sur les bords (le centre reste net)
   if (!vignetteRalentiCache) {
@@ -7095,7 +7278,7 @@ function drawSlowMotionOverlay() {
 function drawPauseOverlay() {
   ctx.save();
   ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 32px ' + currentTheme.fontFamily;
@@ -7103,13 +7286,13 @@ function drawPauseOverlay() {
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
   ctx.shadowBlur = 8;
-  ctx.fillText('⏸️ PAUSE', canvas.width / 2, canvas.height / 2 - 14);
+  ctx.fillText('⏸️ PAUSE', largeurPlateau / 2, hauteurPlateau / 2 - 14);
 
   ctx.font = '14px ' + currentTheme.fontFamily;
   const texteReprise = modeEntree === 'manette' ? 'Appuie sur START pour reprendre'
     : modeEntree === 'tactile' ? 'Touche le jeu pour reprendre'
-    : 'Appuie sur Échap ou P pour reprendre';
-  ctx.fillText(menuBuffsOuvert ? 'Menu des buffs ouvert' : texteReprise, canvas.width / 2, canvas.height / 2 + 20);
+    : 'Appuie sur Échap ou ' + nomTouche(touches.pause) + ' pour reprendre';
+  ctx.fillText(menuBuffsOuvert ? 'Menu des buffs ouvert' : texteReprise, largeurPlateau / 2, hauteurPlateau / 2 + 20);
   ctx.restore();
 }
 
@@ -7118,14 +7301,14 @@ function drawCountdown() {
 
   // voile sombre pour faire ressortir le texte
   ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
 
   if (waitingToStart) {
     // titre en haut, puis le tutoriel un peu réduit dessous
     const hauteurTitre = drawTitreJeu();
-    const echelle = (canvas.height - hauteurTitre) / canvas.height;
+    const echelle = (hauteurPlateau - hauteurTitre) / hauteurPlateau;
     ctx.save();
-    ctx.translate(canvas.width * (1 - echelle) / 2, hauteurTitre);
+    ctx.translate(largeurPlateau * (1 - echelle) / 2, hauteurTitre);
     ctx.scale(echelle, echelle);
     drawControlsTutorial();
     ctx.restore();
@@ -7152,7 +7335,7 @@ function drawCountdown() {
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
   ctx.shadowBlur = 12;
-  ctx.fillText(label, canvas.width / 2, canvas.height / 2);
+  ctx.fillText(label, largeurPlateau / 2, hauteurPlateau / 2);
   ctx.restore();
 }
 
@@ -7177,11 +7360,11 @@ const texteTitreJeu = 'SURVIE ET GRANDIS';
 function drawTitreJeu() {
   const lettres = texteTitreJeu.split('').map(c => policePixel[c] || policePixel[' ']);
   const colonnes = lettres.reduce((n, g) => n + g[0].length + 1, -1);
-  const px = Math.min(5, (canvas.width - 24) / colonnes); // taille d'un « pixel » de la police
+  const px = Math.min(5, (largeurPlateau - 24) / colonnes); // taille d'un « pixel » de la police
   const hauteur = 7 * px;
   const haut = 12;
   const temps = performance.now() / 260;
-  let x = (canvas.width - colonnes * px) / 2;
+  let x = (largeurPlateau - colonnes * px) / 2;
 
   ctx.save();
   const degrade = ctx.createLinearGradient(0, haut, 0, haut + hauteur);
@@ -7226,7 +7409,7 @@ function drawControlsTutorial() {
 
   // titre
   ctx.font = 'bold 20px ' + currentTheme.fontFamily;
-  ctx.fillText('Comment jouer', canvas.width / 2, 26);
+  ctx.fillText('Comment jouer', largeurPlateau / 2, 26);
 
   const iconX = 55; // centre horizontal des icônes
   const labelX = 130; // départ fixe du texte, bien séparé des icônes
@@ -7241,12 +7424,17 @@ function drawControlsTutorial() {
 
   ctx.font = '14px ' + currentTheme.fontFamily;
   ctx.textAlign = 'left';
-  ctx.fillText('Flèches, ZQSD (AZERTY)', labelX, padY + 30);
-  ctx.fillText('ou WASD (QWERTY)', labelX, padY + 50);
+  if (nomTouchesDirection(false) === 'ZQSD / WASD' && nomTouchesDirection(true) === 'Flèches') {
+    ctx.fillText('Flèches, ZQSD (AZERTY)', labelX, padY + 30);
+    ctx.fillText('ou WASD (QWERTY)', labelX, padY + 50);
+  } else {
+    ctx.fillText(nomTouchesDirection(true), labelX, padY + 30);
+    ctx.fillText('ou ' + nomTouchesDirection(false), labelX, padY + 50);
+  }
 
   // --- Espace : démarrer / accélérer ---
   const spaceY = padY + keySize * 2 + 4 + 30;
-  drawKeyIcon(iconX - keySize - 4, spaceY, keySize * 3 + 8, 26, 'ESPACE');
+  drawKeyIcon(iconX - keySize - 4, spaceY, keySize * 3 + 8, 26, nomTouche(touches.boost).toUpperCase());
   if (capacitesActives.sprint) {
     ctx.fillText('Démarrer, puis', labelX, spaceY + 12);
     ctx.fillText('accélère (maintenir)', labelX, spaceY + 32);
@@ -7257,7 +7445,7 @@ function drawControlsTutorial() {
 
   // --- Shift : bouclier ---
   const shiftY = spaceY + 26 + 26;
-  drawKeyIcon(iconX - keySize - 4, shiftY, keySize * 3 + 8, 26, 'SHIFT');
+  drawKeyIcon(iconX - keySize - 4, shiftY, keySize * 3 + 8, 26, touches.bouclier === 'ShiftLeft' ? 'SHIFT' : nomTouche(touches.bouclier).toUpperCase());
   if (capacitesActives.bouclier) {
     ctx.fillText('Bouclier 2s', labelX, shiftY + 12);
     ctx.fillText('(recharge 15s)', labelX, shiftY + 32);
@@ -7275,12 +7463,13 @@ function drawControlsTutorial() {
   // --- menu des buffs ---
   ctx.textAlign = 'center';
   ctx.font = '13px ' + currentTheme.fontFamily;
-  ctx.fillText('B : buffs  •  P : pause  •  H : aide', canvas.width / 2, mouseY + 78);
-  dessinerInvitationTuto('T : tutoriel');
+  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' +
+    nomTouche(touches.aide) + ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, mouseY + 78);
+  dessinerInvitationTuto(nomTouche(touches.tuto) + ' : tutoriel');
 
   // --- message final ---
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
-  ctx.fillText('Appuie sur ESPACE pour commencer', canvas.width / 2, canvas.height - 20);
+  ctx.fillText('Appuie sur ' + nomTouche(touches.boost).toUpperCase() + ' pour commencer', largeurPlateau / 2, hauteurPlateau - 20);
 
   ctx.restore();
 }
@@ -7291,16 +7480,16 @@ function drawTutorielCoop() {
   const partage = clavierPartage();
   const lignes = partage
     ? [
-        ['🕹️ Bouger', 'ZQSD / WASD', 'Flèches'],
-        capacitesActives.sprint ? ['🚀 Démarrer, boost', 'Espace', 'Ctrl droit'] : ['🚀 Démarrer', 'Espace', 'Ctrl droit'],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', 'Maj gauche', 'Maj droite'] : null,
-        ['🔫 Tirer', 'Clic gauche', 'Entrée (auto)'],
-        ['⏪ Rollback', 'Clic droit', 'Retour arr.']
+        ['🕹️ Bouger', nomTouchesDirection(false), nomTouchesDirection(true)],
+        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), nomTouche(touches.boostJ2)],
+        capacitesActives.bouclier ? ['🛡️ Bouclier', nomTouche(touches.bouclier), nomTouche(touches.bouclierJ2)] : null,
+        ['🔫 Tirer', 'Clic gauche', nomTouche(touches.tirJ2) + ' (auto)'],
+        ['⏪ Rollback', 'Clic droit', nomTouche(touches.rollbackJ2)]
       ]
     : [
-        ['🕹️ Bouger', 'Flèches', 'Stick g.'],
-        capacitesActives.sprint ? ['🚀 Démarrer, boost', 'Espace', 'A / Croix'] : ['🚀 Démarrer', 'Espace', 'A / Croix'],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', 'Shift', 'B / LB'] : null,
+        ['🕹️ Bouger', nomTouchesDirection(true), 'Stick g.'],
+        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), 'A / Croix'],
+        capacitesActives.bouclier ? ['🛡️ Bouclier', nomToucheBouclierSolo(), 'B / LB'] : null,
         ['🎯 Viser', 'Souris', 'Stick droit'],
         ['🔫 Tirer', 'Clic gauche', 'RT / RB / X']
       ];
@@ -7313,7 +7502,7 @@ function drawTutorielCoop() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.font = 'bold 20px ' + currentTheme.fontFamily;
-  ctx.fillText('👥 Coop à 2 joueurs', canvas.width / 2, 30);
+  ctx.fillText('👥 Coop à 2 joueurs', largeurPlateau / 2, 30);
 
   // en-têtes de colonnes, de la couleur de chaque serpent
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
@@ -7340,17 +7529,19 @@ function drawTutorielCoop() {
   ctx.font = '13px ' + currentTheme.fontFamily;
   ctx.fillStyle = '#ffffff';
   y += 8;
-  ctx.fillText(partage ? '🎮 Branche une manette pour J2' : '⌨️ Clavier + souris = J1  •  🎮 Manette = J2', canvas.width / 2, y);
-  ctx.fillText('Score commun • un ❤️ réanime ton coéquipier', canvas.width / 2, y + 22);
+  ctx.fillText(partage ? '🎮 Branche une manette pour J2' : '⌨️ Clavier + souris = J1  •  🎮 Manette = J2', largeurPlateau / 2, y);
+  ctx.fillText('Score commun • un ❤️ réanime ton coéquipier', largeurPlateau / 2, y + 22);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.fillText('B : buffs  •  P : pause  •  H : aide  •  T : tuto (solo)', canvas.width / 2, y + 44);
+  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' + nomTouche(touches.aide) +
+    ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, y + 44);
   ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (menu B)' : '👻 Les serpents se traversent (menu B)',
-    canvas.width / 2, y + 66);
+    largeurPlateau / 2, y + 66);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
-  ctx.fillText(partage ? 'ESPACE ou CTRL DROIT pour commencer' : 'ESPACE ou A pour commencer',
-    canvas.width / 2, canvas.height - 20);
+  ctx.fillText(partage ? nomTouche(touches.boost).toUpperCase() + ' ou ' + nomTouche(touches.boostJ2).toUpperCase() + ' pour commencer'
+    : nomTouche(touches.boost).toUpperCase() + ' ou A pour commencer',
+    largeurPlateau / 2, hauteurPlateau - 20);
   ctx.restore();
 }
 
@@ -7388,7 +7579,7 @@ function drawControlsTutorialListe(mode) {
   ctx.shadowBlur = 6;
   ctx.textAlign = 'center';
   ctx.font = 'bold 20px ' + currentTheme.fontFamily;
-  ctx.fillText(mode === 'manette' ? '🎮 Comment jouer' : '📱 Comment jouer', canvas.width / 2, 30);
+  ctx.fillText(mode === 'manette' ? '🎮 Comment jouer' : '📱 Comment jouer', largeurPlateau / 2, 30);
 
   const pas = 40;
   let y = 72;
@@ -7410,7 +7601,7 @@ function drawControlsTutorialListe(mode) {
   ctx.textAlign = 'center';
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
   ctx.fillText(mode === 'manette' ? 'Appuie sur A pour commencer' : 'Touche le jeu pour commencer',
-    canvas.width / 2, canvas.height - 20);
+    largeurPlateau / 2, hauteurPlateau - 20);
   ctx.restore();
 }
 
@@ -7422,12 +7613,12 @@ function dessinerInvitationTuto(commande) {
   if (tutoDejaFait()) {
     ctx.font = '13px ' + currentTheme.fontFamily;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-    ctx.fillText('🎓 ' + commande, canvas.width / 2, canvas.height - 48);
+    ctx.fillText('🎓 ' + commande, largeurPlateau / 2, hauteurPlateau - 48);
   } else {
     ctx.font = 'bold 14px ' + currentTheme.fontFamily;
     ctx.fillStyle = '#ffd54f';
     ctx.globalAlpha = 0.75 + Math.sin(performance.now() / 250) * 0.25;
-    ctx.fillText('🎓 Nouveau ? ' + commande, canvas.width / 2, canvas.height - 48);
+    ctx.fillText('🎓 Nouveau ? ' + commande, largeurPlateau / 2, hauteurPlateau - 48);
   }
   ctx.restore();
 }
@@ -8555,21 +8746,26 @@ function drawBackgroundPattern() {
   // dessinée une seule fois par thème dans un canvas en mémoire puis simplement décalée
   const spacing = gridSize;
   const drift = (performance.now() / 3000) % spacing;
-  if (!fondCache || fondCacheTheme !== currentThemeName) {
+  const largeurFond = largeurPlateau + spacing * 2, hauteurFond = hauteurPlateau + spacing * 2;
+  const echelle = echelleCaches();
+  if (!fondCache || fondCacheTheme !== currentThemeName || fondCache.echelle !== echelle) {
     fondCache = document.createElement('canvas');
-    fondCache.width = canvas.width + spacing * 2;
-    fondCache.height = canvas.height + spacing * 2;
-    dessinerFondTheme(fondCache.getContext('2d'), fondCache.width, fondCache.height, spacing);
+    fondCache.width = largeurFond * echelle;
+    fondCache.height = hauteurFond * echelle;
+    fondCache.echelle = echelle;
+    const fctx = fondCache.getContext('2d');
+    fctx.scale(echelle, echelle);
+    dessinerFondTheme(fctx, largeurFond, hauteurFond, spacing);
     fondCacheTheme = currentThemeName;
   }
-  ctx.drawImage(fondCache, -spacing + drift, -spacing + drift);
+  ctx.drawImage(fondCache, -spacing + drift, -spacing + drift, largeurFond, hauteurFond);
 
   // lave : la lumière des fissures pulse doucement
   if (currentThemeName === 'lave') {
     if (!lueurLaveCache) lueurLaveCache = creerVignette('rgba(255, 61, 0, 0.18)', 'rgba(255, 61, 0, 0)');
     ctx.save();
     ctx.globalAlpha = 0.5 + Math.sin(performance.now() / 900) * 0.5;
-    ctx.drawImage(lueurLaveCache, 0, 0);
+    ctx.drawImage(lueurLaveCache, 0, 0, largeurPlateau, hauteurPlateau);
     ctx.restore();
   }
 
@@ -8577,7 +8773,7 @@ function drawBackgroundPattern() {
   if (!vignetteCache) {
     vignetteCache = creerVignette('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.45)');
   }
-  ctx.drawImage(vignetteCache, 0, 0);
+  ctx.drawImage(vignetteCache, 0, 0, largeurPlateau, hauteurPlateau);
 }
 
 // dessine le décor fixe du thème (appelé une seule fois par thème, dans le canvas en mémoire)
@@ -8676,12 +8872,19 @@ function dessinerFondTheme(fctx, w, h, spacing) {
 
 // --- Décor animé du fond ---
 // sprite dessiné une seule fois puis réutilisé (nom unique par thème)
+// (plus fin sur grand écran : c.lw / c.lh gardent sa taille dans les coordonnées du plateau)
 function spriteDecor(nom, largeur, hauteur, dessiner) {
-  if (!spritesDecor[nom]) {
+  const echelle = echelleCaches();
+  if (!spritesDecor[nom] || spritesDecor[nom].echelle !== echelle) {
     const c = document.createElement('canvas');
-    c.width = largeur;
-    c.height = hauteur;
-    dessiner(c.getContext('2d'), largeur, hauteur);
+    c.width = Math.ceil(largeur * echelle);
+    c.height = Math.ceil(hauteur * echelle);
+    c.lw = largeur;
+    c.lh = hauteur;
+    c.echelle = echelle;
+    const sctx = c.getContext('2d');
+    sctx.scale(echelle, echelle);
+    dessiner(sctx, largeur, hauteur);
     spritesDecor[nom] = c;
   }
   return spritesDecor[nom];
@@ -8691,7 +8894,7 @@ function spriteDecor(nom, largeur, hauteur, dessiner) {
 function dessinerDecorAnime() {
   const now = performance.now();
   const d = decorAnime;
-  const w = canvas.width, h = canvas.height;
+  const w = largeurPlateau, h = hauteurPlateau;
   if (d.theme !== currentThemeName) {
     d.theme = currentThemeName;
     d.elements = [];
@@ -8734,7 +8937,7 @@ function decorNeon(d, w, h) {
     c.fillRect(0, 0, bw, bh);
   });
   ctx.globalAlpha = 0.09;
-  ctx.drawImage(bande, 0, (d.temps / 14) % (h + 160) - 80);
+  ctx.drawImage(bande, 0, (d.temps / 14) % (h + 160) - 80, bande.lw, bande.lh);
 
   const drift = (performance.now() / 3000) % gridSize;
   if (d.temps >= d.prochain) {
@@ -8806,7 +9009,7 @@ function decorEspace(d, w, h) {
   ctx.translate(w * 0.2, h * 0.78);
   ctx.scale(1, 0.55);
   ctx.rotate(t / 20000);
-  ctx.drawImage(galaxie, -45, -45);
+  ctx.drawImage(galaxie, -45, -45, galaxie.lw, galaxie.lh);
   ctx.restore();
 
   const planete = spriteDecor('espace-planete', 100, 100, (c) => {
@@ -8836,7 +9039,7 @@ function decorEspace(d, w, h) {
   };
   if (Math.sin(angleLune) < 0) dessinerLune(); // la lune passe derrière la planète
   ctx.globalAlpha = 0.55;
-  ctx.drawImage(planete, px - 50, py - 50);
+  ctx.drawImage(planete, px - 50, py - 50, planete.lw, planete.lh);
   if (Math.sin(angleLune) >= 0) dessinerLune();
 
   if (t >= d.prochain) {
@@ -8877,7 +9080,7 @@ function decorLave(d, w, h) {
     c.fillRect(0, 0, cw, ch);
   });
   ctx.globalAlpha = 0.55 + Math.sin(t / 1300) * 0.45;
-  ctx.drawImage(chaleur, 0, h - 90);
+  ctx.drawImage(chaleur, 0, h - 90, chaleur.lw, chaleur.lh);
 
   const decalage = -gridSize + (performance.now() / 3000) % gridSize; // suit le léger glissement du fond
   if (t >= d.prochain && pointsFissuresLave.length && d.elements.length < 7) {
@@ -8943,7 +9146,7 @@ function decorOcean(d, w, h) {
   });
   for (let i = 0; i < 3; i++) {
     ctx.globalAlpha = 0.35 + 0.35 * Math.sin(t / 1700 + i * 2.1);
-    ctx.drawImage(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0);
+    ctx.drawImage(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0, rayon.lw, rayon.lh);
   }
 
   // algues : une seule trace pour toutes, l'ondulation grandit vers le haut
@@ -8990,7 +9193,7 @@ function decorOcean(d, w, h) {
         ctx.save();
         ctx.translate(xTete + m.dx * e.sens, e.y + m.dy + Math.sin(t / 300 + m.phase) * 1.5);
         ctx.scale(e.sens, 1);
-        ctx.drawImage(poisson, -8, -5);
+        ctx.drawImage(poisson, -8, -5, poisson.lw, poisson.lh);
         ctx.restore();
       });
     } else {
@@ -9022,8 +9225,8 @@ function decorOcean(d, w, h) {
 // canvas en mémoire avec un dégradé radial du centre (couleurCentre) vers les bords (couleurBord)
 function creerVignette(couleurCentre, couleurBord) {
   const c = document.createElement('canvas');
-  c.width = canvas.width;
-  c.height = canvas.height;
+  c.width = largeurPlateau;
+  c.height = hauteurPlateau;
   const vctx = c.getContext('2d');
   const w = c.width, h = c.height;
   const grad = vctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) / 2);
@@ -9115,7 +9318,7 @@ function drawBossWarning() {
 
   ctx.save();
   ctx.fillStyle = 'rgba(122, 0, 0, 0.22)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
 
   if (blinkVisible) {
     ctx.fillStyle = '#ff1744';
@@ -9123,7 +9326,7 @@ function drawBossWarning() {
     ctx.textAlign = 'center';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
     ctx.shadowBlur = 8;
-    ctx.fillText('⚠️ BOSS ⚠️', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('⚠️ BOSS ⚠️', largeurPlateau / 2, hauteurPlateau / 2);
   }
   ctx.restore();
 }
@@ -9136,7 +9339,7 @@ function drawEndgameTransitionMessage() {
 
   ctx.save();
   ctx.fillStyle = 'rgba(255, 109, 0, 0.18)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, largeurPlateau, hauteurPlateau);
 
   if (blinkVisible) {
     ctx.fillStyle = '#ff9100';
@@ -9144,7 +9347,7 @@ function drawEndgameTransitionMessage() {
     ctx.textAlign = 'center';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
     ctx.shadowBlur = 8;
-    ctx.fillText(endgameTransitionMessageText, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(endgameTransitionMessageText, largeurPlateau / 2, hauteurPlateau / 2);
   }
   ctx.restore();
 }
@@ -9797,8 +10000,8 @@ function launchFireworks() {
 
   for (let i = 0; i < 10; i++) {
     fireworks.push({
-      x: 40 + Math.random() * (canvas.width - 80),
-      y: canvas.height,
+      x: 40 + Math.random() * (largeurPlateau - 80),
+      y: hauteurPlateau,
       targetY: 50 + Math.random() * 140,
       vy: -0.28 - Math.random() * 0.08,
       color: colors[Math.floor(Math.random() * colors.length)],
@@ -9928,7 +10131,7 @@ function dessinerEcranGameOver() {
   const now = performance.now();
   const age = now - go.debut;
   const apparition = Math.min(1, age / 500);
-  const w = canvas.width, h = canvas.height;
+  const w = largeurPlateau, h = hauteurPlateau;
 
   ctx.save();
   // voile sombre teinté de rouge
@@ -10187,12 +10390,79 @@ function definirModeEntree(mode) {
   }
 }
 
+// --- Touches du clavier, modifiables dans ⚙️ Options (js/18-options.js) ---
+// e.code = position physique de la touche : KeyW/KeyA/KeyS/KeyD correspondent
+// à ZQSD sur un clavier AZERTY et à WASD sur un clavier QWERTY.
+// En solo, les touches de J1 et celles de J2 (flèches, Maj droite) font bouger le même serpent.
+const touchesParDefaut = {
+  haut: 'KeyW', bas: 'KeyS', gauche: 'KeyA', droite: 'KeyD', boost: 'Space', bouclier: 'ShiftLeft',
+  hautJ2: 'ArrowUp', basJ2: 'ArrowDown', gaucheJ2: 'ArrowLeft', droiteJ2: 'ArrowRight',
+  boostJ2: 'ControlRight', bouclierJ2: 'ShiftRight', tirJ2: 'Enter', rollbackJ2: 'Backspace',
+  pause: 'KeyP', buffs: 'KeyB', aide: 'KeyH', succes: 'KeyU', tuto: 'KeyT', options: 'KeyO', pleinEcran: 'KeyF'
+};
+let touches = {...touchesParDefaut};
+(function chargerTouches() {
+  const sauvees = lireOption('touches', {});
+  for (const action in sauvees) {
+    if (action in touchesParDefaut && typeof sauvees[action] === 'string') touches[action] = sauvees[action];
+  }
+})();
+
+// carte du clavier réel (Chrome, Edge) : « Z » au lieu de « W » sur un clavier AZERTY
+let carteClavier = null;
+if (navigator.keyboard && navigator.keyboard.getLayoutMap) {
+  navigator.keyboard.getLayoutMap().then(carte => { carteClavier = carte; }).catch(() => {});
+}
+
+const nomsTouchesSpeciales = {
+  Space: 'Espace', ShiftLeft: 'Maj gauche', ShiftRight: 'Maj droite', ControlLeft: 'Ctrl gauche',
+  ControlRight: 'Ctrl droit', AltLeft: 'Alt', AltRight: 'Alt Gr', Enter: 'Entrée', NumpadEnter: 'Entrée (pavé)',
+  Backspace: 'Retour arr.', Tab: 'Tab', CapsLock: 'Verr. maj', Escape: 'Échap', Delete: 'Suppr', Insert: 'Inser',
+  Home: 'Début', End: 'Fin', PageUp: 'Page ↑', PageDown: 'Page ↓',
+  ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→'
+};
+
+// nom lisible d'une touche (e.code)
+function nomTouche(code) {
+  if (!code) return '—';
+  if (nomsTouchesSpeciales[code]) return nomsTouchesSpeciales[code];
+  if (carteClavier && carteClavier.get(code)) return carteClavier.get(code).toUpperCase();
+  if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+  if (/^Digit\d$/.test(code)) return code.slice(5);
+  if (/^Numpad/.test(code)) return 'Pavé ' + code.slice(6);
+  return code;
+}
+
+// « ZQSD / WASD » tant que les touches de déplacement sont celles d'origine et le clavier inconnu
+function nomTouchesDirection(j2) {
+  const s = j2 ? 'J2' : '';
+  const codes = [touches['haut' + s], touches['gauche' + s], touches['bas' + s], touches['droite' + s]];
+  if (j2 && codes.join() === 'ArrowUp,ArrowLeft,ArrowDown,ArrowRight') return 'Flèches';
+  if (!j2 && codes.join() === 'KeyW,KeyA,KeyS,KeyD' && !carteClavier) return 'ZQSD / WASD';
+  return codes.map(nomTouche).join(' ');
+}
+
+// bouclier en solo : les deux touches marchent, « Maj » si ce sont encore les deux Maj
+function nomToucheBouclierSolo() {
+  if (touches.bouclier === 'ShiftLeft' && touches.bouclierJ2 === 'ShiftRight') return 'Maj';
+  return nomTouche(touches.bouclier);
+}
+
+function directionDeTouche(code, j2) {
+  const s = j2 ? 'J2' : '';
+  if (code === touches['haut' + s]) return [0, -1];
+  if (code === touches['bas' + s]) return [0, 1];
+  if (code === touches['gauche' + s]) return [-1, 0];
+  if (code === touches['droite' + s]) return [1, 0];
+  return null;
+}
+
 // Chaque action vise un joueur (joueur 1 par défaut : souris, tactile, solo).
 // Si ce n'est pas le joueur actif, l'action se rappelle elle-même avec ce joueur comme joueur actif.
 
 // Espace / bouton A / bouton Boost : démarrer, rejouer, ou accélérer (maintenu)
 function actionPrincipale(j = joueurs[0]) {
-  if (isPaused || menuBuffsOuvert || aideOuverte || succesOuvert) return;
+  if (isPaused || menuBuffsOuvert || aideOuverte || succesOuvert || optionsOuvertes) return;
   if (gameOver) {
     if (ecranGameOver && performance.now() - ecranGameOver.debut < 700) return;
     init();
@@ -10284,9 +10554,10 @@ function tenterTir(j = joueurs[0]) {
 // convertit une position écran (souris ou doigt) en coordonnées du canvas
 function positionDansCanvas(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
+  // sans la bordure : clientLeft / clientWidth ne comptent que l'intérieur du plateau
   return {
-    x: (clientX - rect.left) * (canvas.width / rect.width),
-    y: (clientY - rect.top) * (canvas.height / rect.height)
+    x: (clientX - rect.left - canvas.clientLeft) * (largeurPlateau / (canvas.clientWidth || rect.width)),
+    y: (clientY - rect.top - canvas.clientTop) * (hauteurPlateau / (canvas.clientHeight || rect.height))
   };
 }
 
@@ -10315,36 +10586,46 @@ document.addEventListener('keydown', (e) => {
 
   if (menuBuffsOuvert) {
     // le menu garde la main : Échap ou B le ferme, Tab/Entrée/Espace naviguent dans ses boutons
-    if (key === 'Escape' || e.code === 'KeyB') {
+    if (key === 'Escape' || e.code === touches.buffs) {
       e.preventDefault();
       fermerMenuBuffs();
     }
     return;
   }
 
-  if (e.code === 'KeyB') {
+  if (e.code === touches.buffs) {
     ouvrirMenuBuffs();
     return;
   }
 
-  if (e.code === 'KeyH') {
+  if (e.code === touches.aide) {
     ouvrirAide();
     return;
   }
 
-  if (e.code === 'KeyU') {
+  if (e.code === touches.succes) {
     ouvrirSucces();
     return;
   }
 
+  if (e.code === touches.options) {
+    ouvrirOptions();
+    return;
+  }
+
+  if (e.code === touches.pleinEcran) {
+    if (!e.repeat) basculerPleinEcran();
+    return;
+  }
+
   // T : lance le tutoriel depuis l'écran de départ ou de fin, ou le quitte
-  if (e.code === 'KeyT') {
+  if (e.code === touches.tuto) {
     if (tutoActif()) quitterTuto(false);
     else if (waitingToStart || gameOver) lancerTuto();
     return;
   }
 
-  if (e.code === 'KeyP' || key === 'Escape') {
+  if (e.code === touches.pause || key === 'Escape') {
     togglePause();
     return;
   }
@@ -10357,70 +10638,63 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  if (key === 'Shift') {
+  const code = e.code;
+  if (code === touches.bouclier || code === touches.bouclierJ2) {
     if (e.repeat) return;
     activerBouclier();
     return;
   }
 
-  if (key === ' ' || key === 'Spacebar') {
+  if (code === touches.boost) {
     e.preventDefault(); // évite que la page défile
     actionPrincipale();
     return;
   }
 
-  // e.code = position physique de la touche : KeyW/KeyA/KeyS/KeyD correspondent
-  // à ZQSD sur un clavier AZERTY et à WASD sur un clavier QWERTY
-  const code = e.code;
-  if (key === 'ArrowUp' || code === 'KeyW') {
-    changerDirection(0, -1);
-  } else if (key === 'ArrowDown' || code === 'KeyS') {
-    changerDirection(0, 1);
-  } else if (key === 'ArrowLeft' || code === 'KeyA') {
-    changerDirection(-1, 0);
-  } else if (key === 'ArrowRight' || code === 'KeyD') {
-    changerDirection(1, 0);
+  const dir = directionDeTouche(code, false) || directionDeTouche(code, true);
+  if (dir) {
+    e.preventDefault(); // les flèches ne font pas défiler la page
+    changerDirection(...dir);
   }
 });
 
 document.addEventListener('keyup', (e) => {
-  if (e.key === ' ' || e.key === 'Spacebar') {
+  if (e.code === touches.boost) {
     arreterBoost();
   }
-  if (clavierPartage() && (e.code === 'ControlRight' || e.code === 'Numpad0')) {
+  if (clavierPartage() && (e.code === touches.boostJ2 || e.code === 'Numpad0')) {
     arreterBoost(joueurs[1]);
   }
 });
 
 // touches du mode coop sans manette : J1 à gauche du clavier (ZQSD / WASD, Espace, Maj gauche) + souris,
-// J2 autour des flèches (Ctrl droit ou 0 du pavé : boost, Maj droite : bouclier, Entrée : tir)
-const directionsJ1 = {KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0], KeyD: [1, 0]};
-const directionsJ2 = {ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0]};
-
+// J2 autour des flèches (Ctrl droit ou 0 du pavé : boost, Maj droite : bouclier, Entrée : tir) ; modifiables dans ⚙️ Options
 function toucheCoop(e) {
   const code = e.code;
   const [j1, j2] = joueurs;
+  const dirJ1 = directionDeTouche(code, false), dirJ2 = directionDeTouche(code, true);
 
-  if (directionsJ1[code]) {
-    changerDirection(...directionsJ1[code], j1);
-  } else if (directionsJ2[code]) {
+  if (dirJ1) {
+    e.preventDefault();
+    changerDirection(...dirJ1, j1);
+  } else if (dirJ2) {
     e.preventDefault(); // les flèches ne font pas défiler la page
-    changerDirection(...directionsJ2[code], j2);
-  } else if (e.key === ' ' || e.key === 'Spacebar') {
+    changerDirection(...dirJ2, j2);
+  } else if (code === touches.boost) {
     e.preventDefault();
     if (!e.repeat) actionPrincipale(j1);
-  } else if (code === 'ControlRight' || code === 'Numpad0') {
+  } else if (code === touches.boostJ2 || code === 'Numpad0') {
     e.preventDefault();
     if (!e.repeat) actionPrincipale(j2);
-  } else if (code === 'ShiftLeft') {
+  } else if (code === touches.bouclier) {
     if (!e.repeat) activerBouclier(j1);
-  } else if (code === 'ShiftRight') {
+  } else if (code === touches.bouclierJ2) {
     if (!e.repeat) activerBouclier(j2);
-  } else if (code === 'Enter' || code === 'NumpadEnter') {
+  } else if (code === touches.tirJ2 || code === 'NumpadEnter') {
     e.preventDefault();
     if (waitingToStart || gameOver) actionPrincipale(j2);
     else tenterTir(j2);
-  } else if (code === 'Backspace') {
+  } else if (code === touches.rollbackJ2) {
     e.preventDefault();
     rollbackManuel(j2);
   }
@@ -10668,6 +10942,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
 
+  if (optionsOuvertes) {
+    manetteDansOptions(vientDAppuyer);
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
+
   if (succesOuvert) {
     manetteDansSucces(dy, vientDAppuyer);
     boutonsManettePrecedents[numero] = etat;
@@ -10719,8 +10999,8 @@ function lireUneManette(pad, numero, now) {
       const angle = Math.atan2(ry, rx);
       joueur.viseeAuto = false; // le joueur vise lui-même
       joueur.viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
-      joueur.mouseX = Math.max(0, Math.min(canvas.width, tourelle.x + Math.cos(angle) * distanceViseeManette));
-      joueur.mouseY = Math.max(0, Math.min(canvas.height, tourelle.y + Math.sin(angle) * distanceViseeManette));
+      joueur.mouseX = Math.max(0, Math.min(largeurPlateau, tourelle.x + Math.cos(angle) * distanceViseeManette));
+      joueur.mouseY = Math.max(0, Math.min(hauteurPlateau, tourelle.y + Math.sin(angle) * distanceViseeManette));
     }
 
     if (vientDAppuyer(MANETTE.A)) actionPrincipale(joueur);
@@ -10827,20 +11107,23 @@ const pagesAide = [
               ['☰', 'Bouton Menu', 'buffs, options, aide, tutoriel']
             ]
           : [
-              ['⬆️', 'Flèches, ZQSD ou WASD', 'se déplacer'],
-              ['🚀', 'Espace', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-              capacitesActives.bouclier ? ['🛡️', 'Maj (Shift)', 'bouclier 2s (recharge 15s)'] : null,
+              ['⬆️', nomTouchesDirection(true) + ' ou ' + nomTouchesDirection(false), 'se déplacer'],
+              ['🚀', nomTouche(touches.boost), capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              capacitesActives.bouclier ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
               ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
-              ['🧪', 'B', 'menu des buffs'],
-              ['❓', 'H', 'cette aide  •  T sur l\'écran de départ : tutoriel'],
-              ['🏆', 'U', 'tes succès'],
-              ['⏸️', 'P ou Échap', 'pause']
+              ['🧪', nomTouche(touches.buffs), 'menu des buffs'],
+              ['❓', nomTouche(touches.aide), 'cette aide  •  ' + nomTouche(touches.tuto) + ' sur l\'écran de départ : tutoriel'],
+              ['🏆', nomTouche(touches.succes), 'tes succès'],
+              ['⚙️', nomTouche(touches.options), 'options : volume, plein écran (' + nomTouche(touches.pleinEcran) + '), touches'],
+              ['⏸️', nomTouche(touches.pause) + ' ou Échap', 'pause']
             ];
       lignes.filter(Boolean).forEach(([i, t, x]) => zone.appendChild(ligneAide(i, t, x)));
       if (enCoop()) {
         zone.appendChild(paragrapheAide(clavierPartage()
-          ? 'Coop sans manette : J1 joue à gauche du clavier (ZQSD, Espace, Maj gauche, souris), J2 autour des flèches (Ctrl droit, Maj droite, Entrée pour tirer, Retour arrière pour le rollback).'
+          ? 'Coop sans manette : J1 joue avec ' + nomTouchesDirection(false) + ', ' + nomTouche(touches.boost) + ', ' + nomTouche(touches.bouclier) +
+            ' et la souris ; J2 avec ' + nomTouchesDirection(true) + ', ' + nomTouche(touches.boostJ2) + ', ' + nomTouche(touches.bouclierJ2) +
+            ', ' + nomTouche(touches.tirJ2) + ' pour tirer, ' + nomTouche(touches.rollbackJ2) + ' pour le rollback. Tout se change dans ⚙️ Options.'
           : 'Coop : J1 joue au clavier et à la souris, la manette joue J2.'));
       }
     }
@@ -11114,7 +11397,7 @@ document.getElementById('tutoBtn').addEventListener('click', () => {
 window.addEventListener('keydown', (e) => {
   if (!aideOuverte) return;
   e.stopImmediatePropagation();
-  if (e.key === 'Escape' || e.code === 'KeyH') {
+  if (e.key === 'Escape' || e.code === touches.aide) {
     e.preventDefault();
     fermerAide();
   } else if (e.key === 'ArrowLeft' || e.code === 'KeyA') {
@@ -11339,7 +11622,7 @@ const astuces = [
     cle: 'blessure',
     cible: () => joueursEnJeu().some(j => j.lives < maxLives) ? centreCase(joueurActif.snake[0]) : null,
     texte: () => 'Aïe ! Un coup coûte 1 ❤️ et 1 segment.' +
-      (capacitesActives.bouclier ? ' Le bouclier (' + texteCommande('Maj', 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
+      (capacitesActives.bouclier ? ' Le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
   },
   {
     cle: 'rollback',
@@ -11351,7 +11634,7 @@ const astuces = [
     cle: 'buffMenu',
     cible: () => joueurs.some(j => performance.now() < j.laserBuffUntil || performance.now() < j.autoAimBuffUntil ||
       performance.now() < j.buffInvincibleUntil || performance.now() < j.doublePointsUntil) ||
-      performance.now() < freezeIndicatorUntil ? {x: canvas.width / 2, y: 8} : null,
+      performance.now() < freezeIndicatorUntil ? {x: largeurPlateau / 2, y: 8} : null,
     texte: () => 'Buff actif ! Son temps restant est affiché en haut. ' +
       texteCommande('Touche B', 'Y / Triangle', 'Menu ☰') + ' : choisir les buffs possibles.'
   }
@@ -11421,9 +11704,9 @@ function dessinerBulle(texte, cibleX, cibleY, options = {}) {
   const distance = 26;
   let enHaut = cibleY - distance - h > 4;
   if (options.position === 'bas') enHaut = false;
-  let x = Math.max(4, Math.min(canvas.width - w - 4, cibleX - w / 2));
+  let x = Math.max(4, Math.min(largeurPlateau - w - 4, cibleX - w / 2));
   let y = enHaut ? cibleY - distance - h : cibleY + distance;
-  y = Math.max(4, Math.min(canvas.height - h - 4, y));
+  y = Math.max(4, Math.min(hauteurPlateau - h - 4, y));
 
   const apparition = options.apparition === undefined ? 1 : options.apparition;
   ctx.globalAlpha = apparition;
@@ -11926,6 +12209,415 @@ document.getElementById('editeurTexteFermer').addEventListener('click', () => {
   editeurTexteEl.classList.remove('ouvert');
 });
 // ============================================================
+// --- Options : volume, plein écran, taille du plateau, touches ---
+// ============================================================
+// Ouvert par « ⚙️ Options » du menu ☰, le bouton ⚙️ à côté du plateau ou la touche O (modifiable).
+// Il met la partie en pause comme l'aide. Les réglages sont gardés dans le navigateur (snakeOptions, js/01-base.js).
+//
+// Plateau sur grand écran : le jeu calcule toujours sur 400 x 400 (largeurPlateau), mais sur ordinateur le
+// canvas prend toute la hauteur de l'écran (HUD à gauche) et son image a autant de pixels que l'écran en
+// affiche (devicePixelRatio compris) : echelleRendu fois 400, appliqué par ctx.setTransform au début de chaque image.
+
+let optionTaillePlateau = lireOption('taillePlateau', 'ecran'); // 'ecran' | 'classique'
+let optionQualite = lireOption('qualite', 'haute'); // 'haute' | 'moyenne' | 'basse'
+const echelleMaxQualite = {haute: 6, moyenne: 3, basse: 1};
+const echelleMaxEnLigne = 2; // l'hôte envoie au plus 800 x 800 à son ami
+
+// --- Taille du plateau ---
+function enPleinEcran() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+
+// nombre de pixels réels du canvas, d'après sa taille à l'écran
+function majResolutionPlateau() {
+  const cote = canvas.clientWidth;
+  if (!cote) return; // plateau caché (menu ☰ ouvert) : on garde la résolution actuelle
+  let max = echelleMaxQualite[optionQualite] || echelleMaxQualite.haute;
+  if (enLigne && enLigne.role === 'hote') max = Math.min(max, echelleMaxEnLigne);
+  const echelle = Math.min(max, Math.max(1, cote * (window.devicePixelRatio || 1) / largeurPlateau));
+  const largeur = Math.round(largeurPlateau * echelle);
+  if (canvas.width !== largeur) {
+    canvas.width = largeur; // vide aussi le canvas : la prochaine image redessine tout
+    canvas.height = Math.round(hauteurPlateau * echelle);
+  }
+  echelleRendu = canvas.width / largeurPlateau;
+  ctx.setTransform(echelleRendu, 0, 0, echelleRendu, 0, 0);
+  majInfoAffichage();
+}
+
+// taille du plateau à l'écran (ordinateur) ; sur écran tactile, c'est la disposition qui la donne (js/18-disposition.js)
+function ajusterTaillePlateau() {
+  const corps = document.body;
+  const adapte = optionTaillePlateau === 'ecran' && !corps.classList.contains('mode-tactile') && !enEcranInvite();
+  corps.classList.toggle('plateau-adapte', adapte);
+  // textes et boutons agrandis avec l'écran : 1,2 en 1080p, 1,6 en 1440p, 2,4 en 4K
+  const zoom = adapte ? Math.max(1, Math.min(2.4, Math.min(innerHeight / 900, innerWidth / 1600))) : 1;
+  corps.style.setProperty('--zoom-interface', zoom);
+  if (!adapte) {
+    corps.classList.remove('plateau-large');
+    corps.style.removeProperty('--cote-plateau');
+    majResolutionPlateau();
+    return;
+  }
+  const marge = 16; // padding du body
+  const bordure = 8; // bordure du canvas, des deux côtés
+  const largeurDispo = innerWidth - marge * 2, hauteurDispo = innerHeight - marge * 2;
+  const boutons = 56 * zoom; // ☰ ❓ ⚙️ à droite du plateau
+  const colonneInfos = 250 * zoom, ecart = 24;
+  // HUD à gauche, plateau sur toute la hauteur : dès que la fenêtre est assez large
+  const coteLarge = Math.floor(Math.min(hauteurDispo, largeurDispo - colonneInfos - ecart - boutons));
+  if (coteLarge >= 440) {
+    corps.classList.add('plateau-large');
+    corps.style.setProperty('--colonne-infos', colonneInfos + 'px');
+    corps.style.setProperty('--cote-plateau', (coteLarge - bordure) + 'px');
+  } else {
+    // fenêtre étroite : HUD au-dessus, comme avant, mais le plateau prend la place qui reste
+    corps.classList.remove('plateau-large');
+    const conteneur = document.getElementById('plateauConteneur');
+    const haut = conteneur.getBoundingClientRect().top - document.getElementById('gameColumn').getBoundingClientRect().top;
+    const reserveBas = 70; // message et bouton Rejouer sous le plateau
+    const cote = Math.floor(Math.max(Math.min(400, innerWidth - 48),
+      Math.min(largeurDispo - (innerWidth > 600 ? boutons * 2 : 0), hauteurDispo - haut - reserveBas)));
+    corps.style.setProperty('--cote-plateau', (cote - bordure) + 'px');
+  }
+  majResolutionPlateau();
+}
+
+let ajustementPrevu = false;
+function prevoirAjustementPlateau() {
+  if (ajustementPrevu) return;
+  ajustementPrevu = true;
+  requestAnimationFrame(() => {
+    ajustementPrevu = false;
+    ajusterTaillePlateau();
+  });
+}
+window.addEventListener('resize', prevoirAjustementPlateau);
+// passage en écran tactile, menu ☰ ouvert ou fermé, écran de l'invité en ligne...
+new MutationObserver(prevoirAjustementPlateau).observe(document.body, {attributes: true, attributeFilter: ['class']});
+// le canvas change de taille (disposition tactile, plein écran) : on refait sa résolution
+if (window.ResizeObserver) new ResizeObserver(() => majResolutionPlateau()).observe(canvas);
+// zoom du navigateur ou écran changé (devicePixelRatio) sans redimensionner la fenêtre
+(function surveillerDensite() {
+  const requete = matchMedia('(resolution: ' + (window.devicePixelRatio || 1) + 'dppx)');
+  const changement = () => {
+    requete.removeEventListener('change', changement);
+    prevoirAjustementPlateau();
+    surveillerDensite();
+  };
+  requete.addEventListener('change', changement);
+})();
+
+// --- Plein écran ---
+function basculerPleinEcran() {
+  const page = document.documentElement;
+  try {
+    if (enPleinEcran()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else if (page.requestFullscreen) {
+      page.requestFullscreen({navigationUI: 'hide'}).catch(() => {});
+    } else if (page.webkitRequestFullscreen) {
+      page.webkitRequestFullscreen();
+    }
+  } catch (e) {
+    // plein écran refusé (iPhone, cadre) : rien à faire
+  }
+}
+document.addEventListener('fullscreenchange', () => majMenuOptions());
+document.addEventListener('webkitfullscreenchange', () => majMenuOptions());
+
+// --- Panneau ---
+const actionsTouches = [
+  {groupe: '🐍 Joueur 1 (et solo)'},
+  {action: 'haut', nom: 'Haut'},
+  {action: 'bas', nom: 'Bas'},
+  {action: 'gauche', nom: 'Gauche'},
+  {action: 'droite', nom: 'Droite'},
+  {action: 'boost', nom: 'Démarrer, boost'},
+  {action: 'bouclier', nom: 'Bouclier'},
+  {groupe: '🐍 Joueur 2 (coop au clavier, marche aussi en solo)'},
+  {action: 'hautJ2', nom: 'Haut'},
+  {action: 'basJ2', nom: 'Bas'},
+  {action: 'gaucheJ2', nom: 'Gauche'},
+  {action: 'droiteJ2', nom: 'Droite'},
+  {action: 'boostJ2', nom: 'Démarrer, boost'},
+  {action: 'bouclierJ2', nom: 'Bouclier'},
+  {action: 'tirJ2', nom: 'Tir (visée auto)'},
+  {action: 'rollbackJ2', nom: 'Rollback'},
+  {groupe: '📋 Menus'},
+  {action: 'pause', nom: 'Pause'},
+  {action: 'buffs', nom: 'Menu des buffs'},
+  {action: 'aide', nom: 'Aide'},
+  {action: 'succes', nom: 'Succès'},
+  {action: 'tuto', nom: 'Tutoriel'},
+  {action: 'options', nom: 'Options'},
+  {action: 'pleinEcran', nom: 'Plein écran'}
+];
+const nomsActions = {};
+actionsTouches.forEach(a => { if (a.action) nomsActions[a.action] = a.nom + (a.action.endsWith('J2') ? ' (J2)' : ''); });
+// touches gardées par le navigateur ou par le jeu
+const touchesReservees = ['Escape', 'Tab', 'F5', 'F11', 'F12', 'MetaLeft', 'MetaRight', 'ContextMenu'];
+
+const optionsMenuEl = document.createElement('div');
+optionsMenuEl.id = 'optionsMenu';
+optionsMenuEl.setAttribute('role', 'dialog');
+optionsMenuEl.setAttribute('aria-modal', 'true');
+optionsMenuEl.setAttribute('aria-labelledby', 'optionsTitre');
+optionsMenuEl.innerHTML = `
+  <div id="optionsPanel">
+    <h2 id="optionsTitre">⚙️ Options</h2>
+    <div id="optionsContenu">
+      <h3>🔊 Son</h3>
+      <div class="options-ligne">
+        <label for="optionsVolume">Effets sonores</label>
+        <input type="range" id="optionsVolume" min="0" max="100" step="5">
+        <span id="optionsVolumeValeur" class="options-valeur"></span>
+      </div>
+      <div class="options-ligne">
+        <span>Son</span>
+        <button id="optionsMuet" class="options-bascule"></button>
+      </div>
+      <p class="options-note">Le jeu n'a pas de musique : ce volume règle tous les bruitages.</p>
+
+      <h3>🖥️ Affichage</h3>
+      <div class="options-ligne">
+        <span>Plein écran</span>
+        <button id="optionsPleinEcran" class="options-bascule"></button>
+      </div>
+      <div class="options-ligne">
+        <span>Taille du plateau</span>
+        <div class="options-choix" id="optionsTaille">
+          <button data-valeur="ecran">Tout l'écran</button>
+          <button data-valeur="classique">Classique</button>
+        </div>
+      </div>
+      <div class="options-ligne">
+        <span>Qualité d'image</span>
+        <div class="options-choix" id="optionsQualite">
+          <button data-valeur="haute">Haute</button>
+          <button data-valeur="moyenne">Moyenne</button>
+          <button data-valeur="basse">Basse</button>
+        </div>
+      </div>
+      <p class="options-note" id="optionsInfoAffichage"></p>
+
+      <h3>⌨️ Touches</h3>
+      <p class="options-note">Clique sur une touche puis appuie sur la nouvelle. Une touche déjà prise est échangée.
+        Fixes : Échap (pause, fermer), clic gauche (tir), clic droit (rollback).</p>
+      <div id="optionsTouches"></div>
+      <div id="optionsTouchesMessage" class="options-note"></div>
+    </div>
+    <div id="optionsActions">
+      <button id="optionsTouchesDefaut">↺ Touches par défaut</button>
+      <button id="optionsFermer">Fermer</button>
+    </div>
+  </div>`;
+document.body.appendChild(optionsMenuEl);
+
+const optionsTouchesEl = document.getElementById('optionsTouches');
+const optionsVolumeEl = document.getElementById('optionsVolume');
+let optionsOuvertes = false;
+let optionsOntMisEnPause = false;
+let actionEnAttente = null; // touche en cours de changement
+
+actionsTouches.forEach(a => {
+  if (a.groupe) {
+    const titre = document.createElement('h4');
+    titre.textContent = a.groupe;
+    optionsTouchesEl.appendChild(titre);
+    return;
+  }
+  const ligne = document.createElement('div');
+  ligne.className = 'options-ligne options-touche';
+  const libelle = document.createElement('span');
+  libelle.textContent = a.nom;
+  const bouton = document.createElement('button');
+  bouton.dataset.action = a.action;
+  bouton.addEventListener('click', () => attendreTouche(a.action));
+  ligne.append(libelle, bouton);
+  optionsTouchesEl.appendChild(ligne);
+});
+
+function majInfoAffichage() {
+  const info = document.getElementById('optionsInfoAffichage');
+  if (!info) return;
+  const cote = canvas.clientWidth;
+  info.textContent = cote
+    ? 'Plateau : ' + cote + ' px à l\'écran, image de ' + canvas.width + ' px.' +
+      (optionQualite !== 'haute' ? ' Choisis Haute pour une image plus nette.' : ' Baisse la qualité si le jeu saccade.')
+    : '';
+}
+
+function majMenuOptions() {
+  if (!optionsMenuEl) return;
+  optionsVolumeEl.value = volumeEffets;
+  document.getElementById('optionsVolumeValeur').textContent = volumeEffets + ' %';
+  const muet = document.getElementById('optionsMuet');
+  muet.textContent = isMuted ? '🔇 Coupé' : '🔊 Activé';
+  muet.classList.toggle('actif', !isMuted);
+  const plein = document.getElementById('optionsPleinEcran');
+  plein.textContent = (enPleinEcran() ? '✔ Oui' : 'Non') + '  (' + nomTouche(touches.pleinEcran) + ')';
+  plein.classList.toggle('actif', enPleinEcran());
+  document.querySelectorAll('#optionsTaille button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionTaillePlateau));
+  document.querySelectorAll('#optionsQualite button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionQualite));
+  optionsTouchesEl.querySelectorAll('button').forEach(b => {
+    const action = b.dataset.action;
+    b.textContent = action === actionEnAttente ? 'Appuie sur une touche…' : nomTouche(touches[action]);
+    b.classList.toggle('en-attente', action === actionEnAttente);
+    b.classList.toggle('modifiee', touches[action] !== touchesParDefaut[action]);
+  });
+  majInfoAffichage();
+}
+
+function sauverTouches() {
+  const differentes = {};
+  for (const action in touches) {
+    if (touches[action] !== touchesParDefaut[action]) differentes[action] = touches[action];
+  }
+  ecrireOption('touches', differentes);
+}
+
+function attendreTouche(action) {
+  actionEnAttente = actionEnAttente === action ? null : action;
+  document.getElementById('optionsTouchesMessage').textContent = actionEnAttente ? 'Échap : annuler.' : '';
+  majMenuOptions();
+}
+
+function choisirTouche(code) {
+  const action = actionEnAttente;
+  actionEnAttente = null;
+  const message = document.getElementById('optionsTouchesMessage');
+  if (touchesReservees.includes(code)) {
+    message.textContent = nomTouche(code) + ' est réservée, choisis-en une autre.';
+    actionEnAttente = action;
+    majMenuOptions();
+    return;
+  }
+  const ancienne = touches[action];
+  const autre = Object.keys(touches).find(a => a !== action && touches[a] === code);
+  touches[action] = code;
+  if (autre) {
+    touches[autre] = ancienne;
+    message.textContent = nomTouche(code) + ' servait à « ' + nomsActions[autre] + ' », qui prend ' + nomTouche(ancienne) + '.';
+  } else {
+    message.textContent = '';
+  }
+  sauverTouches();
+  majMenuOptions();
+}
+
+function ouvrirOptions() {
+  if (menuBuffsOuvert) fermerMenuBuffs();
+  if (aideOuverte) fermerAide();
+  if (succesOuvert) fermerSucces();
+  fermerMenuTactile();
+  if (!optionsOuvertes) {
+    optionsOuvertes = true;
+    optionsOntMisEnPause = false;
+    if (!enEcranInvite()) {
+      // pendant le compte à rebours, la pause n'existe pas encore : on revient à l'écran de départ
+      if (countdownActive) {
+        countdownActive = false;
+        waitingToStart = true;
+      }
+      if (!isPaused && !waitingToStart && !gameOver) {
+        togglePause();
+        optionsOntMisEnPause = true;
+      }
+      joueurs.forEach(j => arreterBoost(j));
+    }
+  }
+  actionEnAttente = null;
+  document.getElementById('optionsTouchesMessage').textContent = '';
+  optionsMenuEl.classList.add('ouvert');
+  majMenuOptions();
+}
+
+function fermerOptions() {
+  if (!optionsOuvertes) return;
+  optionsOuvertes = false;
+  actionEnAttente = null;
+  optionsMenuEl.classList.remove('ouvert');
+  if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réappuie sur un bouton
+  if (optionsOntMisEnPause && isPaused) togglePause();
+  optionsOntMisEnPause = false;
+}
+
+optionsVolumeEl.addEventListener('input', () => {
+  volumeEffets = Number(optionsVolumeEl.value);
+  ecrireOption('volumeEffets', volumeEffets);
+  majVolumeAudio();
+  if (isMuted && volumeEffets > 0) toggleMute(); // monter le volume rallume le son
+  else majMenuOptions();
+});
+// petit son à la fin du réglage, pour entendre le nouveau volume
+optionsVolumeEl.addEventListener('change', () => playApplePickupSound());
+document.getElementById('optionsMuet').addEventListener('click', toggleMute);
+document.getElementById('optionsPleinEcran').addEventListener('click', basculerPleinEcran);
+document.querySelectorAll('#optionsTaille button').forEach(b => b.addEventListener('click', () => {
+  optionTaillePlateau = b.dataset.valeur;
+  ecrireOption('taillePlateau', optionTaillePlateau);
+  ajusterTaillePlateau();
+  majMenuOptions();
+}));
+document.querySelectorAll('#optionsQualite button').forEach(b => b.addEventListener('click', () => {
+  optionQualite = b.dataset.valeur;
+  ecrireOption('qualite', optionQualite);
+  majResolutionPlateau();
+  majMenuOptions();
+}));
+document.getElementById('optionsTouchesDefaut').addEventListener('click', () => {
+  touches = {...touchesParDefaut};
+  actionEnAttente = null;
+  sauverTouches();
+  document.getElementById('optionsTouchesMessage').textContent = 'Touches d\'origine remises.';
+  majMenuOptions();
+});
+document.getElementById('optionsFermer').addEventListener('click', fermerOptions);
+optionsMenuEl.addEventListener('click', (e) => {
+  if (e.target === optionsMenuEl) fermerOptions(); // clic sur le fond sombre
+});
+document.getElementById('optionsMenuBtn').addEventListener('click', () => ouvrirOptions());
+document.getElementById('optionsJeuBtn').addEventListener('click', (e) => {
+  e.currentTarget.blur();
+  ouvrirOptions();
+});
+
+// tant que le panneau est ouvert, il garde le clavier : Échap ou O le ferme, ou la touche attendue est choisie
+window.addEventListener('keydown', (e) => {
+  if (!optionsOuvertes) return;
+  e.stopImmediatePropagation();
+  if (actionEnAttente) {
+    e.preventDefault();
+    if (e.code === 'Escape') {
+      actionEnAttente = null;
+      document.getElementById('optionsTouchesMessage').textContent = '';
+      majMenuOptions();
+    } else if (e.code) {
+      choisirTouche(e.code);
+    }
+    return;
+  }
+  if (e.key === 'Escape' || e.code === touches.options) {
+    e.preventDefault();
+    fermerOptions();
+  } else if (e.code === touches.pleinEcran && !(e.target instanceof HTMLInputElement)) {
+    basculerPleinEcran();
+  }
+}, true);
+// le relâchement d'une touche choisie ne doit pas arriver au jeu (boost relâché, etc.)
+window.addEventListener('keyup', (e) => {
+  if (optionsOuvertes) e.stopImmediatePropagation();
+}, true);
+
+// manette : B ou Start ferme le panneau
+function manetteDansOptions(vientDAppuyer) {
+  if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.START)) fermerOptions();
+}
+
+majBoutonMuet();
+// premier réglage du plateau : à la fin du script (js/20-en-ligne.js), quand tout est chargé
+// ============================================================
 // --- Succès : 58 défis débloqués en jouant, gardés sur l'appareil ---
 // ============================================================
 // La liste est dans listeSucces. Le jeu signale ce qui se passe (succesKill, succesPomme,
@@ -12323,7 +13015,7 @@ function playSuccesSound() {
     gain.gain.linearRampToValueAtTime(0.14, debut + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, debut + (i === 3 ? 0.6 : 0.25));
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sortieAudio);
     osc.start(debut);
     osc.stop(debut + 0.6);
   });
@@ -12532,7 +13224,7 @@ document.getElementById('succesBtn').addEventListener('click', (e) => {
 window.addEventListener('keydown', (e) => {
   if (!succesOuvert) return;
   e.stopImmediatePropagation();
-  if (e.key === 'Escape' || e.code === 'KeyU') {
+  if (e.key === 'Escape' || e.code === touches.succes) {
     e.preventDefault();
     fermerSucces();
   } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyS') {
@@ -12584,7 +13276,7 @@ function cibleInteractive(el) {
 
 // un simple toucher hors partie : démarrer, reprendre, rejouer
 function toucherSimpleHorsPartie() {
-  if (menuBuffsOuvert || aideOuverte || succesOuvert) return;
+  if (menuBuffsOuvert || aideOuverte || succesOuvert || optionsOuvertes) return;
   if (isPaused) togglePause();
   else if (waitingToStart || gameOver) actionPrincipale();
 }
@@ -12710,8 +13402,8 @@ function appliquerStick(now) {
   const j1 = joueurs[0];
   avecJoueur(j1, () => {
     if (!turretPixelPos) return;
-    mouseX = Math.max(0, Math.min(canvas.width, turretPixelPos.x + Math.cos(angle) * distanceViseeTactile));
-    mouseY = Math.max(0, Math.min(canvas.height, turretPixelPos.y + Math.sin(angle) * distanceViseeTactile));
+    mouseX = Math.max(0, Math.min(largeurPlateau, turretPixelPos.x + Math.cos(angle) * distanceViseeTactile));
+    mouseY = Math.max(0, Math.min(hauteurPlateau, turretPixelPos.y + Math.sin(angle) * distanceViseeTactile));
     viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
   });
   if (distance / rayonStick >= seuilTirStick && partieTactileEnCours() && now >= prochainTirStick) {
@@ -12895,7 +13587,7 @@ function pommeMobileTuto(liste, vitesse, rayon, buffType) {
 const etapesTuto = [
   {
     cle: 'bouger', titre: 'Se déplacer', total: 4,
-    texte: () => texteCommande('Tourne avec les flèches ou ZQSD (WASD).', 'Tourne avec le stick gauche ou la croix.',
+    texte: () => texteCommande('Tourne avec ' + nomTouchesDirection(true).replace('Flèches', 'les flèches') + ' ou ' + nomTouchesDirection(false) + '.', 'Tourne avec le stick gauche ou la croix.',
       'Glisse le doigt dans la zone 👆 (ou appuie sur le pad) pour tourner.') + ' Fais 4 virages sans toucher les murs.',
     progres: t => t.virages
   },
@@ -12928,7 +13620,7 @@ const etapesTuto = [
       t.tueBouclier = false;
     },
     texte: t => (t.bouclierVu ? 'Bouclier actif : fonce dans l\'ennemi, il est détruit sans te blesser !'
-      : 'Active le bouclier (' + texteCommande('Maj', 'B ou LB', 'bouton 🛡️') + ') puis fonce dans l\'ennemi.') +
+      : 'Active le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B ou LB', 'bouton 🛡️') + ') puis fonce dans l\'ennemi.') +
       ' Hors tutoriel, il se recharge en 15 secondes.',
     progres: t => (t.bouclierVu ? 1 : 0) + (t.tueBouclier ? 1 : 0),
     entretien: (t, now) => {
@@ -12946,7 +13638,7 @@ const etapesTuto = [
     cle: 'boost', titre: 'Accélérer', total: 2,
     condition: () => capacitesActives.sprint,
     preparer: t => t.boostCumul = 0,
-    texte: () => 'Maintiens ' + texteCommande('Espace', 'A / Croix', 'le bouton Boost') +
+    texte: () => 'Maintiens ' + texteCommande(nomTouche(touches.boost), 'A / Croix', 'le bouton Boost') +
       ' pour aller plus vite. Garde-le 2 secondes.',
     progres: t => Math.floor(t.boostCumul / 1000),
     entretien: (t, now, dt) => {
@@ -13084,7 +13776,7 @@ function etapesTutoActives() {
 
 function lancerTuto() {
   if (enLigne || enEcranInvite()) {
-    spawnPopup(canvas.width / 2, canvas.height / 2, 'Tutoriel : quitte d\'abord le jeu en ligne', '#ffd54f');
+    spawnPopup(largeurPlateau / 2, hauteurPlateau / 2, 'Tutoriel : quitte d\'abord le jeu en ligne', '#ffd54f');
     return;
   }
   if (aideOuverte) fermerAide();
@@ -13235,7 +13927,7 @@ function dessinerTuto() {
   if (!t || gameOver) return;
   const etape = t.etape;
   const now = performance.now();
-  const w = canvas.width;
+  const w = largeurPlateau;
 
   // repère sur la cible : anneau qui pulse et flèche qui rebondit au-dessus
   const cible = !t.reussiA && etape.cible ? etape.cible() : null;
@@ -13265,7 +13957,7 @@ function dessinerTuto() {
     ? '🎓 ' + etape.titre
     : '🎓 Étape ' + numero + ' / ' + totalEtapes + ' · ' + etape.titre + (etape.total > 1 ? '  (' + fait + ' / ' + etape.total + ')' : '');
   const texte = t.reussiA ? '✔ Réussi ! Étape suivante…' : etape.texte(t);
-  const aide = modeEntree === 'clavier' ? 'Échap : pause  •  T : quitter le tutoriel'
+  const aide = modeEntree === 'clavier' ? 'Échap : pause  •  ' + nomTouche(touches.tuto) + ' : quitter le tutoriel'
     : modeEntree === 'manette' ? 'Start : pause  •  LT : aide et quitter' : 'Menu ☰ : quitter le tutoriel';
 
   ctx.save();
@@ -13277,7 +13969,7 @@ function dessinerTuto() {
   const tete = snake[0] && centreCase(snake[0]);
   const sous = (p, yPanneau) => p && p.y > yPanneau - 24 && p.y < yPanneau + h + 24 ? 1 : 0;
   const gene = yPanneau => 2 * sous(tete, yPanneau) + sous(cible, yPanneau);
-  const y = gene(6) < gene(canvas.height - h - 6) ? 6 : canvas.height - h - 6;
+  const y = gene(6) < gene(hauteurPlateau - h - 6) ? 6 : hauteurPlateau - h - 6;
   const couleur = t.reussiA || etape.cle === 'fin' ? '#69f0ae' : '#ffd54f';
 
   ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
@@ -13547,7 +14239,10 @@ async function creerPartieEnLigne() {
     }
     enLigne.invite = id;
     if (!enCoop()) changerModeJeu('coop');
-    if (!enLigne.flux) enLigne.flux = canvas.captureStream(imagesParSecondeEnLigne);
+    if (!enLigne.flux) {
+      majResolutionPlateau(); // image envoyée limitée en taille (js/18-options.js), fixée avant la capture
+      enLigne.flux = canvas.captureStream(imagesParSecondeEnLigne);
+    }
     envoyer({t: 'hote'}, id);
     salon.addStream(enLigne.flux, {target: id});
     enLigne.dernierHud = '';
@@ -13586,8 +14281,8 @@ function appliquerCommandeInvite(m) {
       if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) break;
       j.viseeAuto = false;
       j.viseeManuelleJusqua = performance.now() + dureeViseeManuelle;
-      j.mouseX = x * canvas.width;
-      j.mouseY = y * canvas.height;
+      j.mouseX = x * largeurPlateau;
+      j.mouseY = y * hauteurPlateau;
       tenterTir(j);
       break;
     }
@@ -13671,6 +14366,7 @@ function quitterEnLigne(garderPanneau) {
   if (!enLigne) return;
   const etait = enLigne;
   enLigne = null;
+  if (etait.role === 'hote') majResolutionPlateau(); // l'image n'est plus envoyée : pleine résolution
   try { etait.salon.leave(); } catch (e) {}
   if (etait.flux) etait.flux.getTracks().forEach(t => t.stop());
   if (etait.role === 'hote') gamepadStatusEl.textContent = '';
@@ -13728,26 +14424,24 @@ function enEcranInvite() {
   return document.body.classList.contains('invite-en-ligne');
 }
 
-// clavier de l'invité : on capte les touches avant le jeu local (qui est arrêté)
-const directionsInvite = {
-  ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-  KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0], KeyD: [1, 0]
-};
+// clavier de l'invité : on capte les touches avant le jeu local (qui est arrêté) ;
+// mêmes touches qu'en solo (⚙️ Options), plus Entrée ou Ctrl pour tirer
 window.addEventListener('keydown', (e) => {
-  if (!enEcranInvite()) return;
+  if (!enEcranInvite() || optionsOuvertes) return;
   e.stopImmediatePropagation();
-  const dir = directionsInvite[e.code] || directionsInvite[e.key];
+  const dir = directionDeTouche(e.code, false) || directionDeTouche(e.code, true);
   if (dir) { e.preventDefault(); envoyerAHote({t: 'dir', dx: dir[0], dy: dir[1]}); return; }
   if (e.repeat) return;
-  if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); envoyerAHote({t: 'action'}); }
-  else if (e.key === 'Shift') envoyerAHote({t: 'bouclier'});
-  else if (e.key === 'Enter' || e.code === 'KeyF' || e.key === 'Control') { e.preventDefault(); envoyerAHote({t: 'tir'}); }
-  else if (e.code === 'KeyP' || e.key === 'Escape') envoyerAHote({t: 'pause'});
+  if (e.code === touches.boost) { e.preventDefault(); envoyerAHote({t: 'action'}); }
+  else if (e.code === touches.bouclier || e.code === touches.bouclierJ2) envoyerAHote({t: 'bouclier'});
+  else if (e.code === touches.tirJ2 || e.key === 'Enter' || e.key === 'Control') { e.preventDefault(); envoyerAHote({t: 'tir'}); }
+  else if (e.code === touches.pause || e.key === 'Escape') envoyerAHote({t: 'pause'});
+  else if (e.code === touches.pleinEcran) basculerPleinEcran();
 }, true);
 window.addEventListener('keyup', (e) => {
-  if (!enEcranInvite()) return;
+  if (!enEcranInvite() || optionsOuvertes) return;
   e.stopImmediatePropagation();
-  if (e.key === ' ' || e.key === 'Spacebar') envoyerAHote({t: 'relache'});
+  if (e.code === touches.boost) envoyerAHote({t: 'relache'});
 }, true);
 
 // boutons de l'invité
@@ -13839,6 +14533,9 @@ function lireManetteInvite() {
   }
   requestAnimationFrame(lireManetteInvite);
 }
+
+// premier réglage du plateau à la taille de l'écran (js/18-options.js), une fois tout le script chargé
+ajusterTaillePlateau();
 </script>
 
 <script>
