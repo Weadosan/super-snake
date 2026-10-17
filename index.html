@@ -1193,6 +1193,122 @@
   }
   #aideTuto, #aideFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
   #aideAstuces:not(.actif) { opacity: 0.6; }
+
+  /* --- Succès (js/18-succes.js) --- */
+  #succesBannieres {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100002;
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+  }
+  .succes-banniere {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 10px;
+    background: rgba(20, 20, 31, 0.94);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .succes-banniere.visible { opacity: 1; transform: none; }
+  .succes-banniere-icone { font-size: 26px; line-height: 1; }
+  .succes-banniere-texte { display: flex; flex-direction: column; }
+  .succes-banniere-texte small { color: #ffd700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .succes-banniere-texte b { font-size: 15px; }
+
+  #succesMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #succesMenu.ouvert { display: flex; }
+  #succesPanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 560px;
+    height: min(680px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #succesPanel h2 { margin: 0 0 8px 0; font-size: 18px; text-align: center; }
+  #succesResume { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  #succesCompte { white-space: nowrap; font-weight: bold; color: #ffd700; }
+  .succes-barre {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .succes-barre > div { height: 100%; background: #ffd700; border-radius: 4px; }
+  .succes-barre.petite { height: 4px; margin-top: 4px; flex: none; }
+  .succes-barre.petite > div { background: var(--accent); }
+  #succesContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
+  #succesContenu h3 { margin: 12px 0 6px 0; font-size: 14px; color: var(--accent); }
+  #succesContenu h3:first-child { margin-top: 0; }
+  .succes-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+  .succes-carte {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.62;
+  }
+  .succes-carte.obtenu { opacity: 1; border-color: rgba(255, 215, 0, 0.7); background: rgba(255, 215, 0, 0.07); }
+  .succes-carte-icone { font-size: 20px; width: 26px; flex-shrink: 0; text-align: center; line-height: 1.2; }
+  .succes-carte:not(.obtenu) .succes-carte-icone { filter: grayscale(1); }
+  .succes-carte-texte { display: flex; flex-direction: column; font-size: 13px; min-width: 0; flex: 1; }
+  .succes-carte-texte small { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+  .succes-carte-texte small.succes-carte-date { color: #ffd700; }
+  .succes-carte-texte small.succes-carte-progres { font-size: 10px; }
+  #succesActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  #succesActions button {
+    padding: 8px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #succesFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #statsSucces h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  .stats-succes-liste { display: flex; flex-wrap: wrap; gap: 4px; }
+  .stats-succes-puce {
+    padding: 2px 6px;
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 10px;
+    font-size: 12px;
+  }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
@@ -1247,6 +1363,7 @@
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
       <button id="enLigneBtn">🌐 En ligne</button>
       <button id="aideMenuBtn">❓ Aide</button>
+      <button id="succesBtn">🏆 Succès</button>
       <button id="tutoBtn">🎓 Tutoriel</button>
     </div>
     <div id="gamepadStatus"></div>
@@ -1946,6 +2063,8 @@ function tryRollback() {
 
   lives -= coutRollback;
   updateHeartsDisplay();
+  succesCoeurPerdu();
+  succesRollback(recul);
 
   invulnerableUntil = now + invulnerabilityDuration + rollbackRewindMs;
   slowMotionUntil = now + slowMotionDuration;
@@ -2245,6 +2364,7 @@ function reanimerJoueur(j) {
 // +1 vie, ou en coop réanimation du coéquipier éliminé
 function ramasserCoeur(x, y) {
   stats.heartsCollected++;
+  succesCoeur();
   const aReanimer = joueurs.find(j => j.elimine);
   if (aReanimer && !gameOver && reanimerJoueur(aReanimer)) {
     spawnPopup(x, y, '❤️ ' + aReanimer.nom + ' réanimé !', '#ff6b6b');
@@ -2939,6 +3059,7 @@ function init() {
     startTime: performance.now()
   };
   statsPanelEl.style.display = 'none';
+  succesNouvellePartie();
   killThreshold = randomKillThreshold();
   heartPickup = null;
   lootApples = [];
@@ -2998,6 +3119,7 @@ function addScore(amount) {
   const isDoubled = amount > 0 && performance.now() < doublePointsUntil;
   const finalAmount = isDoubled ? amount * 2 : amount;
   score = Math.max(0, score + finalAmount);
+  if (isDoubled) succesPointsX2(finalAmount);
   scoreEl.textContent = 'Score : ' + score;
   return finalAmount;
 }
@@ -3207,7 +3329,8 @@ function dropBossLoot(x, y) {
     vx: Math.cos(angleGold) * goldenAppleSpeed,
     vy: Math.sin(angleGold) * goldenAppleSpeed,
     radius: goldenAppleRadius,
-    changeDirTimer: 800 + Math.random() * 1000
+    changeDirTimer: 800 + Math.random() * 1000,
+    ne: performance.now()
   });
 
   // 5 pommes classiques éparpillées autour du point de mort, sur des cases libres
@@ -3229,6 +3352,7 @@ function dropBossLoot(x, y) {
 function awardEnemyKill(e, facon) {
   stats.enemiesKilled++;
   joueurActif.ennemis++;
+  succesKill(e);
   if (!facon && estGele(e)) facon = 'glace';
 
   if (e.isBoss) {
@@ -3273,7 +3397,8 @@ function awardEnemyKill(e, facon) {
       vx: Math.cos(angle) * goldenAppleSpeed,
       vy: Math.sin(angle) * goldenAppleSpeed,
       radius: goldenAppleRadius,
-      changeDirTimer: 800 + Math.random() * 1000
+      changeDirTimer: 800 + Math.random() * 1000,
+      ne: performance.now() // pour le succès « Rattrapé ! »
     });
   } else if (!blueApples.length && buffsActifs.length && Math.random() < reglagesDifficulte().chancePommeBleue) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
@@ -3315,6 +3440,7 @@ function applyRandomBuff(x, y, forcedType) {
   if (!type) return;
   const now = performance.now();
   const label = buffLabels[type];
+  succesBuff(type);
 
   spawnPopup(x, y, label.text, label.color);
   spawnParticles(x, y, label.color, 16);
@@ -3347,6 +3473,7 @@ function applyRandomBuff(x, y, forcedType) {
       enemies = [];
       toKill.forEach(e => awardEnemyKill(e));
       if (toKill.length) registerKills(toKill.length);
+      succesExplosion(toKill.length);
       spawnShockwave(x, y, '#ff6d00', 400);
       triggerShake(10);
       playExplosionBuffSound();
@@ -3358,6 +3485,7 @@ function applyRandomBuff(x, y, forcedType) {
       break;
     }
     case 'doublepoints': {
+      if (now >= doublePointsUntil) joueurActif.pointsX2 = 0; // nouveau Points x2 : succès « Jackpot »
       doublePointsUntil = Math.max(now, doublePointsUntil) + dureeBuff('doublepoints');
       playBuffActivateSound();
       break;
@@ -3533,6 +3661,7 @@ function spawnBoss(forcedPos) {
     phase: 0
   });
   spawnShockwave(pos.x, pos.y, '#7a0000', 200);
+  succesBossApparu();
   triggerShake(8);
 }
 
@@ -3855,6 +3984,7 @@ function updateCombat(deltaMs) {
         declencherFlash('#ffffff');
         playGoldenApplePickupSound();
         tongueUntil = performance.now() + tongueDuration;
+        succesPomme('or', goldenApple);
         goldenApples.splice(i, 1);
       }
     }
@@ -3867,6 +3997,7 @@ function updateCombat(deltaMs) {
         j.pommes++;
         applyRandomBuff(blueApple.x, blueApple.y, blueApple.buffType);
         tongueUntil = performance.now() + tongueDuration;
+        succesPomme('bleue');
         blueApples.splice(i, 1);
       }
     }
@@ -4063,6 +4194,7 @@ function collisionsEnnemisSerpent() {
       enemies = enemies.filter((_, i) => !hitEnemies.has(i));
 
       lives -= 1;
+      succesCoeurPerdu();
       declencherFlash('#ff1744');
       updateHeartsDisplay();
       playLoseHeartSound();
@@ -4088,6 +4220,7 @@ function collisionsEnnemisSerpent() {
     });
 
     if (destroyedEnemies.size) {
+      if (isShielded) succesParade();
       destroyedEnemies.forEach(ei => awardEnemyKill(enemies[ei]));
       enemies = enemies.filter((_, i) => !destroyedEnemies.has(i));
       registerKills(destroyedEnemies.size);
@@ -4184,6 +4317,7 @@ function tick() {
     triggerShake(6);
 
     lives -= 1;
+    succesCoeurPerdu();
     declencherFlash('#ff1744');
     updateHeartsDisplay();
     playLoseHeartSound();
@@ -4210,6 +4344,8 @@ function tick() {
       triggerShake(6);
 
       lives -= 1;
+      succesCoeurPerdu();
+      succesCollisionJoueurs();
       declencherFlash('#ff1744');
       updateHeartsDisplay();
       playLoseHeartSound();
@@ -4225,6 +4361,7 @@ function tick() {
   snake.unshift(head);
   stats.maxSnakeLength = Math.max(stats.maxSnakeLength, snake.length);
   majCompteurSegments();
+  succesLongueur(snake.length);
   checkEndgameTransition();
 
   if (!hasWon && snake.length >= winSnakeLength) {
@@ -4243,6 +4380,7 @@ function tick() {
     spawnPopup(px0, py0, '+' + gained0, '#4caf50');
     placeFood();
     playApplePickupSound();
+    succesPomme('normale');
     tongueUntil = performance.now() + tongueDuration;
   } else if (lootIndex !== -1) {
     stats.applesEaten++;
@@ -4253,6 +4391,7 @@ function tick() {
     spawnPopup(px, py, '+' + gained1, '#4caf50');
     playApplePickupSound();
     lootApples.splice(lootIndex, 1);
+    succesPomme('butin');
     tongueUntil = performance.now() + tongueDuration;
   } else if (pendingGrowth > 0) {
     pendingGrowth--; // croissance différée (pomme en or) : la queue n'est pas retirée ce tick
@@ -4383,6 +4522,7 @@ function renderLoop(now) {
         j.lastTickTime = now;
       });
       stats.startTime = now;
+      succesDebutPartie();
     }
   } else {
     const timeScale = now < slowMotionUntil ? slowMotionFactor : 1;
@@ -4390,6 +4530,7 @@ function renderLoop(now) {
     if (!gameOver) updateCombat(frameDelta * timeScale);
     majTuto(now, frameDelta);
     majAstuces(now);
+    majSucces(now, frameDelta);
 
     // chaque serpent avance à son propre rythme (le boost de l'un ne presse pas l'autre)
     joueurs.forEach(j => {
@@ -8000,6 +8141,7 @@ function triggerWin() {
 
   restartBtn.style.display = 'inline-block';
   playVictorySound();
+  succesFinPartie(true);
   saveHighscore(score);
   showEndGameStats();
   launchFireworks();
@@ -8132,6 +8274,7 @@ function endGame() {
     infos.meilleur = isFinite(meilleur) ? meilleur : null;
     infos.nouveauRecord = infos.score > 0 && (infos.meilleur === null || infos.score > infos.meilleur);
   }).catch(() => {}).finally(() => saveHighscore(infos.score));
+  succesFinPartie(false);
   showEndGameStats();
 }
 
@@ -8236,6 +8379,15 @@ function dessinerEcranGameOver() {
     });
   }
 
+  // succès gagnés pendant la partie (la liste est sous le jeu)
+  if (!go.joueurs && partieSucces.debloques.length) {
+    const n = partieSucces.debloques.length;
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px ' + currentTheme.fontFamily;
+    ctx.fillText('🏆 ' + n + (n > 1 ? ' succès débloqués' : ' succès débloqué'), w / 2, 318);
+  }
+
   // invite à rejouer, selon la commande utilisée
   if (age > 700 && Math.floor(now / 500) % 2 === 0) {
     const invite = modeEntree === 'manette' ? 'Appuie sur A pour rejouer'
@@ -8285,8 +8437,9 @@ function showEndGameStats() {
     rows.map(([label, value]) =>
       '<li><span>' + label + '</span><span class="stat-value">' + value + '</span></li>'
     ).join('') +
-    '</ul>';
+    '</ul><div id="statsSucces"></div>';
   statsPanelEl.style.display = 'block';
+  majRecapSucces();
 }
 
 // --- Tableau des meilleurs scores (persistant via window.storage si disponible) ---
@@ -8361,9 +8514,11 @@ function renderHighscores(list, highlightScore) {
 
 async function saveHighscore(finalScore) {
   const list = await loadHighscores();
-  list.push({score: finalScore, date: Date.now()});
+  const entree = {score: finalScore, date: Date.now()};
+  list.push(entree);
   list.sort((a, b) => b.score - a.score);
   const trimmed = list.slice(0, maxHighscores);
+  if (finalScore > 0 && trimmed.includes(entree)) succesPodium();
   await saveHighscoresList(trimmed);
   renderHighscores(trimmed, finalScore);
 }
@@ -8394,7 +8549,7 @@ function definirModeEntree(mode) {
 
 // Espace / bouton A / bouton Boost : démarrer, rejouer, ou accélérer (maintenu)
 function actionPrincipale(j = joueurs[0]) {
-  if (isPaused || menuBuffsOuvert || aideOuverte) return;
+  if (isPaused || menuBuffsOuvert || aideOuverte || succesOuvert) return;
   if (gameOver) {
     if (ecranGameOver && performance.now() - ecranGameOver.debut < 700) return;
     init();
@@ -8531,6 +8686,11 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === 'KeyH') {
     ouvrirAide();
+    return;
+  }
+
+  if (e.code === 'KeyU') {
+    ouvrirSucces();
     return;
   }
 
@@ -8865,6 +9025,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
 
+  if (succesOuvert) {
+    manetteDansSucces(dy, vientDAppuyer);
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
+
   if (menuBuffsOuvert) {
     // navigation dans le menu : haut/bas avec répétition si maintenu, A pour basculer, B/Y/Select pour fermer
     if (dy !== 0) {
@@ -9025,6 +9191,7 @@ const pagesAide = [
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
               ['🧪', 'B', 'menu des buffs'],
               ['❓', 'H', 'cette aide  •  T sur l\'écran de départ : tutoriel'],
+              ['🏆', 'U', 'tes succès'],
               ['⏸️', 'P ou Échap', 'pause']
             ];
       lignes.filter(Boolean).forEach(([i, t, x]) => zone.appendChild(ligneAide(i, t, x)));
@@ -9206,6 +9373,7 @@ function afficherPageAide(n) {
   h.textContent = page.onglet + ' ' + page.titre;
   aideContenuEl.appendChild(h);
   page.remplir(aideContenuEl);
+  succesPageAide(pageAide);
   aideContenuEl.scrollTop = 0;
   aideOngletsEl.querySelectorAll('button').forEach((b, i) => {
     b.classList.toggle('actif', i === pageAide);
@@ -10115,6 +10283,627 @@ document.getElementById('editeurTexteFermer').addEventListener('click', () => {
   editeurTexteEl.classList.remove('ouvert');
 });
 // ============================================================
+// --- Succès : 58 défis débloqués en jouant, gardés sur l'appareil ---
+// ============================================================
+// La liste est dans listeSucces. Le jeu signale ce qui se passe (succesKill, succesPomme,
+// succesLongueur, succesFinPartie...) et majSucces vérifie à chaque image ce qui dépend du temps
+// ou du score. Une bannière annonce chaque déblocage, l'écran 🏆 (bouton « 🏆 Succès » du menu ☰,
+// touche U) les montre tous, et la fin de partie rappelle ceux gagnés pendant la partie.
+// Rien ne se débloque pendant le tutoriel, sauf « Bon élève » et « Curieux ».
+// En ligne, l'hôte fait tourner la partie et envoie chaque déblocage à son ami, qui le garde aussi.
+
+const cleStockageSucces = 'snakeSucces';
+const skinsSucces = ['urchin', 'ghost', 'pixel', 'slime', 'bat'];
+const themesSucces = ['neon', 'espace', 'lave', 'ocean'];
+
+const categoriesSucces = [
+  {cle: 'debut', nom: '🐣 Premiers pas'},
+  {cle: 'survie', nom: '📏 Longueur et survie'},
+  {cle: 'combat', nom: '🔫 Combat'},
+  {cle: 'boss', nom: '👑 Boss'},
+  {cle: 'pommes', nom: '🍎 Pommes et bonus'},
+  {cle: 'capacites', nom: '⏪ Capacités'},
+  {cle: 'difficulte', nom: '🔥 Difficulté'},
+  {cle: 'themes', nom: '🎨 Thèmes et skins'},
+  {cle: 'coop', nom: '👥 Coop et en ligne'},
+  {cle: 'score', nom: '⭐ Score et secrets'}
+];
+
+// progres : [valeur actuelle, objectif] pour les succès à compteur (barre de progression)
+const cumulSucces = () => succesSauves.cumul;
+const listeSucces = [
+  {id: 'premier_repas', cat: 'debut', icone: '🍏', nom: 'Premier repas', detail: 'Manger sa première pomme.'},
+  {id: 'bon_eleve', cat: 'debut', icone: '🎓', nom: 'Bon élève', detail: 'Terminer le tutoriel.'},
+  {id: 'curieux', cat: 'debut', icone: '❓', nom: 'Curieux', detail: 'Ouvrir les 6 pages de l\'aide.',
+    progres: () => [cumulSucces().pagesAide.length, 6]},
+  {id: 'premier_sang', cat: 'debut', icone: '🎯', nom: 'Premier sang', detail: 'Tuer son premier ennemi.'},
+  {id: 'premiere_chute', cat: 'debut', icone: '🩹', nom: 'Première chute', detail: 'Perdre sa première partie.'},
+
+  {id: 'ca_pousse', cat: 'survie', icone: '🌱', nom: 'Ça pousse', detail: 'Atteindre une longueur de 50.'},
+  {id: 'boa', cat: 'survie', icone: '🐍', nom: 'Boa', detail: 'Atteindre une longueur de 100.'},
+  {id: 'anaconda', cat: 'survie', icone: '🐉', nom: 'Anaconda', detail: 'Atteindre une longueur de 200 (les ennemis disparaissent).'},
+  {id: 'super_snake', cat: 'survie', icone: '🎆', nom: 'Super Snake', detail: 'Gagner une partie (longueur 400).'},
+  {id: 'increvable', cat: 'survie', icone: '⏱️', nom: 'Increvable', detail: 'Survivre 5 minutes dans une partie.'},
+  {id: 'marathon', cat: 'survie', icone: '🏃', nom: 'Marathon', detail: 'Survivre 15 minutes dans une partie.'},
+  {id: 'sans_egratignure', cat: 'survie', icone: '💎', nom: 'Sans une égratignure', detail: 'Atteindre 100 de long sans perdre un seul cœur.'},
+  {id: 'sur_le_fil', cat: 'survie', icone: '🧵', nom: 'Sur le fil', detail: 'Gagner une partie avec 1 seul cœur.'},
+
+  {id: 'chasseur', cat: 'combat', icone: '🏹', nom: 'Chasseur', detail: 'Tuer 50 ennemis dans une partie.'},
+  {id: 'exterminateur', cat: 'combat', icone: '💀', nom: 'Exterminateur', detail: 'Tuer 150 ennemis dans une partie.'},
+  {id: 'massacre', cat: 'combat', icone: '☠️', nom: 'Massacre', detail: 'Tuer 1 000 ennemis au total.',
+    progres: () => [cumulSucces().ennemis, 1000]},
+  {id: 'tireur_elite', cat: 'combat', icone: '🔭', nom: 'Tireur d\'élite', detail: 'Finir une partie avec 80 % de précision (au moins 50 tirs).'},
+  {id: 'gros_bras', cat: 'combat', icone: '💪', nom: 'Gros bras', detail: 'Tuer 25 ennemis résistants au total (Normal ou Difficile).',
+    progres: () => [cumulSucces().resistants, 25]},
+  {id: 'combo', cat: 'combat', icone: '⚡', nom: 'Combo', detail: 'Tuer 5 ennemis en moins de 3 secondes.'},
+  {id: 'pacifiste', cat: 'combat', icone: '🕊️', nom: 'Pacifiste', detail: 'Atteindre 50 de long sans tirer un seul coup.'},
+
+  {id: 'tueur_geant', cat: 'boss', icone: '👑', nom: 'Tueur de géant', detail: 'Vaincre un boss.'},
+  {id: 'trophees', cat: 'boss', icone: '🏅', nom: 'Collectionneur de trophées', detail: 'Vaincre 3 boss dans la même partie.'},
+  {id: 'boss_especes', cat: 'boss', icone: '🦔', nom: 'Boss de chaque espèce', detail: 'Vaincre le boss de chaque skin d\'ennemi (5 skins).',
+    progres: () => [cumulSucces().bossSkins.length, skinsSucces.length]},
+  {id: 'sans_trembler', cat: 'boss', icone: '🗿', nom: 'Sans trembler', detail: 'Vaincre un boss sans perdre de cœur pendant le combat.'},
+
+  {id: 'gourmand', cat: 'pommes', icone: '😋', nom: 'Gourmand', detail: 'Manger 500 pommes au total.',
+    progres: () => [cumulSucces().pommes, 500]},
+  {id: 'ruee_or', cat: 'pommes', icone: '🪙', nom: 'Ruée vers l\'or', detail: 'Manger 5 pommes en or dans une partie.'},
+  {id: 'rattrape', cat: 'pommes', icone: '🤾', nom: 'Rattrapé !', detail: 'Manger une pomme en or moins de 2 secondes après son apparition.'},
+  {id: 'butin', cat: 'pommes', icone: '🎁', nom: 'Butin', detail: 'Ramasser 20 pommes laissées par des ennemis.',
+    progres: () => [cumulSucces().butin, 20]},
+  {id: 'coeur_sur_la_main', cat: 'pommes', icone: '❤️', nom: 'Cœur sur la main', detail: 'Ramasser 10 cœurs bonus au total.',
+    progres: () => [cumulSucces().coeurs, 10]},
+  {id: 'panoplie', cat: 'pommes', icone: '🧪', nom: 'Panoplie complète', detail: 'Obtenir chacun des 6 buffs de la pomme bleue.',
+    progres: () => [cumulSucces().buffs.length, buffTypes.length]},
+  {id: 'grand_menage', cat: 'pommes', icone: '💥', nom: 'Grand ménage', detail: 'Tuer 10 ennemis d\'un coup avec l\'explosion générale.'},
+  {id: 'jackpot', cat: 'pommes', icone: '💰', nom: 'Jackpot', detail: 'Marquer 500 points pendant un seul Points x2.'},
+
+  {id: 'retour_futur', cat: 'capacites', icone: '⏪', nom: 'Retour vers le futur', detail: 'Faire un premier rollback.'},
+  {id: 'boucle_temporelle', cat: 'capacites', icone: '🌀', nom: 'Boucle temporelle', detail: 'Enchaîner 3 rollbacks (recul de 3 secondes ou plus).'},
+  {id: 'parade', cat: 'capacites', icone: '🛡️', nom: 'Parade parfaite', detail: 'Détruire un ennemi qui fonce sur ton bouclier.'},
+  {id: 'fou_volant', cat: 'capacites', icone: '🚀', nom: 'Fou du volant', detail: 'Sprinter 60 secondes au total dans une partie.'},
+  {id: 'ancienne', cat: 'capacites', icone: '📼', nom: 'À l\'ancienne', detail: 'Atteindre 100 de long avec bouclier et sprint désactivés toute la partie.'},
+
+  {id: 'echauffement', cat: 'difficulte', icone: '🟢', nom: 'Échauffement', detail: 'Atteindre 100 de long en Facile.'},
+  {id: 'serieux', cat: 'difficulte', icone: '🟡', nom: 'Sérieux', detail: 'Vaincre un boss en Normal.'},
+  {id: 'hardcore', cat: 'difficulte', icone: '🔴', nom: 'Hardcore', detail: 'Vaincre un boss en Difficile.'},
+  {id: 'legende', cat: 'difficulte', icone: '🏆', nom: 'Légende', detail: 'Gagner une partie en Difficile.'},
+  {id: 'tout_terrain', cat: 'difficulte', icone: '🧗', nom: 'Tout-terrain', detail: 'Gagner une partie dans chaque difficulté.',
+    progres: () => [cumulSucces().victoiresDiff.length, ordreDifficultes.length]},
+
+  {id: 'touriste', cat: 'themes', icone: '🧳', nom: 'Touriste', detail: 'Jouer une partie dans chacun des 4 thèmes.',
+    progres: () => [cumulSucces().themesJoues.length, themesSucces.length]},
+  {id: 'explorateur', cat: 'themes', icone: '🧭', nom: 'Explorateur', detail: 'Atteindre 100 de long dans chaque thème.',
+    progres: () => [cumulSucces().themes100.length, themesSucces.length]},
+  {id: 'bestiaire', cat: 'themes', icone: '📖', nom: 'Bestiaire', detail: 'Affronter chacun des 5 skins d\'ennemis.',
+    progres: () => [cumulSucces().skinsVus.length, skinsSucces.length]},
+  {id: 'maitre_elements', cat: 'themes', icone: '🌋', nom: 'Maître des éléments', detail: 'Gagner une partie dans chaque thème.',
+    progres: () => [cumulSucces().victoiresTheme.length, themesSucces.length]},
+
+  {id: 'duo', cat: 'coop', icone: '👥', nom: 'Duo', detail: 'Jouer une partie en coop.'},
+  {id: 'main_dans_main', cat: 'coop', icone: '🤝', nom: 'Main dans la main', detail: 'Vaincre un boss en coop.'},
+  {id: 'esprit_equipe', cat: 'coop', icone: '🎉', nom: 'Esprit d\'équipe', detail: 'Gagner une partie en coop.'},
+  {id: 'pas_tir_ami', cat: 'coop', icone: '🚧', nom: 'Pas de tir ami', detail: 'En coop avec la collision entre joueurs, atteindre 100 de long sans se rentrer dedans.'},
+  {id: 'connecte', cat: 'coop', icone: '🌐', nom: 'Connecté', detail: 'Jouer en ligne (créer ou rejoindre une partie).'},
+  {id: 'a_distance', cat: 'coop', icone: '📡', nom: 'À distance', detail: 'Vaincre un boss en ligne.'},
+
+  {id: 'score_1000', cat: 'score', icone: '4️⃣', nom: 'Score à 4 chiffres', detail: 'Marquer 1 000 points dans une partie.'},
+  {id: 'score_10000', cat: 'score', icone: '5️⃣', nom: 'Score à 5 chiffres', detail: 'Marquer 10 000 points dans une partie.'},
+  {id: 'podium', cat: 'score', icone: '🥇', nom: 'Podium', detail: 'Entrer dans le tableau des meilleurs scores.'},
+  {id: 'accro', cat: 'score', icone: '🎮', nom: 'Accro', detail: 'Jouer 50 parties.',
+    progres: () => [cumulSucces().parties, 50]},
+  {id: 'platine', cat: 'score', icone: '💠', nom: 'Platine', detail: 'Débloquer tous les autres succès.',
+    progres: () => [listeSucces.filter(s => s.id !== 'platine' && succesSauves.obtenus[s.id]).length, listeSucces.length - 1]},
+  {id: 'kamikaze', cat: 'score', icone: '💣', nom: 'Kamikaze', detail: 'Perdre dans les 5 premières secondes.', secret: true}
+];
+const succesParId = Object.create(null);
+listeSucces.forEach(s => succesParId[s.id] = s);
+
+// --- Sauvegarde : succès obtenus (avec leur date) et compteurs cumulés ---
+function succesVides() {
+  return {
+    obtenus: {}, // id -> date du déblocage (ms)
+    cumul: {
+      ennemis: 0, pommes: 0, butin: 0, coeurs: 0, resistants: 0, parties: 0,
+      pagesAide: [], buffs: [], bossSkins: [], themesJoues: [], themes100: [],
+      skinsVus: [], victoiresTheme: [], victoiresDiff: []
+    }
+  };
+}
+
+function chargerSucces() {
+  const donnees = succesVides();
+  try {
+    const lu = JSON.parse(localStorage.getItem(cleStockageSucces));
+    if (lu && typeof lu === 'object') {
+      if (lu.obtenus && typeof lu.obtenus === 'object') {
+        Object.keys(lu.obtenus).forEach(id => {
+          if (succesParId[id] && typeof lu.obtenus[id] === 'number') donnees.obtenus[id] = lu.obtenus[id];
+        });
+      }
+      const c = lu.cumul || {};
+      Object.keys(donnees.cumul).forEach(cle => {
+        const attendu = donnees.cumul[cle];
+        if (Array.isArray(attendu) ? Array.isArray(c[cle]) : typeof c[cle] === 'number') donnees.cumul[cle] = c[cle];
+      });
+    }
+  } catch (e) {
+    // stockage indisponible ou corrompu : on repart de zéro
+  }
+  return donnees;
+}
+
+let succesSauves = chargerSucces();
+let succesASauver = false; // compteurs modifiés depuis la dernière sauvegarde
+let derniereSauvegardeSucces = 0;
+
+function sauverSucces() {
+  succesASauver = false;
+  derniereSauvegardeSucces = performance.now();
+  try {
+    localStorage.setItem(cleStockageSucces, JSON.stringify(succesSauves));
+  } catch (e) {
+    // stockage indisponible : les succès valent pour cette session seulement
+  }
+}
+window.addEventListener('pagehide', () => {
+  if (succesASauver) sauverSucces();
+});
+
+function compterSucces(cle, n = 1) {
+  succesSauves.cumul[cle] += n;
+  succesASauver = true;
+  return succesSauves.cumul[cle];
+}
+
+// ajoute une valeur à une liste cumulée ; renvoie la taille de la liste
+function ajouterSucces(cle, valeur) {
+  const liste = succesSauves.cumul[cle];
+  if (!liste.includes(valeur)) {
+    liste.push(valeur);
+    succesASauver = true;
+  }
+  return liste.length;
+}
+
+// --- État propre à la partie en cours (remis à zéro par init) ---
+function nouvellePartieSucces() {
+  return {
+    commencee: false, // compte à rebours terminé
+    debloques: [], // ids gagnés pendant cette partie (rappel en fin de partie)
+    coeursPerdus: 0,
+    coeursPerdusAuBoss: null, // coeursPerdus au moment où le boss actuel est apparu
+    boss: 0,
+    kills: [], // instants des derniers kills (combo)
+    sprintMs: 0,
+    sansCapacites: true, // bouclier et sprint désactivés depuis le début
+    collisionOk: true, // collision entre joueurs activée depuis le début
+    toucheJoueur: false // un serpent est rentré dans l'autre
+  };
+}
+let partieSucces = nouvellePartieSucces();
+
+function succesNouvellePartie() {
+  if (succesASauver) sauverSucces();
+  partieSucces = nouvellePartieSucces();
+}
+
+// pas de succès pendant le tutoriel, ni sur l'écran de l'invité (c'est l'hôte qui fait tourner la partie)
+function succesActifs() {
+  return !tutoActif() && !enEcranInvite();
+}
+
+function debloquerSucces(id, depuisHote) {
+  const s = succesParId[id];
+  if (!s || succesSauves.obtenus[id]) return;
+  if (!depuisHote && tutoActif() && id !== 'bon_eleve' && id !== 'curieux') return;
+  succesSauves.obtenus[id] = Date.now();
+  sauverSucces();
+  partieSucces.debloques.push(id);
+  afficherBanniereSucces(s);
+  playSuccesSound();
+  // jeu en ligne : l'ami gagne le succès avec l'hôte
+  if (enLigne && enLigne.role === 'hote' && enLigne.invite) enLigne.envoyer({t: 'succes', id}, enLigne.invite);
+  if (gameOver) majRecapSucces();
+  if (succesOuvert) remplirEcranSucces();
+  if (id !== 'platine' && listeSucces.every(x => x.id === 'platine' || succesSauves.obtenus[x.id])) {
+    debloquerSucces('platine', depuisHote);
+  }
+}
+
+// --- Ce que le jeu signale ---
+function succesDebutPartie() {
+  if (!succesActifs()) return;
+  partieSucces.commencee = true;
+  if (compterSucces('parties') >= 50) debloquerSucces('accro');
+  if (ajouterSucces('themesJoues', currentThemeName) >= themesSucces.length) debloquerSucces('touriste');
+  if (enCoop()) debloquerSucces('duo');
+}
+
+function succesKill(e) {
+  if (!succesActifs()) return;
+  const now = performance.now();
+  debloquerSucces('premier_sang');
+  if (stats.enemiesKilled >= 50) debloquerSucces('chasseur');
+  if (stats.enemiesKilled >= 150) debloquerSucces('exterminateur');
+  if (compterSucces('ennemis') >= 1000) debloquerSucces('massacre');
+  if (!e.isBoss && e.maxHp >= 2 && compterSucces('resistants') >= 25) debloquerSucces('gros_bras');
+  partieSucces.kills = partieSucces.kills.filter(t => now - t < 3000);
+  partieSucces.kills.push(now);
+  if (partieSucces.kills.length >= 5) debloquerSucces('combo');
+
+  if (!e.isBoss) return;
+  partieSucces.boss++;
+  debloquerSucces('tueur_geant');
+  if (partieSucces.boss >= 3) debloquerSucces('trophees');
+  if (skinsSucces.includes(enemySkin) && ajouterSucces('bossSkins', enemySkin) >= skinsSucces.length) {
+    debloquerSucces('boss_especes');
+  }
+  if (partieSucces.coeursPerdusAuBoss !== null && partieSucces.coeursPerdus === partieSucces.coeursPerdusAuBoss) {
+    debloquerSucces('sans_trembler');
+  }
+  partieSucces.coeursPerdusAuBoss = null;
+  if (difficulte === 'normal') debloquerSucces('serieux');
+  if (difficulte === 'difficile') debloquerSucces('hardcore');
+  if (enCoop()) debloquerSucces('main_dans_main');
+  if (enLigne && enLigne.role === 'hote' && enLigne.invite) debloquerSucces('a_distance');
+}
+
+function succesBossApparu() {
+  partieSucces.coeursPerdusAuBoss = partieSucces.coeursPerdus;
+}
+
+// type : 'normale', 'butin', 'or' ou 'bleue' ; pomme : l'objet ramassé (pommes mobiles)
+function succesPomme(type, pomme) {
+  if (!succesActifs()) return;
+  debloquerSucces('premier_repas');
+  if (compterSucces('pommes') >= 500) debloquerSucces('gourmand');
+  if (type === 'butin' && compterSucces('butin') >= 20) debloquerSucces('butin');
+  if (type === 'or') {
+    if (stats.goldenApplesEaten >= 5) debloquerSucces('ruee_or');
+    if (pomme && pomme.ne && performance.now() - pomme.ne <= 2000) debloquerSucces('rattrape');
+  }
+}
+
+function succesPageAide(n) {
+  if (ajouterSucces('pagesAide', n) >= pagesAide.length) debloquerSucces('curieux');
+}
+
+function succesCoeur() {
+  if (succesActifs() && compterSucces('coeurs') >= 10) debloquerSucces('coeur_sur_la_main');
+}
+
+function succesCoeurPerdu() {
+  partieSucces.coeursPerdus++;
+}
+
+function succesBuff(type) {
+  if (succesActifs() && ajouterSucces('buffs', type) >= buffTypes.length) debloquerSucces('panoplie');
+}
+
+function succesExplosion(nombre) {
+  if (succesActifs() && nombre >= 10) debloquerSucces('grand_menage');
+}
+
+// points gagnés pendant le Points x2 du joueur actif (remis à zéro quand le buff démarre)
+function succesPointsX2(points) {
+  if (!succesActifs()) return;
+  joueurActif.pointsX2 = (joueurActif.pointsX2 || 0) + points;
+  if (joueurActif.pointsX2 >= 500) debloquerSucces('jackpot');
+}
+
+function succesRollback(recul) {
+  if (!succesActifs()) return;
+  debloquerSucces('retour_futur');
+  if (recul >= 3000) debloquerSucces('boucle_temporelle');
+}
+
+function succesParade() {
+  if (succesActifs()) debloquerSucces('parade');
+}
+
+function succesCollisionJoueurs() {
+  partieSucces.toucheJoueur = true;
+}
+
+// longueur du serpent du joueur actif après un déplacement
+function succesLongueur(longueur) {
+  if (!succesActifs()) return;
+  if (longueur >= 50) {
+    debloquerSucces('ca_pousse');
+    if (stats.shotsFired === 0) debloquerSucces('pacifiste');
+  }
+  if (longueur >= 200) debloquerSucces('anaconda');
+  if (longueur < 100) return;
+  debloquerSucces('boa');
+  if (partieSucces.coeursPerdus === 0) debloquerSucces('sans_egratignure');
+  if (difficulte === 'facile') debloquerSucces('echauffement');
+  if (partieSucces.sansCapacites) debloquerSucces('ancienne');
+  if (enCoop() && partieSucces.collisionOk && !partieSucces.toucheJoueur) debloquerSucces('pas_tir_ami');
+  if (ajouterSucces('themes100', currentThemeName) >= themesSucces.length) debloquerSucces('explorateur');
+}
+
+function succesFinPartie(victoire) {
+  if (!succesActifs()) return;
+  if (!victoire) {
+    debloquerSucces('premiere_chute');
+    if (partieSucces.commencee && performance.now() - stats.startTime < 5000) debloquerSucces('kamikaze');
+  }
+  if (stats.shotsFired >= 50 && stats.shotsHit / stats.shotsFired >= 0.8) debloquerSucces('tireur_elite');
+  if (victoire) {
+    debloquerSucces('super_snake');
+    if (joueursEnJeu().reduce((n, j) => n + j.lives, 0) === 1) debloquerSucces('sur_le_fil');
+    if (difficulte === 'difficile') debloquerSucces('legende');
+    if (enCoop()) debloquerSucces('esprit_equipe');
+    if (ajouterSucces('victoiresDiff', difficulte) >= ordreDifficultes.length) debloquerSucces('tout_terrain');
+    if (ajouterSucces('victoiresTheme', currentThemeName) >= themesSucces.length) debloquerSucces('maitre_elements');
+  }
+  sauverSucces();
+}
+
+// le score final vient d'entrer dans le tableau des meilleurs scores
+function succesPodium() {
+  if (succesActifs()) debloquerSucces('podium');
+}
+
+// à chaque image de jeu : temps de survie, score, sprint, options gardées depuis le début, skins affrontés
+function majSucces(now, delta) {
+  if (!partieSucces.commencee || gameOver || !succesActifs()) return;
+  const duree = now - stats.startTime;
+  if (duree >= 5 * 60000) debloquerSucces('increvable');
+  if (duree >= 15 * 60000) debloquerSucces('marathon');
+  if (score >= 1000) debloquerSucces('score_1000');
+  if (score >= 10000) debloquerSucces('score_10000');
+  if (capacitesActives.bouclier || capacitesActives.sprint) partieSucces.sansCapacites = false;
+  if (!capacitesActives.collisionJoueurs) partieSucces.collisionOk = false;
+  if (joueursEnJeu().some(j => j.boosting)) {
+    partieSucces.sprintMs += delta;
+    if (partieSucces.sprintMs >= 60000) debloquerSucces('fou_volant');
+  }
+  if (skinsSucces.includes(enemySkin) && enemies.some(e => !e.isBoss) &&
+      ajouterSucces('skinsVus', enemySkin) >= skinsSucces.length) {
+    debloquerSucces('bestiaire');
+  }
+  if (succesASauver && now - derniereSauvegardeSucces > 3000) sauverSucces();
+}
+
+// --- Son du déblocage : petit arpège montant ---
+function playSuccesSound() {
+  if (isMuted) return;
+  const ctx = getAudioCtx();
+  [783.99, 1046.5, 1318.51, 1567.98].forEach((freq, i) => { // Sol - Do - Mi - Sol
+    const debut = ctx.currentTime + i * 0.07;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, debut);
+    gain.gain.setValueAtTime(0.001, debut);
+    gain.gain.linearRampToValueAtTime(0.14, debut + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, debut + (i === 3 ? 0.6 : 0.25));
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(debut);
+    osc.stop(debut + 0.6);
+  });
+}
+
+// --- Bannière de déblocage (en haut de l'écran, sans mettre le jeu en pause) ---
+const bannieresSuccesEl = document.createElement('div');
+bannieresSuccesEl.id = 'succesBannieres';
+bannieresSuccesEl.setAttribute('aria-live', 'polite');
+document.body.appendChild(bannieresSuccesEl);
+const dureeBanniereSucces = 3200;
+const maxBannieresSucces = 3; // au-delà, les suivantes attendent leur tour
+let fileBannieresSucces = [];
+
+function afficherBanniereSucces(s) {
+  if (bannieresSuccesEl.children.length >= maxBannieresSucces) {
+    fileBannieresSucces.push(s);
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'succes-banniere';
+  const icone = document.createElement('span');
+  icone.className = 'succes-banniere-icone';
+  icone.textContent = s.icone;
+  const texte = document.createElement('span');
+  texte.className = 'succes-banniere-texte';
+  const titre = document.createElement('small');
+  titre.textContent = '🏆 Succès débloqué !';
+  const nom = document.createElement('b');
+  nom.textContent = s.nom;
+  texte.appendChild(titre);
+  texte.appendChild(nom);
+  el.appendChild(icone);
+  el.appendChild(texte);
+  bannieresSuccesEl.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+  setTimeout(() => {
+    el.classList.remove('visible');
+    setTimeout(() => {
+      el.remove();
+      if (fileBannieresSucces.length) afficherBanniereSucces(fileBannieresSucces.shift());
+    }, 350);
+  }, dureeBanniereSucces);
+}
+
+// --- Rappel en fin de partie (sous les stats) ---
+function majRecapSucces() {
+  const zone = document.getElementById('statsSucces');
+  if (!zone) return;
+  zone.textContent = '';
+  if (!partieSucces.debloques.length) return;
+  const h = document.createElement('h3');
+  h.textContent = '🏆 Succès débloqués pendant la partie';
+  zone.appendChild(h);
+  const liste = document.createElement('div');
+  liste.className = 'stats-succes-liste';
+  partieSucces.debloques.forEach(id => {
+    const s = succesParId[id];
+    const puce = document.createElement('span');
+    puce.className = 'stats-succes-puce';
+    puce.textContent = s.icone + ' ' + s.nom;
+    puce.title = s.detail;
+    liste.appendChild(puce);
+  });
+  zone.appendChild(liste);
+}
+
+// --- Écran des succès ---
+const succesMenuEl = document.createElement('div');
+succesMenuEl.id = 'succesMenu';
+succesMenuEl.setAttribute('role', 'dialog');
+succesMenuEl.setAttribute('aria-modal', 'true');
+succesMenuEl.innerHTML = `
+  <div id="succesPanel">
+    <h2>🏆 Succès</h2>
+    <div id="succesResume">
+      <span id="succesCompte"></span>
+      <div class="succes-barre"><div id="succesBarreTotale"></div></div>
+    </div>
+    <div id="succesContenu"></div>
+    <div id="succesActions">
+      <button id="succesReinitialiser">↺ Réinitialiser</button>
+      <button id="succesFermer">Fermer</button>
+    </div>
+  </div>`;
+document.body.appendChild(succesMenuEl);
+const succesContenuEl = document.getElementById('succesContenu');
+
+let succesOuvert = false;
+let succesAMisEnPause = false; // l'écran a mis la partie en pause : il la relance en se fermant
+
+function dateSucces(ms) {
+  const d = new Date(ms);
+  return d.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short', year: 'numeric'});
+}
+
+function carteSucces(s) {
+  const obtenu = succesSauves.obtenus[s.id];
+  const cache = s.secret && !obtenu;
+  const carte = document.createElement('div');
+  carte.className = 'succes-carte' + (obtenu ? ' obtenu' : '');
+  const icone = document.createElement('span');
+  icone.className = 'succes-carte-icone';
+  icone.textContent = obtenu ? s.icone : cache ? '❔' : '🔒';
+  const texte = document.createElement('span');
+  texte.className = 'succes-carte-texte';
+  const nom = document.createElement('b');
+  nom.textContent = cache ? '???' : s.nom;
+  const detail = document.createElement('small');
+  detail.textContent = cache ? 'Succès secret : continue de jouer pour le découvrir.' : s.detail;
+  texte.appendChild(nom);
+  texte.appendChild(detail);
+  if (obtenu) {
+    const date = document.createElement('small');
+    date.className = 'succes-carte-date';
+    date.textContent = '✔ ' + dateSucces(obtenu);
+    texte.appendChild(date);
+  } else if (s.progres) {
+    const [valeur, objectif] = s.progres();
+    const barre = document.createElement('div');
+    barre.className = 'succes-barre petite';
+    const rempli = document.createElement('div');
+    rempli.style.width = Math.min(100, valeur / objectif * 100) + '%';
+    barre.appendChild(rempli);
+    const nombre = document.createElement('small');
+    nombre.className = 'succes-carte-progres';
+    nombre.textContent = Math.min(valeur, objectif).toLocaleString('fr-FR') + ' / ' + objectif.toLocaleString('fr-FR');
+    texte.appendChild(barre);
+    texte.appendChild(nombre);
+  }
+  carte.appendChild(icone);
+  carte.appendChild(texte);
+  return carte;
+}
+
+function remplirEcranSucces() {
+  const total = listeSucces.length;
+  const obtenus = listeSucces.filter(s => succesSauves.obtenus[s.id]).length;
+  document.getElementById('succesCompte').textContent = obtenus + ' / ' + total + ' débloqués';
+  document.getElementById('succesBarreTotale').style.width = (obtenus / total * 100) + '%';
+  const defilement = succesContenuEl.scrollTop;
+  succesContenuEl.textContent = '';
+  categoriesSucces.forEach(c => {
+    const deLaCategorie = listeSucces.filter(s => s.cat === c.cle);
+    const h = document.createElement('h3');
+    h.textContent = c.nom + ' (' + deLaCategorie.filter(s => succesSauves.obtenus[s.id]).length + ' / ' + deLaCategorie.length + ')';
+    succesContenuEl.appendChild(h);
+    const grille = document.createElement('div');
+    grille.className = 'succes-grille';
+    deLaCategorie.forEach(s => grille.appendChild(carteSucces(s)));
+    succesContenuEl.appendChild(grille);
+  });
+  succesContenuEl.scrollTop = defilement;
+}
+
+function ouvrirSucces() {
+  if (enEcranInvite()) return;
+  if (aideOuverte) fermerAide();
+  if (menuBuffsOuvert) fermerMenuBuffs();
+  if (typeof fermerMenuTactile === 'function') fermerMenuTactile();
+  if (!succesOuvert) {
+    succesOuvert = true;
+    succesAMisEnPause = false;
+    if (countdownActive) {
+      countdownActive = false;
+      waitingToStart = true;
+    }
+    if (!isPaused && !waitingToStart && !gameOver) {
+      togglePause();
+      succesAMisEnPause = true;
+    }
+    joueurs.forEach(j => arreterBoost(j));
+    succesContenuEl.scrollTop = 0;
+  }
+  if (succesASauver) sauverSucces();
+  remplirEcranSucces();
+  succesMenuEl.classList.add('ouvert');
+}
+
+function fermerSucces() {
+  if (!succesOuvert) return;
+  succesOuvert = false;
+  succesMenuEl.classList.remove('ouvert');
+  if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réappuie sur un bouton
+  if (succesAMisEnPause && isPaused) togglePause();
+  succesAMisEnPause = false;
+}
+
+document.getElementById('succesFermer').addEventListener('click', fermerSucces);
+document.getElementById('succesReinitialiser').addEventListener('click', () => {
+  if (!window.confirm('Effacer tous les succès et leurs compteurs ?')) return;
+  succesSauves = succesVides();
+  partieSucces.debloques = [];
+  sauverSucces();
+  remplirEcranSucces();
+});
+succesMenuEl.addEventListener('click', (e) => {
+  if (e.target === succesMenuEl) fermerSucces();
+});
+document.getElementById('succesBtn').addEventListener('click', (e) => {
+  e.currentTarget.blur();
+  ouvrirSucces();
+});
+
+// tant que l'écran est ouvert, le clavier le pilote : flèches pour défiler, Échap ou U pour fermer
+window.addEventListener('keydown', (e) => {
+  if (!succesOuvert) return;
+  e.stopImmediatePropagation();
+  if (e.key === 'Escape' || e.code === 'KeyU') {
+    e.preventDefault();
+    fermerSucces();
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyS') {
+    e.preventDefault();
+    succesContenuEl.scrollTop += (e.key === 'ArrowDown' || e.code === 'KeyS') ? 60 : -60;
+  }
+}, true);
+
+// manette sur l'écran des succès : haut/bas = défiler, B / A / Start = fermer
+function manetteDansSucces(dy, vientDAppuyer) {
+  if (dy !== 0) succesContenuEl.scrollTop += dy * 10;
+  if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.A) || vientDAppuyer(MANETTE.START)) fermerSucces();
+}
+// ============================================================
 // --- Commandes tactiles (smartphone / tablette) ---
 // ============================================================
 // Zone de déplacement : glisser pour tourner (on peut enchaîner les virages sans lever le doigt).
@@ -10147,12 +10936,12 @@ function partieTactileEnCours() {
 
 // boutons, menus et liens gardent leur comportement normal
 function cibleInteractive(el) {
-  return !!(el && el.closest && el.closest('button, a, input, select, label, #buffMenu, #aideMenu, #highscoreSidebar'));
+  return !!(el && el.closest && el.closest('button, a, input, select, label, #buffMenu, #aideMenu, #succesMenu, #highscoreSidebar'));
 }
 
 // un simple toucher hors partie : démarrer, reprendre, rejouer
 function toucherSimpleHorsPartie() {
-  if (menuBuffsOuvert || aideOuverte) return;
+  if (menuBuffsOuvert || aideOuverte || succesOuvert) return;
   if (isPaused) togglePause();
   else if (waitingToStart || gameOver) actionPrincipale();
 }
@@ -10727,6 +11516,7 @@ function quitterTuto(termine) {
     } catch (e) {
       // stockage indisponible : on reproposera simplement le tutoriel
     }
+    debloquerSucces('bon_eleve');
   }
   init(); // retour à l'écran de départ, dans le mode du joueur
 }
@@ -11119,6 +11909,7 @@ async function creerPartieEnLigne() {
     salon.addStream(enLigne.flux, {target: id});
     enLigne.dernierHud = '';
     etatEnLigne('✅ Ton ami est connecté : il joue le serpent J2. Lance la partie !', code);
+    debloquerSucces('connecte');
     gamepadStatusEl.textContent = '🌐 Ami connecté (J2)';
   };
   salon.onPeerLeave = (id) => {
@@ -11200,11 +11991,14 @@ async function rejoindrePartieEnLigne(saisie) {
       enLigne.hote = id;
       enLigne.connecte = true;
       entrerEcranInvite();
+      debloquerSucces('connecte');
     } else if (m.t === 'plein' && !enLigne.hote) {
       quitterEnLigne(true);
       etatEnLigne('Cette partie a déjà deux joueurs.');
     } else if (m.t === 'hud' && id === enLigne.hote && Array.isArray(m.textes)) {
       afficherHudInvite(m.textes);
+    } else if (m.t === 'succes' && id === enLigne.hote && typeof m.id === 'string') {
+      debloquerSucces(m.id, true); // succès gagné ensemble dans la partie de l'hôte
     }
   });
   salon.onPeerStream = (flux, id) => {
