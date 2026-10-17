@@ -659,6 +659,28 @@
     #optionsBtn { top: 6px; right: 6px; }
   }
   body.mode-tactile #optionsBtn { display: none; }
+  /* bouton Aide, sous le bouton Options */
+  #aideBtn {
+    position: absolute;
+    top: 48px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #aideBtn:hover { background: var(--accent); }
+  @media (max-width: 600px) {
+    #aideBtn { top: 6px; right: 52px; }
+  }
+  body.mode-tactile #aideBtn { display: none; }
   /* ordinateur, page épurée comme sur téléphone : les réglages sont dans le menu ☰ */
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
@@ -1096,6 +1118,81 @@
   }
   #inviteBoost { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
   #inviteAide { font-size: 11px; color: var(--text-muted); text-align: center; max-width: 520px; }
+
+  /* --- Aide (js/18-aide.js) --- */
+  #aideMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #aideMenu.ouvert { display: flex; }
+  #aidePanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 440px;
+    height: min(640px, 100%); /* même taille pour toutes les pages : le panneau ne saute pas */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #aidePanel h2 { margin: 0 0 10px 0; font-size: 18px; text-align: center; }
+  #aideOnglets { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+  #aideOnglets button, #aideNavigation button {
+    width: 42px;
+    height: 36px;
+    font-size: 18px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #aideOnglets button.actif { border: 2px solid var(--accent); background: rgba(255, 255, 255, 0.08); }
+  #aideContenu {
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    padding-right: 4px;
+  }
+  #aideContenu h3 { margin: 0 0 8px 0; font-size: 15px; color: var(--accent); }
+  #aideContenu canvas#aideCanvasEnnemis {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .aide-ligne { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
+  .aide-icone { font-size: 19px; width: 26px; flex-shrink: 0; text-align: center; line-height: 1.2; }
+  .aide-icone canvas { width: 22px; height: 22px; }
+  .aide-texte { display: flex; flex-direction: column; font-size: 13px; }
+  .aide-texte small { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+  .aide-note { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px 0; }
+  #aideNavigation { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0 8px 0; font-size: 12px; color: var(--text-muted); }
+  #aideActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  #aideActions button {
+    padding: 8px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #aideTuto, #aideFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #aideAstuces:not(.actif) { opacity: 0.6; }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
@@ -1149,6 +1246,8 @@
       <button id="difficulteBtn">🟡 Normal</button>
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
       <button id="enLigneBtn">🌐 En ligne</button>
+      <button id="aideMenuBtn">❓ Aide</button>
+      <button id="tutoBtn">🎓 Tutoriel</button>
     </div>
     <div id="gamepadStatus"></div>
 
@@ -1166,6 +1265,7 @@
       <canvas id="game" width="400" height="400"></canvas>
       <!-- bouton Options sur ordinateur (sur téléphone, c'est le bouton ☰ placé avec les commandes) -->
       <button id="optionsBtn" title="Options">☰</button>
+      <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
     </div>
     <div id="touchControls">
       <button class="touch-btn" id="touchBoost">🚀 Boost</button>
@@ -2053,6 +2153,10 @@ function teteLaPlusProche(x, y) {
 // le joueur actif n'a plus de vie (ou a percuté un mur sans rollback possible) :
 // fin de partie en solo ; en coop il sort, jusqu'à ce que son coéquipier ramasse un cœur
 function eliminerJoueur() {
+  if (tutoActif()) {
+    tutoSauverJoueur(); // on ne perd pas pendant le tutoriel
+    return;
+  }
   if (!enCoop()) {
     endGame();
     return;
@@ -2813,6 +2917,8 @@ function spawnPopup(x, y, text, color) {
 }
 
 function init() {
+  finirTutoSiActif(); // une partie relancée arrête le tutoriel (js/18-tuto.js)
+  astuceEnCours = null;
   // un serpent par joueur, avec ses vies, buffs, bouclier et commandes (voir 04-joueurs.js)
   baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // avant creerJoueurs
   creerJoueurs();
@@ -3156,6 +3262,9 @@ function awardEnemyKill(e, facon) {
     playExplosionSound();
   }
 
+  // pendant le tutoriel, chaque étape place elle-même ses pommes : pas de butin au hasard
+  if (tutoActif()) return;
+
   // chance qu'il laisse une pomme en or mobile (rare, grosse récompense)
   if (!goldenApples.length && Math.random() < goldenAppleChance) {
     const angle = Math.random() * Math.PI * 2;
@@ -3257,6 +3366,7 @@ function applyRandomBuff(x, y, forcedType) {
 }
 
 function registerKills(count) {
+  if (tutoActif()) return; // ni cœur bonus ni boss au compteur pendant le tutoriel
   killCount += count;
   if (killCount >= killThreshold) {
     killCount -= killThreshold;
@@ -3637,8 +3747,11 @@ function updateCombat(deltaMs) {
   }
 
   // spawn périodique d'ennemis, avec avertissement 1s avant à la position exacte
-  // (désactivé une fois le mode endgame atteint : plus aucun ennemi ne réapparaît)
-  if (!endgameNoEnemies) {
+  // (désactivé une fois le mode endgame atteint : plus aucun ennemi ne réapparaît,
+  // et pendant le tutoriel, où chaque étape place ses ennemis)
+  if (tutoActif()) {
+    // rien : voir js/18-tuto.js
+  } else if (!endgameNoEnemies) {
     const timeUntilNextSpawn = enemySpawnInterval - (performance.now() - lastEnemySpawn);
 
     if (!pendingSpawnWarning && timeUntilNextSpawn <= spawnWarningDuration) {
@@ -4184,6 +4297,8 @@ function togglePause() {
     debutRalenti += pausedDuration;
     if (rollbackPlayback) rollbackPlayback.lastStepTime += pausedDuration;
     stats.startTime += pausedDuration;
+    decalerTuto(pausedDuration);
+    if (astuceEnCours) astuceEnCours.debut += pausedDuration;
     enemies.forEach(e => {
       if (e.frozenUntil) e.frozenUntil += pausedDuration;
       if (e.hitFlashUntil) e.hitFlashUntil += pausedDuration;
@@ -4212,6 +4327,7 @@ function renderLoop(now) {
 
   if (isPaused) {
     draw(1);
+    dessinerTuto();
     drawPauseOverlay();
     animationFrameId = requestAnimationFrame(renderLoop);
     return;
@@ -4243,6 +4359,7 @@ function renderLoop(now) {
     draw(j => j === rp.joueur ? tRecul : 1);
     drawSlowMotionOverlay();
     drawEndgameTransitionMessage();
+    dessinerTuto();
     animationFrameId = requestAnimationFrame(renderLoop);
     return;
   }
@@ -4271,6 +4388,8 @@ function renderLoop(now) {
     const timeScale = now < slowMotionUntil ? slowMotionFactor : 1;
 
     if (!gameOver) updateCombat(frameDelta * timeScale);
+    majTuto(now, frameDelta);
+    majAstuces(now);
 
     // chaque serpent avance à son propre rythme (le boost de l'un ne presse pas l'autre)
     joueurs.forEach(j => {
@@ -4298,6 +4417,8 @@ function renderLoop(now) {
   drawSlowMotionOverlay();
   drawEndgameTransitionMessage();
   dessinerEcranGameOver();
+  dessinerTuto();
+  dessinerAstuce();
 
   updateShieldDisplay();
   updateBuffStatusDisplay();
@@ -5370,7 +5491,8 @@ function drawControlsTutorial() {
   // --- menu des buffs ---
   ctx.textAlign = 'center';
   ctx.font = '13px ' + currentTheme.fontFamily;
-  ctx.fillText('B : menu des buffs  •  P : pause', canvas.width / 2, mouseY + 78);
+  ctx.fillText('B : buffs  •  P : pause  •  H : aide', canvas.width / 2, mouseY + 78);
+  dessinerInvitationTuto('T : tutoriel');
 
   // --- message final ---
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
@@ -5437,7 +5559,7 @@ function drawTutorielCoop() {
   ctx.fillText(partage ? '🎮 Branche une manette pour J2' : '⌨️ Clavier + souris = J1  •  🎮 Manette = J2', canvas.width / 2, y);
   ctx.fillText('Score commun • un ❤️ réanime ton coéquipier', canvas.width / 2, y + 22);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.fillText('B : menu des buffs  •  P : pause', canvas.width / 2, y + 44);
+  ctx.fillText('B : buffs  •  P : pause  •  H : aide  •  T : tuto (solo)', canvas.width / 2, y + 44);
   ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (menu B)' : '👻 Les serpents se traversent (menu B)',
     canvas.width / 2, y + 66);
 
@@ -5466,7 +5588,7 @@ function drawControlsTutorialListe(mode) {
         ['🔫', 'Stick à fond (ou toucher la zone)', 'tirer'],
         ['🚀', 'Bouton Boost', 'démarrer, puis accélère (maintenir)'],
         ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'],
-        ['☰', 'Bouton Menu', 'buffs, options, placer les commandes']
+        ['☰', 'Bouton Menu', 'buffs, options, aide, tutoriel']
       ];
   // capacités désactivées dans le menu : on adapte les lignes
   lignes.forEach(l => {
@@ -5500,10 +5622,29 @@ function drawControlsTutorialListe(mode) {
     y += pas;
   });
 
+  dessinerInvitationTuto(mode === 'manette' ? 'LT : aide et tutoriel' : 'Menu ☰ : aide et tutoriel');
   ctx.textAlign = 'center';
   ctx.font = 'bold 16px ' + currentTheme.fontFamily;
   ctx.fillText(mode === 'manette' ? 'Appuie sur A pour commencer' : 'Touche le jeu pour commencer',
     canvas.width / 2, canvas.height - 20);
+  ctx.restore();
+}
+
+// ligne « tutoriel » de l'écran de départ : mise en avant (dorée, qui pulse) tant qu'il n'a jamais été fini
+function dessinerInvitationTuto(commande) {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  if (tutoDejaFait()) {
+    ctx.font = '13px ' + currentTheme.fontFamily;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.fillText('🎓 ' + commande, canvas.width / 2, canvas.height - 48);
+  } else {
+    ctx.font = 'bold 14px ' + currentTheme.fontFamily;
+    ctx.fillStyle = '#ffd54f';
+    ctx.globalAlpha = 0.75 + Math.sin(performance.now() / 250) * 0.25;
+    ctx.fillText('🎓 Nouveau ? ' + commande, canvas.width / 2, canvas.height - 48);
+  }
   ctx.restore();
 }
 
@@ -8253,7 +8394,7 @@ function definirModeEntree(mode) {
 
 // Espace / bouton A / bouton Boost : démarrer, rejouer, ou accélérer (maintenu)
 function actionPrincipale(j = joueurs[0]) {
-  if (isPaused || menuBuffsOuvert) return;
+  if (isPaused || menuBuffsOuvert || aideOuverte) return;
   if (gameOver) {
     if (ecranGameOver && performance.now() - ecranGameOver.debut < 700) return;
     init();
@@ -8385,6 +8526,18 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === 'KeyB') {
     ouvrirMenuBuffs();
+    return;
+  }
+
+  if (e.code === 'KeyH') {
+    ouvrirAide();
+    return;
+  }
+
+  // T : lance le tutoriel depuis l'écran de départ ou de fin, ou le quitte
+  if (e.code === 'KeyT') {
+    if (tutoActif()) quitterTuto(false);
+    else if (waitingToStart || gameOver) lancerTuto();
     return;
   }
 
@@ -8618,7 +8771,7 @@ construireMenuBuffs();
 // ============================================================
 // A/Croix : démarrer, rejouer, boost (maintenu) — B/Rond ou LB : bouclier
 // RT/R2, RB ou X/Carré : tirer — stick droit : viser — stick gauche ou croix : se déplacer
-// Start : pause — Select/Back ou Y/Triangle : menu des buffs
+// Start : pause — Select/Back ou Y/Triangle : menu des buffs — LT/L2 : aide (et tutoriel)
 const MANETTE = {A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, SELECT: 8, START: 9, HAUT: 12, BAS: 13, GAUCHE: 14, DROITE: 15};
 const zoneMorteStick = 0.5; // seuil pour qu'un stick compte comme une direction
 const zoneMorteVisee = 0.3;
@@ -8706,6 +8859,12 @@ function lireUneManette(pad, numero, now) {
     }
   }
 
+  if (aideOuverte) {
+    manetteDansAide(dx, dy, vientDAppuyer);
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
+
   if (menuBuffsOuvert) {
     // navigation dans le menu : haut/bas avec répétition si maintenu, A pour basculer, B/Y/Select pour fermer
     if (dy !== 0) {
@@ -8729,6 +8888,11 @@ function lireUneManette(pad, numero, now) {
   }
   directionMenuManettePrecedente = 0;
 
+  if (vientDAppuyer(MANETTE.LT)) {
+    ouvrirAide();
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
   if (vientDAppuyer(MANETTE.SELECT) || vientDAppuyer(MANETTE.Y)) {
     ouvrirMenuBuffs();
     boutonsManettePrecedents[numero] = etat;
@@ -8759,6 +8923,410 @@ function lireUneManette(pad, numero, now) {
   boutonsManettePrecedents[numero] = etat;
 }
 
+// ============================================================
+// --- Écran d'aide : pages illustrées (commandes, pommes, ennemis, buffs, survie, modes) ---
+// ============================================================
+// Ouvert par le bouton ❓ (à côté de ☰), la touche H, LT / L2 à la manette, ou « ❓ Aide » du menu ☰.
+// Il met la partie en pause comme le menu des buffs, et propose de lancer le tutoriel (js/18-tuto.js).
+const aideMenuEl = document.createElement('div');
+aideMenuEl.id = 'aideMenu';
+aideMenuEl.setAttribute('role', 'dialog');
+aideMenuEl.setAttribute('aria-modal', 'true');
+aideMenuEl.innerHTML = `
+  <div id="aidePanel">
+    <h2>❓ Aide</h2>
+    <div id="aideOnglets"></div>
+    <div id="aideContenu"></div>
+    <div id="aideNavigation">
+      <button id="aidePrecedent" aria-label="Page précédente">◀</button>
+      <span id="aidePageNumero"></span>
+      <button id="aideSuivant" aria-label="Page suivante">▶</button>
+    </div>
+    <div id="aideActions">
+      <button id="aideTuto">🎓 Lancer le tutoriel</button>
+      <button id="aideAstuces">💡 Astuces : oui</button>
+      <button id="aideFermer">Fermer</button>
+    </div>
+  </div>`;
+document.body.appendChild(aideMenuEl);
+const aideContenuEl = document.getElementById('aideContenu');
+const aideOngletsEl = document.getElementById('aideOnglets');
+
+let aideOuverte = false;
+let aideAMisEnPause = false; // l'aide a mis la partie en pause : elle la relance en se fermant
+let pageAide = 0;
+let boucleAideActive = false;
+
+// texte d'une commande selon l'appareil utilisé (clavier, manette ou tactile)
+function texteCommande(clavier, manette, tactile) {
+  return modeEntree === 'manette' ? manette : modeEntree === 'tactile' ? tactile : clavier;
+}
+
+// une ligne « icône + titre + explication »
+function ligneAide(icone, titre, detail) {
+  const li = document.createElement('div');
+  li.className = 'aide-ligne';
+  const ic = document.createElement('span');
+  ic.className = 'aide-icone';
+  if (typeof icone === 'string') ic.textContent = icone;
+  else ic.appendChild(icone);
+  const texte = document.createElement('span');
+  texte.className = 'aide-texte';
+  const b = document.createElement('b');
+  b.textContent = titre;
+  texte.appendChild(b);
+  if (detail) {
+    const small = document.createElement('small');
+    small.textContent = detail;
+    texte.appendChild(small);
+  }
+  li.appendChild(ic);
+  li.appendChild(texte);
+  return li;
+}
+
+function paragrapheAide(texte) {
+  const p = document.createElement('p');
+  p.className = 'aide-note';
+  p.textContent = texte;
+  return p;
+}
+
+const pagesAide = [
+  {
+    onglet: '🎮', titre: 'Commandes',
+    remplir(zone) {
+      const d = reglagesDifficulte();
+      const lignes = modeEntree === 'manette'
+        ? [
+            ['🕹️', 'Stick gauche ou croix', 'se déplacer'],
+            ['🎯', 'Stick droit', 'viser'],
+            ['🔫', 'RT / R2, RB ou X', 'tirer'],
+            ['🚀', 'A / Croix', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+            capacitesActives.bouclier ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
+            ['🧪', 'Y / Triangle ou Select', 'menu des buffs'],
+            ['❓', 'LT / L2', 'cette aide'],
+            ['⏸️', 'Start', 'pause']
+          ]
+        : modeEntree === 'tactile'
+          ? [
+              ['👆', 'Pad ou zone 👆', 'tourner (flèche ou glissé)'],
+              ['🕹️', 'Zone 🎯 : stick', 'orienter la tourelle'],
+              ['🔫', 'Stick à fond (ou toucher la zone)', 'tirer'],
+              ['🚀', 'Bouton Boost', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              capacitesActives.bouclier ? ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'] : null,
+              ['☰', 'Bouton Menu', 'buffs, options, aide, tutoriel']
+            ]
+          : [
+              ['⬆️', 'Flèches, ZQSD ou WASD', 'se déplacer'],
+              ['🚀', 'Espace', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              capacitesActives.bouclier ? ['🛡️', 'Maj (Shift)', 'bouclier 2s (recharge 15s)'] : null,
+              ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
+              ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
+              ['🧪', 'B', 'menu des buffs'],
+              ['❓', 'H', 'cette aide  •  T sur l\'écran de départ : tutoriel'],
+              ['⏸️', 'P ou Échap', 'pause']
+            ];
+      lignes.filter(Boolean).forEach(([i, t, x]) => zone.appendChild(ligneAide(i, t, x)));
+      if (enCoop()) {
+        zone.appendChild(paragrapheAide(clavierPartage()
+          ? 'Coop sans manette : J1 joue à gauche du clavier (ZQSD, Espace, Maj gauche, souris), J2 autour des flèches (Ctrl droit, Maj droite, Entrée pour tirer, Retour arrière pour le rollback).'
+          : 'Coop : J1 joue au clavier et à la souris, la manette joue J2.'));
+      }
+    }
+  },
+  {
+    onglet: '🍎', titre: 'Pommes et cœurs',
+    remplir(zone) {
+      const d = reglagesDifficulte();
+      zone.appendChild(ligneAide(iconePomme('normale'), nomPomme('normale') + ' : +10 points, +1 segment',
+        'Une est toujours sur la carte. Les ennemis tués en laissent parfois une en plus.'));
+      zone.appendChild(ligneAide(iconePomme('or'), nomPomme('or') + ' : +100 points, +10 segments',
+        'Rare, laissée par un ennemi tué. Elle bouge : il faut la rattraper.'));
+      zone.appendChild(ligneAide(iconePomme('bleue'), nomPomme('bleue') + ' : un buff au hasard',
+        'Rare, laissée par un ennemi tué (' + Math.round(d.chancePommeBleue * 100) + ' %). Elle bouge aussi. Voir la page des buffs.'));
+      zone.appendChild(ligneAide('❤️', 'Cœur : +1 vie',
+        'Apparaît tous les ' + d.killsCoeur[0] + ' à ' + d.killsCoeur[1] + ' ennemis tués (compteur en haut). Marche dessus ou tire dessus.' +
+        (enCoop() ? ' En coop, il réanime d\'abord ton coéquipier KO.' : '')));
+      zone.appendChild(paragrapheAide('Plus le serpent est long, plus les ennemis ralentissent. À ' + endgameSnakeLength +
+        ' segments ils disparaissent et 5 pommes restent sur la carte ; à ' + winSnakeLength + ' segments, c\'est gagné !'));
+    }
+  },
+  {
+    onglet: '👾', titre: 'Ennemis et boss',
+    remplir(zone) {
+      const d = reglagesDifficulte();
+      const c = document.createElement('canvas');
+      c.id = 'aideCanvasEnnemis';
+      c.width = 400;
+      c.height = 110;
+      zone.appendChild(c);
+      zone.appendChild(ligneAide('🎯', 'Tire dessus : +15 points', 'Chaque tir coûte 2 points, et on ne peut pas tirer à 0 point.'));
+      zone.appendChild(ligneAide('💢', 'S\'il te touche : -1 ❤️, -5 points, -1 segment',
+        'Il meurt en te touchant. Tu as ensuite 1 seconde de répit.'));
+      zone.appendChild(ligneAide('🔴', 'Point rouge clignotant', 'Un ennemi va apparaître à cet endroit dans 1 seconde.'));
+      if (d.chanceResistant > 0) {
+        zone.appendChild(ligneAide('💪', 'Ennemi résistant (couleur différente)',
+          'Il faut le toucher 2 fois. ' + Math.round(d.chanceResistant * 100) + ' % des ennemis en ' + d.nom + '.'));
+      }
+      zone.appendChild(ligneAide('🧊', 'Ennemi gelé', 'Inoffensif : fonce dedans avec la tête pour le briser.'));
+      zone.appendChild(ligneAide('👑', 'Boss : tous les ' + bossKillThreshold + ' ennemis tués',
+        'Annoncé avant d\'arriver, il te poursuit sans relâche. Il faut ' + d.pvBoss + ' tirs. Butin : ' +
+        nomPomme('or') + ', ' + nomPomme('bleue') + ' (points x2), 5 pommes et un cœur.'));
+    },
+    anime: true
+  },
+  {
+    onglet: '🧪', titre: 'Buffs',
+    remplir(zone) {
+      zone.appendChild(paragrapheAide('Chaque ' + nomPomme('bleue') + ' donne un de ces buffs. Le menu des buffs (' +
+        texteCommande('touche B', 'Y / Triangle', 'menu ☰') + ') permet de choisir ceux qui peuvent sortir.'));
+      buffTypes.forEach(type => {
+        const b = buffDescriptions[type];
+        const off = !buffsActifs.includes(type);
+        zone.appendChild(ligneAide(b.icon, b.nom + (off ? ' (désactivé)' : ''), texteAvecDureeBuff(b.detail, type)));
+      });
+      zone.appendChild(paragrapheAide('Les buffs en cours et leur temps restant s\'affichent en haut ; ils clignotent 3 secondes avant de finir.'));
+    }
+  },
+  {
+    onglet: '🛡️', titre: 'Survivre',
+    remplir(zone) {
+      const d = reglagesDifficulte();
+      zone.appendChild(ligneAide('🧱', 'Les murs', 'Toucher un mur fait perdre la partie… sauf si un rollback te sauve.'));
+      zone.appendChild(ligneAide('⏪', 'Rollback (-' + d.coutRollback + ' ❤️)',
+        'Avec plus de ' + d.coutRollback + ' cœurs, le serpent recule dans le temps au lieu de mourir contre un mur. ' +
+        (modeEntree === 'clavier' ? 'Clic droit pour le faire toi-même. ' : '') +
+        'Plusieurs rollbacks de suite remontent de plus en plus loin.'));
+      zone.appendChild(ligneAide('🐍', 'Se mordre la queue',
+        'Le bout coupé est perdu (-10 points par segment) et tu perds 1 ❤️, mais la partie continue.'));
+      if (capacitesActives.bouclier) {
+        zone.appendChild(ligneAide('🛡️', 'Bouclier : 2 secondes sans dégât',
+          'Les ennemis qui te touchent sont détruits. Il se recharge en 15 secondes (anneau autour de la tête).'));
+      }
+      if (capacitesActives.sprint) {
+        zone.appendChild(ligneAide('🚀', 'Sprint', 'Le serpent va 25 % plus vite tant que tu maintiens le boost.'));
+      }
+      zone.appendChild(ligneAide('🔫', 'La tourelle', 'Elle est portée par le 2e segment et vise ' +
+        texteCommande('la souris', 'le stick droit', 'le stick de la zone 🎯') + '.'));
+    }
+  },
+  {
+    onglet: '⚙️', titre: 'Modes de jeu',
+    remplir(zone) {
+      ordreDifficultes.forEach(cle => {
+        const n = niveauxDifficulte[cle];
+        const details = cle === 'facile'
+          ? 'Plus lent, aucun ennemi résistant, boss à 6 PV, buffs 50 % plus longs, ' + nomPomme('bleue') +
+            ' 2x plus fréquente, rollback à 2 cœurs, option Visée auto.'
+          : cle === 'normal'
+            ? 'Un peu plus lent que Difficile, 15 % d\'ennemis résistants.'
+            : 'Le jeu d\'origine : plus rapide, 30 % d\'ennemis résistants.';
+        zone.appendChild(ligneAide(n.icone, n.nom + (cle === difficulte ? ' (actuel)' : ''), details));
+      });
+      zone.appendChild(ligneAide('👥', 'Coop à 2', 'Score commun. Un joueur KO revient quand l\'autre ramasse un cœur. ' +
+        'Option « Collision entre joueurs » dans le menu des buffs.'));
+      zone.appendChild(ligneAide('🌐', 'En ligne', 'Crée une partie et donne le code à ton ami : il joue le serpent J2 depuis son appareil.'));
+      zone.appendChild(paragrapheAide('Difficulté, Solo / Coop, thèmes et skins se changent dans le menu ☰. Les meilleurs scores sont gardés par difficulté.'));
+    }
+  }
+];
+
+// petites scènes de démonstration de la page des ennemis : normal, résistant, gelé, boss
+const ennemisAide = [
+  {x: 50, y: 52, dur: false, gele: false, label: 'Normal'},
+  {x: 150, y: 52, dur: true, gele: false, label: 'Résistant'},
+  {x: 250, y: 52, dur: false, gele: true, label: 'Gelé'},
+  {x: 345, y: 50, boss: true, label: 'Boss'}
+].map((d, i) => ({
+  ...d,
+  cx: d.x, cy: d.y, vx: 0, vy: 0,
+  radius: d.boss ? bossRadius : d.dur ? enemyRadius + 2 : enemyRadius,
+  hp: d.dur ? 2 : 1, maxHp: d.dur ? 2 : 1,
+  isBoss: !!d.boss,
+  hitFlashUntil: 0,
+  frozenUntil: 0,
+  neA: 0,
+  phase: i * 1.3
+}));
+
+function dessinerEnnemisAide() {
+  const c = document.getElementById('aideCanvasEnnemis');
+  if (!c) return;
+  const now = performance.now();
+  ennemisAide.forEach(e => {
+    e.color = e.isBoss ? bossColor : e.dur ? currentTheme.enemyTough : currentTheme.enemyNormal;
+    e.frozenUntil = e.gele ? now + 1000 : 0;
+    if (!e.isBoss) e.hp = e.dur ? 2 : 1;
+    if (!e.gele) {
+      const x = e.cx + Math.cos(now / 700 + e.phase) * 5;
+      const y = e.cy + Math.sin(now / 500 + e.phase) * 3;
+      e.vx = x - e.x;
+      e.vy = y - e.y;
+      e.x = x;
+      e.y = y;
+    }
+  });
+  // même principe que l'aperçu du menu ☰ : on prête au jeu ce canvas et ces ennemis le temps d'une image
+  const ctxJeu = ctx, ennemisJeu = enemies, pauseJeu = isPaused;
+  ctx = c.getContext('2d');
+  enemies = ennemisAide;
+  isPaused = false;
+  try {
+    ctx.save();
+    ctx.fillStyle = currentTheme.canvasBg;
+    ctx.fillRect(0, 0, c.width, c.height);
+    drawEnemies();
+    ctx.fillStyle = currentTheme.textColor;
+    ctx.font = '13px ' + currentTheme.fontFamily;
+    ctx.textAlign = 'center';
+    ennemisAide.forEach(e => ctx.fillText(e.label, e.cx, c.height - 8));
+    ctx.restore();
+  } finally {
+    ctx = ctxJeu;
+    enemies = ennemisJeu;
+    isPaused = pauseJeu;
+  }
+}
+
+function boucleAide() {
+  if (!aideOuverte || !pagesAide[pageAide].anime) {
+    boucleAideActive = false;
+    return;
+  }
+  dessinerEnnemisAide();
+  requestAnimationFrame(boucleAide);
+}
+
+function afficherPageAide(n) {
+  pageAide = (n + pagesAide.length) % pagesAide.length;
+  const page = pagesAide[pageAide];
+  aideContenuEl.textContent = '';
+  const h = document.createElement('h3');
+  h.textContent = page.onglet + ' ' + page.titre;
+  aideContenuEl.appendChild(h);
+  page.remplir(aideContenuEl);
+  aideContenuEl.scrollTop = 0;
+  aideOngletsEl.querySelectorAll('button').forEach((b, i) => {
+    b.classList.toggle('actif', i === pageAide);
+    b.setAttribute('aria-selected', i === pageAide ? 'true' : 'false');
+  });
+  document.getElementById('aidePageNumero').textContent = (pageAide + 1) + ' / ' + pagesAide.length;
+  if (page.anime && !boucleAideActive) {
+    boucleAideActive = true;
+    requestAnimationFrame(boucleAide);
+  }
+}
+
+pagesAide.forEach((page, i) => {
+  const b = document.createElement('button');
+  b.textContent = page.onglet;
+  b.title = page.titre;
+  b.setAttribute('aria-label', page.titre);
+  b.addEventListener('click', () => afficherPageAide(i));
+  aideOngletsEl.appendChild(b);
+});
+
+function majBoutonsAide() {
+  const enTuto = tutoActif();
+  document.getElementById('aideTuto').textContent = enTuto ? '✖ Quitter le tutoriel' : '🎓 Lancer le tutoriel';
+  document.getElementById('aideAstuces').textContent = '💡 Astuces : ' + (astucesActives ? 'oui' : 'non');
+  document.getElementById('aideAstuces').classList.toggle('actif', astucesActives);
+  const boutonTuto = document.getElementById('tutoBtn');
+  if (boutonTuto) boutonTuto.textContent = enTuto ? '✖ Quitter le tuto' : '🎓 Tutoriel';
+}
+
+function ouvrirAide(page) {
+  if (enEcranInvite()) return;
+  if (menuBuffsOuvert) fermerMenuBuffs();
+  if (typeof fermerMenuTactile === 'function') fermerMenuTactile();
+  if (!aideOuverte) {
+    aideOuverte = true;
+    aideAMisEnPause = false;
+    // pendant le compte à rebours, la pause n'existe pas encore : on revient à l'écran de départ
+    if (countdownActive) {
+      countdownActive = false;
+      waitingToStart = true;
+    }
+    if (!isPaused && !waitingToStart && !gameOver) {
+      togglePause();
+      aideAMisEnPause = true;
+    }
+    joueurs.forEach(j => arreterBoost(j));
+  }
+  aideMenuEl.classList.add('ouvert');
+  majBoutonsAide();
+  afficherPageAide(page === undefined ? pageAide : page);
+}
+
+function fermerAide() {
+  if (!aideOuverte) return;
+  aideOuverte = false;
+  aideMenuEl.classList.remove('ouvert');
+  if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réappuie sur un bouton
+  if (aideAMisEnPause && isPaused) togglePause();
+  aideAMisEnPause = false;
+}
+
+document.getElementById('aideFermer').addEventListener('click', fermerAide);
+document.getElementById('aidePrecedent').addEventListener('click', () => afficherPageAide(pageAide - 1));
+document.getElementById('aideSuivant').addEventListener('click', () => afficherPageAide(pageAide + 1));
+document.getElementById('aideTuto').addEventListener('click', () => {
+  if (tutoActif()) {
+    fermerAide();
+    quitterTuto(false);
+  } else {
+    fermerAide();
+    lancerTuto();
+  }
+});
+document.getElementById('aideAstuces').addEventListener('click', () => {
+  basculerAstuces();
+  majBoutonsAide();
+});
+// clic sur le fond sombre = fermer
+aideMenuEl.addEventListener('click', (e) => {
+  if (e.target === aideMenuEl) fermerAide();
+});
+document.getElementById('aideBtn').addEventListener('click', (e) => {
+  e.currentTarget.blur();
+  ouvrirAide();
+});
+document.getElementById('aideMenuBtn').addEventListener('click', () => ouvrirAide());
+document.getElementById('tutoBtn').addEventListener('click', () => {
+  if (typeof fermerMenuTactile === 'function') fermerMenuTactile();
+  if (tutoActif()) quitterTuto(false);
+  else lancerTuto();
+});
+
+// tant que l'aide est ouverte, le clavier la pilote : flèches pour changer de page, Échap ou H pour fermer
+window.addEventListener('keydown', (e) => {
+  if (!aideOuverte) return;
+  e.stopImmediatePropagation();
+  if (e.key === 'Escape' || e.code === 'KeyH') {
+    e.preventDefault();
+    fermerAide();
+  } else if (e.key === 'ArrowLeft' || e.code === 'KeyA') {
+    e.preventDefault();
+    afficherPageAide(pageAide - 1);
+  } else if (e.key === 'ArrowRight' || e.code === 'KeyD') {
+    e.preventDefault();
+    afficherPageAide(pageAide + 1);
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    aideContenuEl.scrollTop += e.key === 'ArrowDown' ? 40 : -40;
+  }
+}, true);
+
+// manette dans l'aide : gauche/droite = page, haut/bas = défiler, A = tutoriel, B / LT / Start = fermer
+let directionAideManettePrecedente = 0;
+function manetteDansAide(dx, dy, vientDAppuyer) {
+  if (dx !== 0 && dx !== directionAideManettePrecedente) afficherPageAide(pageAide + dx);
+  directionAideManettePrecedente = dx;
+  if (dy !== 0) aideContenuEl.scrollTop += dy * 8;
+  if (vientDAppuyer(MANETTE.A)) document.getElementById('aideTuto').click();
+  else if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.LT) || vientDAppuyer(MANETTE.START)) fermerAide();
+}
 // ============================================================
 // --- Aperçu du thème (map) et des ennemis dans le menu ☰ ---
 // ============================================================
@@ -8858,6 +9426,260 @@ function demarrerApercu() {
 }
 
 document.querySelectorAll('.theme-btn, .skin-btn').forEach(b => b.addEventListener('click', majLegendeApercu));
+// ============================================================
+// --- Astuces : bulles d'aide la première fois qu'une chose apparaît en partie ---
+// ============================================================
+// Chaque astuce ne s'affiche qu'une fois (mémorisé), sans mettre la partie en pause.
+// Elles se coupent dans l'aide (💡 Astuces : non), et « Lancer le tutoriel » ne les montre pas.
+const cleStockageAstucesVues = 'snakeAstucesVues';
+const cleStockageAstuces = 'snakeAstuces';
+const dureeAstuce = 5000; // ms d'affichage d'une bulle
+const delaiEntreAstuces = 1500; // ms de calme entre deux bulles
+let astucesVues = chargerAstucesVues();
+let astucesActives = chargerAstucesActives();
+let astuceEnCours = null; // {cle, texte, cible, debut, x, y}
+let finDerniereAstuce = 0;
+
+function chargerAstucesVues() {
+  try {
+    const liste = JSON.parse(localStorage.getItem(cleStockageAstucesVues) || '[]');
+    if (Array.isArray(liste)) return liste;
+  } catch (e) {
+    // stockage indisponible ou corrompu : aucune astuce vue
+  }
+  return [];
+}
+
+function chargerAstucesActives() {
+  try {
+    return localStorage.getItem(cleStockageAstuces) !== 'non';
+  } catch (e) {
+    return true;
+  }
+}
+
+function sauverAstuces() {
+  try {
+    localStorage.setItem(cleStockageAstucesVues, JSON.stringify(astucesVues));
+    localStorage.setItem(cleStockageAstuces, astucesActives ? 'oui' : 'non');
+  } catch (e) {
+    // ignore : le choix vaut pour cette session seulement
+  }
+}
+
+// rallumer les astuces les fait toutes revoir depuis le début
+function basculerAstuces() {
+  astucesActives = !astucesActives;
+  if (astucesActives) astucesVues = [];
+  astuceEnCours = null;
+  sauverAstuces();
+}
+
+function centreCase(c) {
+  return {x: c.x * gridSize + gridSize / 2, y: c.y * gridSize + gridSize / 2};
+}
+
+// liste des astuces : quand elles se déclenchent (renvoie la cible à montrer, ou null) et leur texte
+const astuces = [
+  {
+    cle: 'tir',
+    cible: () => enemies.find(e => !e.isBoss),
+    texte: () => texteCommande('Vise avec la souris et clique pour tirer sur les ennemis.',
+      'Vise au stick droit et tire avec RT.', 'Tiens le stick de la zone 🎯 pour viser, pousse-le à fond pour tirer.') +
+      ' Un tir coûte 2 points.'
+  },
+  {
+    cle: 'apparition',
+    cible: () => pendingSpawnWarning,
+    texte: () => 'Ce point clignotant : un ennemi va apparaître ici dans 1 seconde.'
+  },
+  {
+    cle: 'resistant',
+    cible: () => enemies.find(e => !e.isBoss && e.maxHp > 1),
+    texte: () => 'Cet ennemi est résistant : il faut le toucher 2 fois.'
+  },
+  {
+    cle: 'pommeOr',
+    cible: () => goldenApples[0],
+    texte: () => nomPomme('or') + ' ! Rattrape-la : +100 points et +10 segments.'
+  },
+  {
+    cle: 'pommeBleue',
+    cible: () => blueApples[0],
+    texte: () => nomPomme('bleue') + ' : attrape-la pour un buff au hasard (gel, laser, invincibilité…).'
+  },
+  {
+    cle: 'coeur',
+    cible: () => heartPickup,
+    texte: () => 'Un cœur : +1 vie' + (joueurs.some(j => j.elimine) ? ' (ou réanime ton coéquipier)' : '') +
+      '. Marche dessus ou tire dessus.'
+  },
+  {
+    cle: 'gel',
+    cible: () => enemies.find(e => !e.isBoss && estGele(e)),
+    texte: () => 'Ennemis gelés : ils sont inoffensifs. Fonce dedans avec la tête pour les briser !'
+  },
+  {
+    cle: 'boss',
+    cible: () => bossSpawnPending ? bossSpawnPosition : enemies.find(e => e.isBoss),
+    texte: () => 'Un boss ! Il te poursuit sans relâche : il faut ' + reglagesDifficulte().pvBoss + ' tirs pour le battre.'
+  },
+  {
+    cle: 'blessure',
+    cible: () => joueursEnJeu().some(j => j.lives < maxLives) ? centreCase(joueurActif.snake[0]) : null,
+    texte: () => 'Aïe ! Un coup coûte 1 ❤️ et 1 segment.' +
+      (capacitesActives.bouclier ? ' Le bouclier (' + texteCommande('Maj', 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
+  },
+  {
+    cle: 'rollback',
+    cible: () => !enCoop() && lives > reglagesDifficulte().coutRollback ? centreCase(snake[0]) : null,
+    texte: () => 'Tu as plus de ' + reglagesDifficulte().coutRollback + ' cœurs : un rollback te sauvera si tu touches un mur' +
+      (modeEntree === 'clavier' ? ', ou clic droit pour reculer quand tu veux' : '') + ' (-' + reglagesDifficulte().coutRollback + ' ❤️).'
+  },
+  {
+    cle: 'buffMenu',
+    cible: () => joueurs.some(j => performance.now() < j.laserBuffUntil || performance.now() < j.autoAimBuffUntil ||
+      performance.now() < j.buffInvincibleUntil || performance.now() < j.doublePointsUntil) ||
+      performance.now() < freezeIndicatorUntil ? {x: canvas.width / 2, y: 8} : null,
+    texte: () => 'Buff actif ! Son temps restant est affiché en haut. ' +
+      texteCommande('Touche B', 'Y / Triangle', 'Menu ☰') + ' : choisir les buffs possibles.'
+  }
+];
+
+// appelé à chaque image de partie : déclenche une astuce si besoin et suit sa cible
+function majAstuces(now) {
+  if (!astucesActives || tutoActif() || gameOver || waitingToStart || countdownActive || isPaused || hasWon) return;
+  if (astuceEnCours) {
+    if (now - astuceEnCours.debut > dureeAstuce) {
+      astuceEnCours = null;
+      finDerniereAstuce = now;
+    } else {
+      // la bulle suit sa cible tant qu'elle existe (pomme qui bouge, ennemi...)
+      const c = astuceEnCours.cible();
+      if (c) {
+        astuceEnCours.x = c.x;
+        astuceEnCours.y = c.y;
+      }
+    }
+    return;
+  }
+  if (now - finDerniereAstuce < delaiEntreAstuces) return;
+  for (const a of astuces) {
+    if (astucesVues.includes(a.cle)) continue;
+    const c = a.cible();
+    if (!c) continue;
+    astuceEnCours = {cle: a.cle, texte: a.texte(), cible: a.cible, debut: now, x: c.x, y: c.y};
+    astucesVues.push(a.cle);
+    sauverAstuces();
+    return;
+  }
+}
+
+// coupe un texte en lignes qui tiennent dans la largeur donnée
+function couperTexte(texte, largeurMax) {
+  const mots = texte.split(' ');
+  const lignes = [];
+  let ligne = '';
+  mots.forEach(mot => {
+    const essai = ligne ? ligne + ' ' + mot : mot;
+    if (ctx.measureText(essai).width > largeurMax && ligne) {
+      lignes.push(ligne);
+      ligne = mot;
+    } else {
+      ligne = essai;
+    }
+  });
+  if (ligne) lignes.push(ligne);
+  return lignes;
+}
+
+// bulle arrondie avec une pointe vers (cibleX, cibleY) ; options : titre, couleur, largeur, apparition (0 à 1)
+function dessinerBulle(texte, cibleX, cibleY, options = {}) {
+  const largeur = options.largeur || 230;
+  const couleur = options.couleur || '#ffd54f';
+  const marge = 10;
+  ctx.save();
+  ctx.font = '13px ' + currentTheme.fontFamily;
+  const lignes = couperTexte(texte, largeur - 2 * marge);
+  const hauteurLigne = 17;
+  const hauteurTitre = options.titre ? 20 : 0;
+  const h = lignes.length * hauteurLigne + hauteurTitre + 2 * marge - 2;
+  const w = largeur;
+
+  // au-dessus de la cible s'il y a la place, sinon en dessous ; toujours dans le plateau
+  const distance = 26;
+  let enHaut = cibleY - distance - h > 4;
+  if (options.position === 'bas') enHaut = false;
+  let x = Math.max(4, Math.min(canvas.width - w - 4, cibleX - w / 2));
+  let y = enHaut ? cibleY - distance - h : cibleY + distance;
+  y = Math.max(4, Math.min(canvas.height - h - 4, y));
+
+  const apparition = options.apparition === undefined ? 1 : options.apparition;
+  ctx.globalAlpha = apparition;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = 'rgba(12, 14, 26, 0.92)';
+  ctx.strokeStyle = couleur;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8);
+  else ctx.rect(x, y, w, h);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  // pointe vers la cible (si la cible n'est pas sous la bulle)
+  if (options.pointe !== false && (cibleY < y - 4 || cibleY > y + h + 4)) {
+    const px = Math.max(x + 14, Math.min(x + w - 14, cibleX));
+    const bord = cibleY < y ? y : y + h;
+    const sens = cibleY < y ? -1 : 1;
+    ctx.beginPath();
+    ctx.moveTo(px - 7, bord);
+    ctx.lineTo(px + 7, bord);
+    ctx.lineTo(px + (cibleX - px) * 0.3, bord + sens * 11);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(12, 14, 26, 0.92)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(px - 7, bord + sens);
+    ctx.lineTo(px + (cibleX - px) * 0.3, bord + sens * 11);
+    ctx.lineTo(px + 7, bord + sens);
+    ctx.stroke();
+    // petit cercle qui pulse autour de la cible
+    ctx.globalAlpha = apparition * (0.5 + Math.sin(performance.now() / 150) * 0.3);
+    ctx.beginPath();
+    ctx.arc(cibleX, cibleY, 16 + Math.sin(performance.now() / 150) * 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = apparition;
+  }
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  let ty = y + marge;
+  if (options.titre) {
+    ctx.fillStyle = couleur;
+    ctx.font = 'bold 14px ' + currentTheme.fontFamily;
+    ctx.fillText(options.titre, x + marge, ty);
+    ty += hauteurTitre;
+    ctx.font = '13px ' + currentTheme.fontFamily;
+  }
+  ctx.fillStyle = '#ffffff';
+  lignes.forEach(l => {
+    ctx.fillText(l, x + marge, ty);
+    ty += hauteurLigne;
+  });
+  ctx.restore();
+  return {x, y, w, h};
+}
+
+function dessinerAstuce() {
+  const a = astuceEnCours;
+  if (!a || gameOver) return;
+  const age = performance.now() - a.debut;
+  const apparition = Math.min(1, age / 250, (dureeAstuce - age) / 400);
+  if (apparition <= 0) return;
+  dessinerBulle(a.texte, a.x, a.y, {titre: '💡 Astuce', apparition});
+}
 // ============================================================
 // --- Disposition de l'écran tactile (réglable par le joueur) ---
 // ============================================================
@@ -9325,12 +10147,12 @@ function partieTactileEnCours() {
 
 // boutons, menus et liens gardent leur comportement normal
 function cibleInteractive(el) {
-  return !!(el && el.closest && el.closest('button, a, input, select, label, #buffMenu, #highscoreSidebar'));
+  return !!(el && el.closest && el.closest('button, a, input, select, label, #buffMenu, #aideMenu, #highscoreSidebar'));
 }
 
 // un simple toucher hors partie : démarrer, reprendre, rejouer
 function toucherSimpleHorsPartie() {
-  if (menuBuffsOuvert) return;
+  if (menuBuffsOuvert || aideOuverte) return;
   if (isPaused) togglePause();
   else if (waitingToStart || gameOver) actionPrincipale();
 }
@@ -9575,6 +10397,488 @@ touchBouclierBtn.addEventListener('pointerdown', (e) => {
 // le menu contextuel (appui long) gênerait le jeu sur mobile
 document.getElementById('touchControls').addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('contextmenu', e => e.preventDefault());
+// ============================================================
+// --- Tutoriel guidé : une partie en solo découpée en étapes ---
+// ============================================================
+// Chaque étape donne une consigne (adaptée au clavier, à la manette ou au tactile) et passe à la suivante
+// dès qu'elle est réussie. Pendant le tutoriel, le jeu ne fait apparaître ni ennemis ni butin au hasard :
+// chaque étape place ce dont elle a besoin. On ne peut pas perdre : le serpent repart ailleurs.
+// Lancé par T sur l'écran de départ, le bouton 🎓 du menu ☰ ou « Lancer le tutoriel » de l'aide.
+const cleStockageTutoFait = 'snakeTutoFait';
+const vitesseTuto = 0.75; // serpent un peu plus lent qu'en Facile
+const pvBossTuto = 4;
+const delaiEtapeReussie = 1400; // ms entre « Bravo » et l'étape suivante
+const dureeFinTuto = 6000;
+let tuto = null; // null, ou l'état du tutoriel en cours (voir lancerTuto)
+
+function tutoActif() {
+  return !!tuto;
+}
+
+function tutoDejaFait() {
+  try {
+    return localStorage.getItem(cleStockageTutoFait) === 'oui';
+  } catch (e) {
+    return false;
+  }
+}
+
+// ennemi du tutoriel : plus lent que d'habitude, gelé si demandé
+function ennemiTuto(gele) {
+  const avant = enemies.length;
+  spawnEnemy();
+  const e = enemies[avant];
+  if (!e) return;
+  e.speedFactor = 0.5;
+  e.vx *= 0.5;
+  e.vy *= 0.5;
+  if (gele) e.frozenUntil = freezeIndicatorUntil;
+}
+
+// garde assez de points pour tirer
+function pointsPourTirer(minimum) {
+  if (score >= minimum) return;
+  score = minimum;
+  scoreEl.textContent = 'Score : ' + score;
+}
+
+function positionLoinDuSerpent() {
+  return pickEnemySpawnPosition();
+}
+
+function pommeMobileTuto(liste, vitesse, rayon, buffType) {
+  const pos = positionLoinDuSerpent();
+  const angle = Math.random() * Math.PI * 2;
+  const pomme = {
+    x: pos.x, y: pos.y,
+    vx: Math.cos(angle) * vitesse,
+    vy: Math.sin(angle) * vitesse,
+    radius: rayon,
+    changeDirTimer: 800 + Math.random() * 1000
+  };
+  if (buffType) pomme.buffType = buffType;
+  liste.push(pomme);
+}
+
+const etapesTuto = [
+  {
+    cle: 'bouger', titre: 'Se déplacer', total: 4,
+    texte: () => texteCommande('Tourne avec les flèches ou ZQSD (WASD).', 'Tourne avec le stick gauche ou la croix.',
+      'Glisse le doigt dans la zone 👆 (ou appuie sur le pad) pour tourner.') + ' Fais 4 virages sans toucher les murs.',
+    progres: t => t.virages
+  },
+  {
+    cle: 'manger', titre: 'Manger', total: 3,
+    texte: () => 'Mange 3 pommes (' + nomPomme('normale') + ') : chacune donne 10 points et un segment de plus.',
+    progres: t => stats.applesEaten - t.base.pommes,
+    cible: () => food && centreCase(food)
+  },
+  {
+    cle: 'tirer', titre: 'Tirer', total: 2,
+    preparer: () => pointsPourTirer(30),
+    texte: () => texteCommande('Vise l\'ennemi avec la souris et clique pour tirer.',
+      'Vise l\'ennemi au stick droit et tire avec RT (ou X).',
+      'Tiens le stick de la zone 🎯 vers l\'ennemi, pousse-le à fond pour tirer.') +
+      ' La tourelle est sur ton dos. Chaque tir coûte 2 points.',
+    progres: t => stats.enemiesKilled - t.base.ennemis,
+    entretien: t => {
+      pointsPourTirer(6);
+      if (!enemies.length) ennemiTuto(false);
+    },
+    cible: () => enemies[0]
+  },
+  {
+    cle: 'bouclier', titre: 'Bouclier', total: 2,
+    condition: () => capacitesActives.bouclier,
+    preparer: t => {
+      shieldReadyAt = 0;
+      t.bouclierVu = false;
+      t.tueBouclier = false;
+    },
+    texte: t => (t.bouclierVu ? 'Bouclier actif : fonce dans l\'ennemi, il est détruit sans te blesser !'
+      : 'Active le bouclier (' + texteCommande('Maj', 'B ou LB', 'bouton 🛡️') + ') puis fonce dans l\'ennemi.') +
+      ' Hors tutoriel, il se recharge en 15 secondes.',
+    progres: t => (t.bouclierVu ? 1 : 0) + (t.tueBouclier ? 1 : 0),
+    entretien: (t, now) => {
+      if (now < shieldActiveUntil) t.bouclierVu = true;
+      else if (!t.tueBouclier) shieldReadyAt = 0; // raté : on peut réessayer tout de suite
+      if (stats.enemiesKilled > t.killsVus) {
+        if (now < shieldActiveUntil + 150) t.tueBouclier = true;
+        t.killsVus = stats.enemiesKilled;
+      }
+      if (!enemies.length) ennemiTuto(false);
+    },
+    cible: () => enemies[0]
+  },
+  {
+    cle: 'boost', titre: 'Accélérer', total: 2,
+    condition: () => capacitesActives.sprint,
+    preparer: t => t.boostCumul = 0,
+    texte: () => 'Maintiens ' + texteCommande('Espace', 'A / Croix', 'le bouton Boost') +
+      ' pour aller plus vite. Garde-le 2 secondes.',
+    progres: t => Math.floor(t.boostCumul / 1000),
+    entretien: (t, now, dt) => {
+      if (boosting) t.boostCumul += dt;
+    }
+  },
+  {
+    cle: 'pommeBleue', titre: 'Pomme bleue', total: 1,
+    preparer: () => pommeMobileTuto(blueApples, blueAppleSpeed, blueAppleRadius, 'freeze'),
+    texte: () => nomPomme('bleue') + ' bouge : attrape-la ! Elle donne un buff au hasard. Ici, ce sera le gel.',
+    progres: t => stats.blueApplesEaten - t.base.pommesBleues,
+    entretien: t => {
+      if (!blueApples.length && stats.blueApplesEaten === t.base.pommesBleues) {
+        pommeMobileTuto(blueApples, blueAppleSpeed, blueAppleRadius, 'freeze');
+      }
+    },
+    cible: () => blueApples[0]
+  },
+  {
+    cle: 'briser', titre: 'Ennemis gelés', total: 3,
+    preparer: () => {
+      freezeIndicatorUntil = Math.max(freezeIndicatorUntil, performance.now() + 3000);
+      for (let i = 0; i < 3; i++) ennemiTuto(true);
+    },
+    texte: () => 'Le gel fige les ennemis : ils ne te font plus rien. Fonce dedans avec la tête pour les briser !',
+    progres: t => stats.enemiesKilled - t.base.ennemis,
+    entretien: (t, now) => {
+      // le gel dure tant que l'étape n'est pas finie
+      freezeIndicatorUntil = now + 3000;
+      enemies.forEach(e => e.frozenUntil = freezeIndicatorUntil);
+      const reste = 3 - (stats.enemiesKilled - t.base.ennemis);
+      if (enemies.length < reste) ennemiTuto(true);
+    },
+    terminer: () => {
+      freezeIndicatorUntil = 0;
+      enemies.forEach(e => e.frozenUntil = 0);
+    },
+    cible: () => ennemiLePlusProche(snake[0].x * gridSize + gridSize / 2, snake[0].y * gridSize + gridSize / 2)
+  },
+  {
+    cle: 'pommeOr', titre: 'Pomme en or', total: 1,
+    preparer: () => pommeMobileTuto(goldenApples, goldenAppleSpeed, goldenAppleRadius),
+    texte: () => nomPomme('or') + ' : rattrape-la ! +100 points et +10 segments d\'un coup. ' +
+      'Dans une vraie partie, c\'est un ennemi tué qui la laisse, rarement.',
+    progres: t => stats.goldenApplesEaten - t.base.pommesOr,
+    entretien: t => {
+      if (!goldenApples.length && stats.goldenApplesEaten === t.base.pommesOr) {
+        pommeMobileTuto(goldenApples, goldenAppleSpeed, goldenAppleRadius);
+      }
+    },
+    cible: () => goldenApples[0]
+  },
+  {
+    cle: 'coeur', titre: 'Cœur', total: 1,
+    preparer: () => {
+      if (!heartPickup) spawnHeartPickup();
+    },
+    texte: () => 'Ramasse le cœur : +1 vie. Tu peux aussi tirer dessus. Il apparaît après un certain nombre d\'ennemis tués.',
+    progres: t => stats.heartsCollected - t.base.coeurs,
+    entretien: t => {
+      if (!heartPickup && stats.heartsCollected === t.base.coeurs) spawnHeartPickup();
+    },
+    cible: () => heartPickup
+  },
+  {
+    cle: 'rollback', titre: 'Rollback', total: 1,
+    preparer: () => {
+      const cout = reglagesDifficulte().coutRollback;
+      if (lives <= cout) {
+        lives = cout + 1;
+        updateHeartsDisplay();
+        spawnPopup(snake[0].x * gridSize + gridSize / 2, snake[0].y * gridSize, 'Cœurs offerts ❤️', '#ff6b6b');
+      }
+    },
+    texte: () => {
+      const cout = reglagesDifficulte().coutRollback;
+      return modeEntree === 'clavier'
+        ? 'Clic droit : rollback ! Le serpent recule dans le temps (-' + cout + ' ❤️). Il se fait aussi tout seul si tu touches un mur. Essaie !'
+        : 'Fonce dans un mur : avec plus de ' + cout + ' cœurs, le rollback te sauve en reculant dans le temps (-' + cout + ' ❤️).';
+    },
+    progres: t => joueurs[0].rollbackFin > t.debutEtape ? 1 : 0,
+    entretien: () => {
+      const cout = reglagesDifficulte().coutRollback;
+      if (lives <= cout && !rollbackPlayback) {
+        lives = cout + 1;
+        updateHeartsDisplay();
+      }
+    }
+  },
+  {
+    cle: 'boss', titre: 'Boss', total: pvBossTuto,
+    preparer: t => {
+      if (lives < maxLives) {
+        lives = maxLives;
+        updateHeartsDisplay();
+      }
+      pointsPourTirer(60);
+      t.bossVu = false;
+      announceBoss();
+    },
+    texte: () => 'Un boss arrive ! Il te poursuit sans relâche : tire-lui dessus ' + pvBossTuto +
+      ' fois. Le bouclier et le sprint aident à l\'esquiver.',
+    progres: t => {
+      const boss = enemies.find(e => e.isBoss);
+      if (boss) return boss.maxHp - boss.hp;
+      return t.bossVu ? pvBossTuto : 0;
+    },
+    entretien: t => {
+      pointsPourTirer(6);
+      const boss = enemies.find(e => e.isBoss);
+      if (boss && !t.bossVu) {
+        t.bossVu = true;
+        boss.hp = boss.maxHp = pvBossTuto;
+      }
+      if (!boss && !t.bossVu && !bossSpawnPending) announceBoss();
+    },
+    cible: () => enemies.find(e => e.isBoss) || bossSpawnPosition
+  },
+  {
+    cle: 'fin', titre: 'Bravo !', total: 0,
+    preparer: () => {
+      enemies = [];
+      pendingSpawnWarning = null;
+      playVictorySound();
+      launchFireworks();
+    },
+    texte: () => 'Tu connais l\'essentiel ! Tout est rappelé dans l\'aide (' +
+      texteCommande('touche H', 'LT / L2', 'menu ☰, bouton Aide') + '). Une vraie partie va commencer…'
+  }
+];
+
+function etapesTutoActives() {
+  return etapesTuto.filter(e => !e.condition || e.condition());
+}
+
+function lancerTuto() {
+  if (enLigne || enEcranInvite()) {
+    spawnPopup(canvas.width / 2, canvas.height / 2, 'Tutoriel : quitte d\'abord le jeu en ligne', '#ffd54f');
+    return;
+  }
+  if (aideOuverte) fermerAide();
+  if (menuBuffsOuvert) fermerMenuBuffs();
+  const modeAvant = modeJeu;
+  modeJeu = 'solo'; // le tutoriel se joue seul ; le mode choisi revient à la fin (voir finirTutoSiActif)
+  majBoutonMode();
+  init();
+  const now = performance.now();
+  tuto = {
+    modeAvant,
+    etapes: etapesTutoActives(),
+    index: -1,
+    etape: null,
+    debutEtape: now,
+    reussiA: 0,
+    virages: 0,
+    derniereDirection: {x: 1, y: 0},
+    killsVus: 0,
+    base: {}
+  };
+  // partie lente, sans ennemis au départ ; un petit compte à rebours avant de partir
+  enemies = [];
+  pendingSpawnWarning = null;
+  baseTickInterval = tickIntervalDifficile / vitesseTuto;
+  joueurs[0].tickInterval = baseTickInterval;
+  waitingToStart = false;
+  countdownActive = true;
+  countdownStartTime = now;
+  messageEl.textContent = '🎓 Tutoriel';
+  demarrerEtapeTuto(0);
+  majBoutonsAide();
+}
+
+function demarrerEtapeTuto(index) {
+  const t = tuto;
+  if (t.etape && t.etape.terminer) t.etape.terminer(t);
+  t.index = index;
+  t.etape = t.etapes[index];
+  t.debutEtape = performance.now();
+  t.reussiA = 0;
+  t.killsVus = stats.enemiesKilled;
+  t.base = {
+    pommes: stats.applesEaten,
+    ennemis: stats.enemiesKilled,
+    pommesBleues: stats.blueApplesEaten,
+    pommesOr: stats.goldenApplesEaten,
+    coeurs: stats.heartsCollected
+  };
+  if (t.etape.preparer) t.etape.preparer(t);
+}
+
+// appelé par init() : une partie relancée (bouton Rejouer, difficulté...) arrête le tutoriel
+// et remet le mode Solo / Coop choisi par le joueur
+function finirTutoSiActif() {
+  if (!tuto) return;
+  const modeAvant = tuto.modeAvant;
+  tuto = null;
+  if (modeAvant !== modeJeu) {
+    modeJeu = chargerModeJeu(); // le choix mémorisé (ou celui que le joueur vient de faire)
+    majBoutonMode();
+    initHighscores();
+  }
+  majBoutonsAide();
+}
+
+function quitterTuto(termine) {
+  if (!tuto) return;
+  if (termine) {
+    try {
+      localStorage.setItem(cleStockageTutoFait, 'oui');
+    } catch (e) {
+      // stockage indisponible : on reproposera simplement le tutoriel
+    }
+  }
+  init(); // retour à l'écran de départ, dans le mode du joueur
+}
+
+// le tutoriel ne se perd pas : sans vie ou contre un mur, le serpent repart d'un endroit sûr
+function tutoSauverJoueur() {
+  const j = joueurActif;
+  const place = placeReanimation() || {cases: departJoueur(0).cases, direction: {x: 1, y: 0}};
+  const now = performance.now();
+  j.snake = place.cases.map(c => ({...c}));
+  j.prevSnake = place.cases.map(c => ({...c}));
+  j.direction = {...place.direction};
+  j.nextDirection = {...place.direction};
+  j.directionLockedThisTick = false;
+  j.pendingGrowth = 0;
+  j.snakeHistory = [];
+  j.blessures = [];
+  j.trailPoints = [];
+  j.interpolatedPositionsCache = [];
+  j.lives = Math.max(j.lives, maxLives);
+  j.invulnerableUntil = now + 2000;
+  j.lastTickTime = now;
+  if (rollbackPlayback && rollbackPlayback.joueur === j) rollbackPlayback = null;
+  tuto.derniereDirection = {...place.direction};
+  const tete = centreCase(j.snake[0]);
+  spawnPopup(tete.x, tete.y - 14, 'Oups ! On repart d\'ici', '#ffd54f');
+  spawnParticles(tete.x, tete.y, couleurJoueur(j), 18);
+  updateHeartsDisplay();
+  majCompteurSegments();
+}
+
+// la pause décale aussi les minuteurs du tutoriel
+function decalerTuto(duree) {
+  if (!tuto) return;
+  tuto.debutEtape += duree;
+  if (tuto.reussiA) tuto.reussiA += duree;
+}
+
+// appelé à chaque image de partie (hors pause, compte à rebours et rollback)
+function majTuto(now, dt) {
+  const t = tuto;
+  if (!t || gameOver) return;
+  const etape = t.etape;
+
+  // virages : chaque changement de direction réel du serpent
+  if ((direction.x || direction.y) && (direction.x !== t.derniereDirection.x || direction.y !== t.derniereDirection.y)) {
+    t.virages++;
+    t.derniereDirection = {...direction};
+  }
+
+  if (etape.cle === 'fin') {
+    if (now - t.debutEtape > dureeFinTuto) quitterTuto(true);
+    return;
+  }
+
+  if (t.reussiA) {
+    if (now - t.reussiA >= delaiEtapeReussie) demarrerEtapeTuto(t.index + 1);
+    return;
+  }
+  if (etape.entretien) etape.entretien(t, now, dt);
+  if (etape.progres(t) >= etape.total) {
+    t.reussiA = now;
+    const tete = centreCase(snake[0]);
+    spawnPopup(tete.x, tete.y - 16, '✔ Bravo !', '#69f0ae');
+    spawnParticles(tete.x, tete.y, '#69f0ae', 16);
+    playHeartPickupSound();
+  }
+}
+
+// panneau de consigne (en bas, ou en haut si le serpent est en bas) et repère sur la cible
+function dessinerTuto() {
+  const t = tuto;
+  if (!t || gameOver) return;
+  const etape = t.etape;
+  const now = performance.now();
+  const w = canvas.width;
+
+  // repère sur la cible : anneau qui pulse et flèche qui rebondit au-dessus
+  const cible = !t.reussiA && etape.cible ? etape.cible() : null;
+  if (cible && !countdownActive) {
+    const pulse = Math.sin(now / 160);
+    ctx.save();
+    ctx.strokeStyle = '#ffd54f';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.55 + pulse * 0.25;
+    ctx.beginPath();
+    ctx.arc(cible.x, cible.y, (cible.radius || 10) + 9 + pulse * 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffd54f';
+    ctx.font = 'bold 16px ' + currentTheme.fontFamily;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    const haut = cible.y - (cible.radius || 10) - 12 - Math.abs(pulse) * 5;
+    ctx.fillText('▼', cible.x, haut > 16 ? haut : cible.y + (cible.radius || 10) + 30);
+    ctx.restore();
+  }
+
+  const numero = t.index + 1;
+  const totalEtapes = t.etapes.length;
+  const fait = Math.min(etape.total, etape.progres ? etape.progres(t) : 0);
+  const titre = etape.cle === 'fin'
+    ? '🎓 ' + etape.titre
+    : '🎓 Étape ' + numero + ' / ' + totalEtapes + ' · ' + etape.titre + (etape.total > 1 ? '  (' + fait + ' / ' + etape.total + ')' : '');
+  const texte = t.reussiA ? '✔ Réussi ! Étape suivante…' : etape.texte(t);
+  const aide = modeEntree === 'clavier' ? 'Échap : pause  •  T : quitter le tutoriel'
+    : modeEntree === 'manette' ? 'Start : pause  •  LT : aide et quitter' : 'Menu ☰ : quitter le tutoriel';
+
+  ctx.save();
+  ctx.font = '13px ' + currentTheme.fontFamily;
+  const marge = 10;
+  const lignes = couperTexte(texte, w - 16 - 2 * marge);
+  const h = 22 + lignes.length * 17 + 18 + 2 * marge - 4;
+  // en bas, sauf si le panneau y cache davantage : la tête du serpent compte plus que la cible de l'étape
+  const tete = snake[0] && centreCase(snake[0]);
+  const sous = (p, yPanneau) => p && p.y > yPanneau - 24 && p.y < yPanneau + h + 24 ? 1 : 0;
+  const gene = yPanneau => 2 * sous(tete, yPanneau) + sous(cible, yPanneau);
+  const y = gene(6) < gene(canvas.height - h - 6) ? 6 : canvas.height - h - 6;
+  const couleur = t.reussiA || etape.cle === 'fin' ? '#69f0ae' : '#ffd54f';
+
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = 'rgba(12, 14, 26, 0.9)';
+  ctx.strokeStyle = couleur;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(8, y, w - 16, h, 8);
+  else ctx.rect(8, y, w - 16, h);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  // barre de progression des étapes, en haut du panneau
+  const avance = (t.index + (t.reussiA ? 1 : 0)) / totalEtapes;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.fillRect(18, y + 4, w - 36, 3);
+  ctx.fillStyle = couleur;
+  ctx.fillRect(18, y + 4, (w - 36) * avance, 3);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = couleur;
+  ctx.font = 'bold 14px ' + currentTheme.fontFamily;
+  ctx.fillText(titre, 8 + marge, y + marge + 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '13px ' + currentTheme.fontFamily;
+  lignes.forEach((l, i) => ctx.fillText(l, 8 + marge, y + marge + 24 + i * 17));
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  ctx.font = '11px ' + currentTheme.fontFamily;
+  ctx.fillText(aide, 8 + marge, y + h - marge - 10);
+  ctx.restore();
+}
 // ============================================================
 // --- Démarrage ---
 // ============================================================
