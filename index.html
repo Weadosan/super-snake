@@ -10288,7 +10288,7 @@ function showEndGameStats() {
   majRecapSucces();
 }
 
-// --- Tableau des meilleurs scores (persistant via window.storage si disponible) ---
+// --- Tableau des meilleurs scores (gardé dans le localStorage du navigateur) ---
 const maxHighscores = 5;
 
 // meilleurs scores séparés par difficulté ; Difficile garde les clés d'origine (anciens scores)
@@ -10297,16 +10297,6 @@ function cleHighscores(base) {
 }
 
 async function loadHighscores() {
-  // essaie d'abord window.storage (si un jour publié comme artefact Claude),
-  // sinon utilise localStorage, qui fonctionne dans un fichier HTML normal
-  try {
-    if (window.storage) {
-      const result = await window.storage.get(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), false);
-      return result ? JSON.parse(result.value) : [];
-    }
-  } catch (err) {
-    // ignore, on tente localStorage ensuite
-  }
   try {
     const raw = localStorage.getItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'));
     return raw ? JSON.parse(raw) : [];
@@ -10316,14 +10306,6 @@ async function loadHighscores() {
 }
 
 async function saveHighscoresList(list) {
-  try {
-    if (window.storage) {
-      await window.storage.set(cleHighscores(enCoop() ? 'highscoresCoop' : 'highscores'), JSON.stringify(list), false);
-      return;
-    }
-  } catch (err) {
-    // ignore, on tente localStorage ensuite
-  }
   try {
     localStorage.setItem(cleHighscores(enCoop() ? 'snakeHighscoresCoop' : 'snakeHighscores'), JSON.stringify(list));
   } catch (err) {
