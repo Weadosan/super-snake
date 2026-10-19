@@ -1821,6 +1821,100 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   }
   #optionsActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
   #optionsFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; border: none !important; }
+
+  /* --- Mode Malédiction (js/18-malediction.js) --- */
+  #maledictionJeuBtn {
+    position: absolute;
+    top: 200px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ff5252;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+    opacity: 0.6;
+  }
+  #maledictionJeuBtn.actif { opacity: 1; background: rgba(120, 0, 0, 0.8); box-shadow: 0 0 8px #ff5252; }
+  #maledictionJeuBtn:hover { background: #ff5252; opacity: 1; }
+  @media (max-width: 600px) {
+    #maledictionJeuBtn { top: 6px; right: 190px; }
+  }
+  body:not(.entre-parties) #maledictionJeuBtn { display: none; }
+  body.mode-tactile #maledictionJeuBtn { position: fixed; top: 12px; right: 120px; z-index: 16; }
+  body.plateau-adapte #maledictionJeuBtn,
+  body.plateau-adapte #maledictionPanel { zoom: var(--zoom-interface, 1); }
+  #maledictionHud { color: #ff8a80; }
+  #maledictionMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #maledictionMenu.ouvert { display: flex; }
+  #maledictionPanel {
+    background: var(--bg-canvas);
+    border: 2px solid #ff5252;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    box-shadow: 0 0 24px rgba(255, 23, 68, 0.35);
+  }
+  #maledictionPanel h2 { margin: 0 0 6px 0; font-size: 18px; text-align: center; color: #ff8a80; }
+  .malediction-intro { font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0; text-align: center; }
+  #maledictionListe { overflow-y: auto; min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 2px; }
+  .malediction-ligne {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .malediction-ligne:hover, .malediction-ligne:focus-visible, .malediction-ligne.focus-manette { border-color: #ff8a80; outline: none; }
+  .malediction-ligne.actif { border: 2px solid #ff5252; background: rgba(255, 23, 68, 0.18); }
+  .malediction-icone { font-size: 20px; width: 26px; text-align: center; }
+  .malediction-texte { flex: 1; display: flex; flex-direction: column; }
+  .malediction-texte b { font-size: 14px; }
+  .malediction-texte small { font-size: 11px; color: var(--text-muted); }
+  .malediction-bonus { font-weight: bold; color: #ffd700; font-size: 13px; white-space: nowrap; }
+  .malediction-ligne:not(.actif) .malediction-bonus { opacity: 0.55; }
+  #maledictionTotal { text-align: center; font-weight: bold; color: #ffd700; margin: 10px 0 0 0; font-size: 14px; }
+  #maledictionActions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  #maledictionActions button {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #maledictionFermer { background: #ff5252 !important; color: #14141f !important; font-weight: bold; border: none !important; }
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
@@ -1890,6 +1984,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button id="pauseBtn">⏸️ Pause</button>
       <button id="muteBtn">🔊 Son</button>
       <button id="buffMenuBtn">🛒 Boutique</button>
+      <button id="maledictionBtn">💀 Malédiction</button>
       <button id="modeBtn">👤 Solo</button>
       <button id="difficulteBtn">🟡 Normal</button>
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
@@ -1907,6 +2002,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div id="segmentCounter">Segments : 3</div>
       <div id="killProgress">Ennemis tués : 0 / 25 (❤️ bonus)</div>
       <div id="difficulteHud">Difficulté : Normal</div>
+      <div id="maledictionHud"></div>
       <div id="shieldStatus">Bouclier (Maj) : Prêt</div>
       <div id="buffStatus"></div>
     </div>
@@ -1918,6 +2014,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
       <button id="optionsJeuBtn" title="Options : volume, plein écran, touches (O)">⚙️</button>
       <button id="boutiqueJeuBtn" title="Boutique (B)">🛒<span id="boutiqueJeuSolde"></span></button>
+      <button id="maledictionJeuBtn" title="Malédiction (M) : plus dur, plus d'Écailles">💀</button>
     </div>
     <div id="touchControls">
       <button class="touch-btn" id="touchBoost">🚀 Boost</button>
@@ -4283,7 +4380,7 @@ function sauverCapacites() {
 
 // tire un buff au hasard parmi ceux activés et débloqués dans la Boutique (null si aucun)
 function tirerBuffAleatoire() {
-  const dispo = buffsDisponibles();
+  const dispo = buffsEnJeu();
   if (!dispo.length) return null;
   return dispo[Math.floor(Math.random() * dispo.length)];
 }
@@ -4528,6 +4625,8 @@ const popupLifetime = 800; // ms
 // buffs de la pomme bleue, thèmes, skins du serpent et de la tourelle. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
 // Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
 // reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
+// Mode Malédiction : des malus choisis avant la partie (reglagesProgression.maledictions, écran js/18-malediction.js),
+// chacun ajoute un bonus en % aux Écailles de la partie. Le jeu ne les lit que par maledictionActive(cle).
 // Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
 // boutons pour se donner des Écailles ou tout débloquer, pas de succès.
 
@@ -4586,7 +4685,19 @@ const reglagesProgression = {
     balles: {effet: 0.15, prix: [150, 300]}, // vitesse des tirs (+15 %)
     avarice: {effet: 0.10, prix: [100, 200, 300]} // Écailles gagnées (+10 %)
   },
-  vitesseAimant: 0.12 // px par ms : vitesse à laquelle l'aimant attire une pomme
+  vitesseAimant: 0.12, // px par ms : vitesse à laquelle l'aimant attire une pomme
+  // Mode Malédiction : malus cumulables choisis avant la partie ; bonus = % d'Écailles en plus sur le gain de la partie
+  // (les bonus s'additionnent : trois malus à +20 % donnent ×1,6, en plus du bonus de difficulté)
+  maledictions: {
+    rapides: {bonus: 0.25, vitesse: 1.35}, // ennemis et boss 35 % plus rapides
+    horde: {bonus: 0.25, intervalle: 0.6}, // un ennemi toutes les 2,2 s x 0,6
+    coriaces: {bonus: 0.20, pvBoss: 1.5}, // tous les ennemis à 2 coups, boss avec 50 % de PV en plus
+    serpentRapide: {bonus: 0.20, vitesse: 1.2}, // le serpent avance 20 % plus vite
+    sansBouclier: {bonus: 0.15},
+    sansSprint: {bonus: 0.10},
+    sansBuffs: {bonus: 0.15}, // plus aucune pomme bleue
+    unCoeur: {bonus: 0.40} // un seul cœur au départ (Cœur de réserve compris), et plus de cœur bonus
+  }
 };
 
 // textes de la Boutique ; {n} = l'effet total au niveau affiché
@@ -4598,6 +4709,18 @@ const textesAmeliorations = {
   aimant: {icone: '🧲', nom: 'Aimant', detail: n => 'Pommes en or et bleues attirées à ' + n + ' px de la tête'},
   balles: {icone: '🔫', nom: 'Balles rapides', detail: n => '+' + Math.round(n * 100) + ' % de vitesse des tirs'},
   avarice: {icone: '🪙', nom: 'Avarice', detail: n => '+' + Math.round(n * 100) + ' % d\'Écailles gagnées'}
+};
+
+// textes du mode Malédiction, dans l'ordre de l'écran de choix
+const textesMaledictions = {
+  rapides: {icone: '⚡', nom: 'Ennemis rapides', detail: m => 'Ennemis et boss ' + Math.round((m.vitesse - 1) * 100) + ' % plus rapides'},
+  horde: {icone: '👾', nom: 'Horde', detail: m => 'Les ennemis apparaissent ' + Math.round((1 / m.intervalle - 1) * 100) + ' % plus souvent'},
+  coriaces: {icone: '🧱', nom: 'Ennemis coriaces', detail: m => 'Tous les ennemis à 2 coups, boss ' + Math.round((m.pvBoss - 1) * 100) + ' % plus solides'},
+  serpentRapide: {icone: '🏃', nom: 'Serpent pressé', detail: m => 'Ton serpent avance ' + Math.round((m.vitesse - 1) * 100) + ' % plus vite'},
+  sansBouclier: {icone: '🛡️', nom: 'Sans bouclier', detail: () => 'Le bouclier ne marche pas'},
+  sansSprint: {icone: '🐢', nom: 'Sans sprint', detail: () => 'Pas d\'accélération'},
+  sansBuffs: {icone: '🔵', nom: 'Sans buffs', detail: () => 'Plus aucune pomme bleue'},
+  unCoeur: {icone: '🖤', nom: 'Un seul cœur', detail: () => '1 cœur au départ, plus de cœur bonus, donc pas de rollback'}
 };
 
 const modeDev = /[?&]dev(=|&|$)/.test(location.search);
@@ -4616,6 +4739,7 @@ function progressionVide() {
     achats: {}, // amélioration ou contenu -> niveau acheté
     inactifs: [], // améliorations coupées dans la Boutique
     succesPayes: [], // succès dont les Écailles ont déjà été données
+    maledictions: [], // malus choisis pour les prochaines parties (mode Malédiction)
     migre: false, // anciens joueurs déjà traités (ancienJoueur)
     boutiqueVue: false // la Boutique a déjà été ouverte (sinon on la signale)
   };
@@ -4638,6 +4762,7 @@ function lireProgression(cle) {
     ['inactifs', 'succesPayes'].forEach(c => {
       if (Array.isArray(lu[c])) p[c] = lu[c].filter(x => typeof x === 'string');
     });
+    if (Array.isArray(lu.maledictions)) p.maledictions = lu.maledictions.filter(c => reglagesProgression.maledictions[c]);
     ['migre', 'boutiqueVue'].forEach(c => { p[c] = lu[c] === true; });
     return p;
   } catch (e) {
@@ -4776,6 +4901,57 @@ function buffsDisponibles() {
   return buffsActifs.filter(t => contenuDebloque('buff', t));
 }
 
+// buffs que la pomme bleue peut donner dans cette partie (aucun sous la malédiction « Sans buffs »)
+function buffsEnJeu() {
+  return maledictionActive('sansBuffs') ? [] : buffsDisponibles();
+}
+
+// --- Mode Malédiction ---
+// malus de la partie en cours : copiés au lancement (init), pour qu'un changement n'agisse qu'à la partie suivante
+let maledictionsPartie = [];
+
+function maledictionActive(cle) {
+  return !enTuto() && maledictionsPartie.includes(cle);
+}
+
+function basculerMalediction(cle) {
+  if (!reglagesProgression.maledictions[cle]) return;
+  const liste = progression.maledictions;
+  progression.maledictions = liste.includes(cle) ? liste.filter(c => c !== cle) : liste.concat(cle);
+  sauverProgression();
+}
+
+// bonus d'Écailles d'une liste de malus (0,75 = +75 %)
+function bonusMaledictions(liste) {
+  const m = reglagesProgression.maledictions;
+  return Math.round(liste.reduce((s, c) => s + (m[c] ? m[c].bonus : 0), 0) * 100) / 100;
+}
+
+// réglage d'un malus actif (ex. reglageMalediction('rapides', 'vitesse', 1) : 1,35 sous la malédiction, sinon 1)
+function reglageMalediction(cle, champ, sinon) {
+  return maledictionActive(cle) ? reglagesProgression.maledictions[cle][champ] : sinon;
+}
+
+// points de vie d'un boss (+50 % sous la malédiction « Ennemis coriaces »)
+function pvBossPartie() {
+  return Math.round(reglagesDifficulte().pvBoss * reglageMalediction('coriaces', 'pvBoss', 1));
+}
+
+// bouclier et sprint : coupés dans la Boutique ou par une malédiction
+function bouclierDisponible() {
+  return capacitesActives.bouclier && !maledictionActive('sansBouclier');
+}
+
+function sprintDisponible() {
+  return capacitesActives.sprint && !maledictionActive('sansSprint');
+}
+
+// « +75 % » ; vide sans malus
+function texteBonusMaledictions(liste) {
+  const b = bonusMaledictions(liste);
+  return b > 0 ? '+' + Math.round(b * 100) + ' %' : '';
+}
+
 // --- Effets des améliorations dans la partie ---
 function dureeRechargeBouclier() {
   return shieldCooldownDuration * (1 - bonusProgression('bouclier'));
@@ -4880,10 +5056,11 @@ let dernierGainPartie = null; // détail du gain de la dernière partie terminé
 function progressionNouvellePartie() {
   partieProgression = {succes: 0};
   dernierGainPartie = null;
+  maledictionsPartie = enEcranInvite() ? [] : progression.maledictions.slice();
 }
 
 // calcul pur : ce que rapporte une partie, ligne par ligne
-// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte}
+// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte, maledictions (liste, facultative)}
 function gainPartie(partie) {
   const g = reglagesProgression.gains;
   const lignes = [];
@@ -4896,9 +5073,10 @@ function gainPartie(partie) {
   ajouter('🟡 ' + nomPomme('or') + ' × ' + partie.pommesOr, partie.pommesOr * g.pommeOr);
   if (partie.victoire) ajouter('🎉 Victoire', g.victoire);
   const base = lignes.reduce((s, l) => s + l[1], 0);
+  const bonusMalus = bonusMaledictions(partie.maledictions || []);
   const multiplicateur = (reglagesProgression.multiplicateurDifficulte[partie.difficulte] || 1) *
-    (1 + bonusProgression('avarice'));
-  return {lignes, base, multiplicateur, total: Math.round(base * multiplicateur)};
+    (1 + bonusProgression('avarice')) * (1 + bonusMalus);
+  return {lignes, base, multiplicateur, bonusMaledictions: bonusMalus, total: Math.round(base * multiplicateur)};
 }
 
 // fin de partie (perdue ou gagnée) : calcule le gain, l'ajoute et le garde pour l'écran de fin
@@ -4911,7 +5089,8 @@ function progressionFinPartie(victoire) {
     pommesOr: stats.goldenApplesEaten,
     victoire,
     dureeSecondes: (performance.now() - stats.startTime) / 1000,
-    difficulte
+    difficulte,
+    maledictions: maledictionsPartie
   });
   ajouterEcailles(gain.total);
   if (gain.total > 0) progression.parties++;
@@ -4936,7 +5115,8 @@ function recevoirEcaillesHote(n) {
 function texteGainPartie() {
   if (!dernierGainPartie) return '';
   const n = dernierGainPartie.total + partieProgression.succes;
-  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + '  (total ' + progression.ecailles + ')';
+  const malus = dernierGainPartie.bonusMaledictions > 0 ? '  💀 ' + texteBonusMaledictions(maledictionsPartie) : '';
+  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + malus + '  (total ' + progression.ecailles + ')';
 }
 
 // détail du gain sous le jeu, dans les stats de fin de partie
@@ -4947,8 +5127,14 @@ function majRecapEcailles() {
   const g = dernierGainPartie;
   if (!g) return;
   const lignes = g.lignes.slice();
-  if (g.base > 0 && g.multiplicateur !== 1) {
-    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, '×' + String(Math.round(g.multiplicateur * 100) / 100).replace('.', ',')]);
+  const nombre = x => '×' + String(Math.round(x * 100) / 100).replace('.', ',');
+  const multiplicateurSansMalus = g.multiplicateur / (1 + (g.bonusMaledictions || 0));
+  if (g.base > 0 && Math.abs(multiplicateurSansMalus - 1) > 0.001) {
+    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, nombre(multiplicateurSansMalus)]);
+  }
+  if (g.base > 0 && g.bonusMaledictions > 0) {
+    const icones = maledictionsPartie.map(c => textesMaledictions[c].icone).join('');
+    lignes.push(['💀 Malédiction ' + icones, nombre(1 + g.bonusMaledictions)]);
   }
   if (partieProgression.succes > 0) lignes.push(['🏆 Succès', partieProgression.succes]);
   const h = document.createElement('h3');
@@ -5041,7 +5227,8 @@ function nouveauJoueur(numero) {
     direction: {x: 0, y: 0},
     nextDirection: {x: 0, y: 0},
     directionLockedThisTick: false, // un seul virage entre deux déplacements (évite le demi-tour en 2 appuis rapides)
-    lives: maxLives + bonusProgression('coeur'), // + Cœur de réserve (js/03-progression.js)
+    // + Cœur de réserve (js/03-progression.js), ou un seul sous la malédiction « Un seul cœur »
+    lives: maledictionActive('unCoeur') ? 1 : maxLives + bonusProgression('coeur'),
     pendingGrowth: 0, // nombre de prochains ticks où la queue ne doit pas être retirée (croissance différée)
     tongueUntil: 0,
     snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~6 dernières secondes
@@ -5935,7 +6122,8 @@ function init() {
   finirTutoSiActif(); // une partie relancée arrête le tutoriel (js/18-tuto.js)
   astuceEnCours = null;
   // un serpent par joueur, avec ses vies, buffs, bouclier et commandes (voir 04-joueurs.js)
-  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // avant creerJoueurs
+  progressionNouvellePartie(); // fixe aussi les malédictions de la partie, avant creerJoueurs
+  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse / reglageMalediction('serpentRapide', 'vitesse', 1);
   creerJoueurs();
   score = 0;
   gameOver = false;
@@ -5955,7 +6143,7 @@ function init() {
   };
   statsPanelEl.style.display = 'none';
   succesNouvellePartie();
-  progressionNouvellePartie();
+  majHudMalediction();
   killThreshold = randomKillThreshold();
   heartPickup = null;
   lootApples = [];
@@ -6064,8 +6252,8 @@ function majCompteurSegments() {
 }
 
 function updateShieldDisplay() {
-  shieldStatusEl.style.display = capacitesActives.bouclier ? '' : 'none';
-  if (!capacitesActives.bouclier) return;
+  shieldStatusEl.style.display = bouclierDisponible() ? '' : 'none';
+  if (!bouclierDisponible()) return;
   const now = performance.now();
   if (enCoop()) {
     // une seule ligne pour les deux joueurs
@@ -6203,7 +6391,7 @@ function dropBossLoot(x, y) {
 
   // pomme bleue avec le buff x2 (s'ajoute à une éventuelle pomme bleue déjà présente)
   // si x2 est désactivé dans le menu, on prend un autre buff actif ; aucun buff actif = pas de pomme bleue
-  const bossBuff = buffsDisponibles().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
+  const bossBuff = buffsEnJeu().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
   if (bossBuff) {
     const blueSpot = pickSafeDropPosition(Math.PI * 0.25);
     const angleBlue = Math.random() * Math.PI * 2;
@@ -6296,7 +6484,7 @@ function awardEnemyKill(e, facon) {
       changeDirTimer: 800 + Math.random() * 1000,
       ne: performance.now() // pour le succès « Rattrapé ! »
     });
-  } else if (!blueApples.length && buffsDisponibles().length &&
+  } else if (!blueApples.length && buffsEnJeu().length &&
       Math.random() < reglagesDifficulte().chancePommeBleue + bonusProgression('pommeBleue')) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
     const angle = Math.random() * Math.PI * 2;
@@ -6423,6 +6611,7 @@ function announceBoss() {
 }
 
 function spawnHeartPickup() {
+  if (maledictionActive('unCoeur')) return; // malédiction : plus aucun cœur bonus
   let x, y;
   const safeDistance = 130;
   const heartPickupRadius = reglagesDifficulte().rayonCoeur; // plus gros en Facile
@@ -6549,8 +6738,8 @@ function spawnBoss(forcedPos) {
     speedFactor: 1,
     radius: bossRadius,
     changeDirTimer: 0,
-    hp: reglagesDifficulte().pvBoss,
-    maxHp: reglagesDifficulte().pvBoss,
+    hp: pvBossPartie(),
+    maxHp: pvBossPartie(),
     color: bossColor,
     hitFlashUntil: 0,
     isBoss: true,
@@ -6615,7 +6804,8 @@ function spawnEnemy(preAssignedPos) {
 
   const angle = Math.random() * Math.PI * 2;
   // chance d'obtenir un ennemi résistant (2 coups) selon la difficulté (Difficile 30%, Facile aucun)
-  const isTough = Math.random() < reglagesDifficulte().chanceResistant;
+  // (tous sous la malédiction « Ennemis coriaces »)
+  const isTough = maledictionActive('coriaces') || Math.random() < reglagesDifficulte().chanceResistant;
   const newEnemy = {
     x, y,
     vx: Math.cos(angle) * enemySpeed * speedFactor,
@@ -6778,7 +6968,7 @@ function updateCombat(deltaMs) {
   if (tutoActif()) {
     // rien : voir js/18-tuto.js
   } else if (!endgameNoEnemies) {
-    const timeUntilNextSpawn = enemySpawnInterval - (performance.now() - lastEnemySpawn);
+    const timeUntilNextSpawn = enemySpawnInterval * reglageMalediction('horde', 'intervalle', 1) - (performance.now() - lastEnemySpawn);
 
     if (!pendingSpawnWarning && timeUntilNextSpawn <= spawnWarningDuration) {
       pendingSpawnWarning = pickEnemySpawnPosition();
@@ -6805,7 +6995,8 @@ function updateCombat(deltaMs) {
 
   // déplacement aléatoire des ennemis (rebond sur les murs + changements de direction)
   // le boss, lui, poursuit directement la tête du serpent le plus proche sans relâche
-  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse;
+  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse *
+    reglageMalediction('rapides', 'vitesse', 1);
 
   enemies.forEach(e => {
     if (performance.now() < (e.frozenUntil || 0)) return; // gelé : ne bouge pas
@@ -8591,7 +8782,7 @@ function dessinerSerpent(t) {
 
   // petit anneau de recharge du bouclier autour de la tête (masqué pendant le bouclier actif,
   // déjà signalé par son propre halo bleu pulsant)
-  if (performance.now() >= shieldActiveUntil && capacitesActives.bouclier) {
+  if (performance.now() >= shieldActiveUntil && bouclierDisponible()) {
     drawShieldCooldownRing(headPos);
   }
 
@@ -8906,9 +9097,11 @@ function drawCountdown() {
   if (waitingToStart) {
     // titre en haut, puis le tutoriel un peu réduit dessous
     const hauteurTitre = drawTitreJeu();
-    const echelle = (hauteurPlateau - hauteurTitre) / hauteurPlateau;
+    const hauteurBandeau = dessinerBandeauMalediction(hauteurTitre); // js/18-malediction.js
+    const haut = hauteurTitre + hauteurBandeau;
+    const echelle = (hauteurPlateau - haut) / hauteurPlateau;
     ctx.save();
-    ctx.translate(largeurPlateau * (1 - echelle) / 2, hauteurTitre);
+    ctx.translate(largeurPlateau * (1 - echelle) / 2, haut);
     ctx.scale(echelle, echelle);
     drawControlsTutorial();
     ctx.restore();
@@ -9035,7 +9228,7 @@ function drawControlsTutorial() {
   // --- Espace : démarrer / accélérer ---
   const spaceY = padY + keySize * 2 + 4 + 30;
   drawKeyIcon(iconX - keySize - 4, spaceY, keySize * 3 + 8, 26, nomTouche(touches.boost).toUpperCase());
-  if (capacitesActives.sprint) {
+  if (sprintDisponible()) {
     ctx.fillText('Démarrer, puis', labelX, spaceY + 12);
     ctx.fillText('accélère (maintenir)', labelX, spaceY + 32);
   } else {
@@ -9046,7 +9239,7 @@ function drawControlsTutorial() {
   // --- Shift : bouclier ---
   const shiftY = spaceY + 26 + 26;
   drawKeyIcon(iconX - keySize - 4, shiftY, keySize * 3 + 8, 26, touches.bouclier === 'ShiftLeft' ? 'SHIFT' : nomTouche(touches.bouclier).toUpperCase());
-  if (capacitesActives.bouclier) {
+  if (bouclierDisponible()) {
     ctx.fillText('Bouclier 2s', labelX, shiftY + 12);
     ctx.fillText('(recharge 15s)', labelX, shiftY + 32);
   } else {
@@ -9081,15 +9274,15 @@ function drawTutorielCoop() {
   const lignes = partage
     ? [
         ['🕹️ Bouger', nomTouchesDirection(false), nomTouchesDirection(true)],
-        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), nomTouche(touches.boostJ2)],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', nomTouche(touches.bouclier), nomTouche(touches.bouclierJ2)] : null,
+        [sprintDisponible() ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), nomTouche(touches.boostJ2)],
+        bouclierDisponible() ? ['🛡️ Bouclier', nomTouche(touches.bouclier), nomTouche(touches.bouclierJ2)] : null,
         ['🔫 Tirer', 'Clic gauche', nomTouche(touches.tirJ2) + ' (auto)'],
         ['⏪ Rollback', 'Clic droit', nomTouche(touches.rollbackJ2)]
       ]
     : [
         ['🕹️ Bouger', nomTouchesDirection(true), 'Stick g.'],
-        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), 'A / Croix'],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', nomToucheBouclierSolo(), 'B / LB'] : null,
+        [sprintDisponible() ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), 'A / Croix'],
+        bouclierDisponible() ? ['🛡️ Bouclier', nomToucheBouclierSolo(), 'B / LB'] : null,
         ['🎯 Viser', 'Souris', 'Stick droit'],
         ['🔫 Tirer', 'Clic gauche', 'RT / RB / X']
       ];
@@ -9155,6 +9348,7 @@ function drawControlsTutorialListe(mode) {
         ['🚀', 'A / Croix', 'démarrer, puis accélère (maintenir)'],
         ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'],
         ['🛒', 'Y / Triangle ou Select', 'boutique'],
+        ['💀', 'X entre deux parties', 'malédiction'],
         ['⏸️', 'Start', 'pause']
       ]
     : [
@@ -9167,10 +9361,10 @@ function drawControlsTutorialListe(mode) {
       ];
   // capacités désactivées dans le menu : on adapte les lignes
   lignes.forEach(l => {
-    if (l[0] === '🚀' && !capacitesActives.sprint) l[2] = 'démarrer (sprint désactivé)';
+    if (l[0] === '🚀' && !sprintDisponible()) l[2] = 'démarrer (sprint désactivé)';
   });
   for (let i = lignes.length - 1; i >= 0; i--) {
-    if (lignes[i][0] === '🛡️' && !capacitesActives.bouclier) lignes.splice(i, 1);
+    if (lignes[i][0] === '🛡️' && !bouclierDisponible()) lignes.splice(i, 1);
   }
 
   ctx.save();
@@ -14395,7 +14589,8 @@ const touchesParDefaut = {
   haut: 'KeyW', bas: 'KeyS', gauche: 'KeyA', droite: 'KeyD', boost: 'Space', bouclier: 'ShiftLeft',
   hautJ2: 'ArrowUp', basJ2: 'ArrowDown', gaucheJ2: 'ArrowLeft', droiteJ2: 'ArrowRight',
   boostJ2: 'ControlRight', bouclierJ2: 'ShiftRight', tirJ2: 'Enter', rollbackJ2: 'Backspace',
-  pause: 'KeyP', buffs: 'KeyB', aide: 'KeyH', succes: 'KeyU', tuto: 'KeyT', options: 'KeyO', pleinEcran: 'KeyF'
+  pause: 'KeyP', buffs: 'KeyB', aide: 'KeyH', succes: 'KeyU', tuto: 'KeyT', options: 'KeyO', pleinEcran: 'KeyF',
+  malediction: 'KeyM'
 };
 let touches = {...touchesParDefaut};
 (function chargerTouches() {
@@ -14473,7 +14668,7 @@ function actionPrincipale(j = joueurs[0]) {
   }
   if (countdownActive || j.elimine) return;
   if (j !== joueurActif) return avecJoueur(j, () => actionPrincipale(j));
-  if (!capacitesActives.sprint) return; // sprint désactivé dans le menu
+  if (!sprintDisponible()) return; // sprint désactivé dans la Boutique ou par une malédiction
   if (!boosting) {
     boosting = true;
     tickInterval = baseTickInterval * boostFactor;
@@ -14491,7 +14686,7 @@ function arreterBoost(j = joueurs[0]) {
 function activerBouclier(j = joueurs[0]) {
   if (j !== joueurActif) return avecJoueur(j, () => activerBouclier(j));
   if (isPaused || menuBuffsOuvert || waitingToStart || countdownActive || gameOver || j.elimine) return;
-  if (!capacitesActives.bouclier) return; // bouclier désactivé dans le menu
+  if (!bouclierDisponible()) return; // bouclier désactivé dans la Boutique ou par une malédiction
   const now = performance.now();
   if (now >= shieldReadyAt) {
     shieldActiveUntil = now + shieldDuration;
@@ -14600,6 +14795,11 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === touches.aide) {
     ouvrirAide();
+    return;
+  }
+
+  if (e.code === touches.malediction) {
+    ouvrirMalediction();
     return;
   }
 
@@ -15692,8 +15892,8 @@ function rafraichirMenuBuffs() {
   if (typeof remplacerEmojis === 'function') remplacerEmojis(document.getElementById('boutiqueFiche'));
 
   // boutons tactiles : bouclier masqué, Boost ne sert plus qu'à démarrer
-  document.getElementById('touchBouclier').classList.toggle('capacite-off', !capacitesActives.bouclier);
-  document.getElementById('touchBoost').textContent = capacitesActives.sprint ? '🚀 Boost' : '▶️ Démarrer';
+  document.getElementById('touchBouclier').classList.toggle('capacite-off', !bouclierDisponible());
+  document.getElementById('touchBoost').textContent = sprintDisponible() ? '🚀 Boost' : '▶️ Démarrer';
   const dispo = buffsDisponibles();
   document.querySelectorAll('.legend-buffs li[data-buff]').forEach(li => {
     li.classList.toggle('buff-desactive', !dispo.includes(li.dataset.buff));
@@ -15865,7 +16065,7 @@ buffMenuEl.addEventListener('click', (e) => {
 // ============================================================
 // A/Croix : démarrer, rejouer, boost (maintenu) — B/Rond ou LB : bouclier
 // RT/R2, RB ou X/Carré : tirer — stick droit : viser — stick gauche ou croix : se déplacer
-// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel)
+// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel) — X entre deux parties : malédiction
 const MANETTE = {A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, SELECT: 8, START: 9, HAUT: 12, BAS: 13, GAUCHE: 14, DROITE: 15};
 const zoneMorteStick = 0.5; // seuil pour qu'un stick compte comme une direction
 const zoneMorteVisee = 0.3;
@@ -15965,6 +16165,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
 
+  if (maledictionOuverte) {
+    manetteDansMalediction(dy, vientDAppuyer);
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
+
   if (succesOuvert) {
     manetteDansSucces(dy, vientDAppuyer);
     boutonsManettePrecedents[numero] = etat;
@@ -16001,6 +16207,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
   if (vientDAppuyer(MANETTE.START)) togglePause();
+  // X entre deux parties (il ne tire pas encore) : malédiction
+  if ((waitingToStart || gameOver) && !countdownActive && vientDAppuyer(MANETTE.X)) {
+    ouvrirMalediction();
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
 
   if (!isPaused) {
     if (dx !== 0 || dy !== 0) changerDirection(dx, dy, joueur);
@@ -16104,9 +16316,10 @@ const pagesAide = [
             ['🕹️', 'Stick gauche ou croix', 'se déplacer'],
             ['🎯', 'Stick droit', 'viser'],
             ['🔫', 'RT / R2, RB ou X', 'tirer'],
-            ['🚀', 'A / Croix', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-            capacitesActives.bouclier ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
+            ['🚀', 'A / Croix', sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+            bouclierDisponible() ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
             ['🛒', 'Y / Triangle ou Select', 'boutique'],
+            ['💀', 'X entre deux parties', 'malédiction (plus dur, plus d\'Écailles)'],
             ['❓', 'LT / L2', 'cette aide'],
             ['⏸️', 'Start', 'pause']
           ]
@@ -16115,17 +16328,18 @@ const pagesAide = [
               ['👆', 'Pad ou zone 👆', 'tourner (flèche ou glissé)'],
               ['🕹️', 'Zone 🎯 : stick', 'orienter la tourelle'],
               ['🔫', 'Stick à fond (ou toucher la zone)', 'tirer'],
-              ['🚀', 'Bouton Boost', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-              capacitesActives.bouclier ? ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'] : null,
+              ['🚀', 'Bouton Boost', sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              bouclierDisponible() ? ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'] : null,
               ['☰', 'Bouton Menu', 'buffs, options, aide, tutoriel']
             ]
           : [
               ['⬆️', nomTouchesDirection(true) + ' ou ' + nomTouchesDirection(false), 'se déplacer'],
-              ['🚀', nomTouche(touches.boost), capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-              capacitesActives.bouclier ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
+              ['🚀', nomTouche(touches.boost), sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              bouclierDisponible() ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
               ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
               ['🛒', nomTouche(touches.buffs), 'boutique'],
+              ['💀', nomTouche(touches.malediction), 'malédiction : des malus contre plus d\'Écailles'],
               ['❓', nomTouche(touches.aide), 'cette aide  •  ' + nomTouche(touches.tuto) + ' sur l\'écran de départ : tutoriel'],
               ['🏆', nomTouche(touches.succes), 'tes succès'],
               ['⚙️', nomTouche(touches.options), 'options : volume, plein écran (' + nomTouche(touches.pleinEcran) + '), touches'],
@@ -16209,11 +16423,11 @@ const pagesAide = [
         'Plusieurs rollbacks de suite remontent de plus en plus loin.'));
       zone.appendChild(ligneAide('🐍', 'Se mordre la queue',
         'Le bout coupé est perdu (-10 points par segment) et tu perds 1 ❤️, mais la partie continue.'));
-      if (capacitesActives.bouclier) {
+      if (bouclierDisponible()) {
         zone.appendChild(ligneAide('🛡️', 'Bouclier : 2 secondes sans dégât',
           'Les ennemis qui te touchent sont détruits. Il se recharge en 15 secondes (anneau autour de la tête).'));
       }
-      if (capacitesActives.sprint) {
+      if (sprintDisponible()) {
         zone.appendChild(ligneAide('🚀', 'Sprint', 'Le serpent va 25 % plus vite tant que tu maintiens le boost.'));
       }
       zone.appendChild(ligneAide('🔫', 'La tourelle', 'Elle est portée par le 2e segment et vise ' +
@@ -16236,6 +16450,11 @@ const pagesAide = [
       zone.appendChild(ligneAide('👥', 'Coop à 2', 'Score commun. Un joueur KO revient quand l\'autre ramasse un cœur. ' +
         'Option « Collision entre joueurs » dans les options.'));
       zone.appendChild(ligneAide('🌐', 'En ligne', 'Crée une partie et donne le code à ton ami : il joue le serpent J2 depuis son appareil.'));
+      const malus = progression.maledictions;
+      zone.appendChild(ligneAide('💀', 'Malédiction' + (malus.length ? ' (' + iconesMaledictions(malus) + ' +' +
+        Math.round(bonusMaledictions(malus) * 100) + ' %)' : ''), 'Avant une partie, choisis des malus (ennemis rapides, sans bouclier, ' +
+        'un seul cœur…) : chacun ajoute un bonus aux Écailles de la partie. ' +
+        texteCommande('Touche ' + nomTouche(touches.malediction), 'Bouton X', 'Bouton 💀') + ' entre deux parties.'));
       zone.appendChild(paragrapheAide('Difficulté, Solo / Coop, thèmes et skins se changent dans le menu ☰. Les meilleurs scores sont gardés par difficulté.'));
     }
   }
@@ -16672,13 +16891,13 @@ const astuces = [
   {
     cle: 'boss',
     cible: () => bossSpawnPending ? bossSpawnPosition : enemies.find(e => e.isBoss),
-    texte: () => 'Un boss ! Il te poursuit sans relâche : il faut ' + reglagesDifficulte().pvBoss + ' tirs pour le battre.'
+    texte: () => 'Un boss ! Il te poursuit sans relâche : il faut ' + pvBossPartie() + ' tirs pour le battre.'
   },
   {
     cle: 'blessure',
     cible: () => joueursEnJeu().some(j => j.lives < maxLives) ? centreCase(joueurActif.snake[0]) : null,
     texte: () => 'Aïe ! Un coup coûte 1 ❤️ et 1 segment.' +
-      (capacitesActives.bouclier ? ' Le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
+      (bouclierDisponible() ? ' Le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
   },
   {
     cle: 'rollback',
@@ -17265,6 +17484,211 @@ document.getElementById('editeurTexteFermer').addEventListener('click', () => {
   editeurTexteEl.classList.remove('ouvert');
 });
 // ============================================================
+// --- Mode Malédiction : malus choisis avant la partie, contre plus d'Écailles ---
+// ============================================================
+// Ouvert par « 💀 Malédiction » du menu ☰, le bouton 💀 à côté du plateau, la touche M (modifiable)
+// ou X à la manette, seulement entre deux parties. Les malus et leurs bonus sont dans
+// reglagesProgression.maledictions (js/03-progression.js) ; le choix est gardé dans la progression
+// et copié au lancement de chaque partie (maledictionsPartie). Le tutoriel n'en a jamais.
+
+let maledictionOuverte = false;
+let maledictionAChange = false;
+let focusMalediction = 0; // ligne choisie à la manette
+
+const maledictionMenuEl = document.createElement('div');
+maledictionMenuEl.id = 'maledictionMenu';
+maledictionMenuEl.setAttribute('role', 'dialog');
+maledictionMenuEl.setAttribute('aria-modal', 'true');
+maledictionMenuEl.setAttribute('aria-labelledby', 'maledictionTitre');
+maledictionMenuEl.innerHTML = `
+  <div id="maledictionPanel">
+    <h2 id="maledictionTitre">💀 Malédiction</h2>
+    <p class="malediction-intro">Choisis des malus pour tes prochaines parties : chacun ajoute un bonus aux Écailles gagnées.
+      Ils se cumulent, avec la difficulté et en coop. Pas de malédiction dans le tutoriel.</p>
+    <div id="maledictionListe"></div>
+    <p id="maledictionTotal"></p>
+    <div id="maledictionActions">
+      <button id="maledictionLever">✖ Tout lever</button>
+      <button id="maledictionFermer">Fermer</button>
+    </div>
+  </div>`;
+document.body.appendChild(maledictionMenuEl);
+
+const maledictionListeEl = document.getElementById('maledictionListe');
+Object.keys(textesMaledictions).forEach(cle => {
+  const t = textesMaledictions[cle];
+  const ligne = document.createElement('button');
+  ligne.className = 'malediction-ligne';
+  ligne.dataset.cle = cle;
+  ligne.innerHTML = '<span class="malediction-icone"></span><span class="malediction-texte"><b></b><small></small></span>' +
+    '<span class="malediction-bonus"></span>';
+  ligne.querySelector('.malediction-icone').textContent = t.icone;
+  ligne.querySelector('b').textContent = t.nom;
+  ligne.querySelector('small').textContent = t.detail(reglagesProgression.maledictions[cle]);
+  ligne.querySelector('.malediction-bonus').textContent = '+' + Math.round(reglagesProgression.maledictions[cle].bonus * 100) + ' %';
+  ligne.addEventListener('click', () => {
+    ligne.blur();
+    basculerMalediction(cle);
+    maledictionAChange = true;
+    majMenuMalediction();
+  });
+  maledictionListeEl.appendChild(ligne);
+});
+
+// malédiction modifiable : entre deux parties, hors tutoriel et hors écran de l'invité en ligne
+function maledictionModifiable() {
+  return (waitingToStart || gameOver) && !countdownActive && !tutoActif() && !enEcranInvite();
+}
+
+// « ⚡👾🖤 » : icônes d'une liste de malus
+function iconesMaledictions(liste) {
+  return liste.map(c => textesMaledictions[c].icone).join('');
+}
+
+function majMenuMalediction() {
+  const choisies = progression.maledictions;
+  maledictionListeEl.querySelectorAll('.malediction-ligne').forEach((b, i) => {
+    b.classList.toggle('actif', choisies.includes(b.dataset.cle));
+    b.classList.toggle('focus-manette', modeEntree === 'manette' && i === focusMalediction);
+    b.setAttribute('aria-pressed', choisies.includes(b.dataset.cle) ? 'true' : 'false');
+  });
+  const b = bonusMaledictions(choisies);
+  document.getElementById('maledictionTotal').textContent = choisies.length
+    ? '💀 ' + choisies.length + ' malus : +' + Math.round(b * 100) + ' % d\'Écailles (×' +
+      String(Math.round((1 + b) * 100) / 100).replace('.', ',') + ')'
+    : 'Aucun malus : partie normale.';
+  majHudMalediction();
+}
+
+// rappel dans les infos de la partie (et sur l'écran de l'invité en ligne, qui reçoit le HUD)
+function majHudMalediction() {
+  const hud = document.getElementById('maledictionHud');
+  if (!hud) return;
+  const liste = enTuto() ? [] : maledictionsPartie; // malus de la partie (copiés à son lancement)
+  hud.textContent = liste.length ? '💀 ' + iconesMaledictions(liste) + ' +' + Math.round(bonusMaledictions(liste) * 100) + ' % 🪙' : '';
+  hud.title = liste.map(c => textesMaledictions[c].nom).join(', ');
+  hud.style.display = liste.length ? '' : 'none';
+  const bouton = document.getElementById('maledictionJeuBtn');
+  if (bouton) bouton.classList.toggle('actif', progression.maledictions.length > 0);
+  if (typeof rafraichirMenuBuffs === 'function') rafraichirMenuBuffs(); // boutons tactiles bouclier et boost
+}
+
+function ouvrirMalediction() {
+  if (maledictionOuverte) return;
+  if (!maledictionModifiable()) {
+    if (!enEcranInvite()) {
+      spawnPopup(largeurPlateau / 2, hauteurPlateau / 2, '💀 Malédiction : entre deux parties', '#ff8a80');
+    }
+    return;
+  }
+  if (menuBuffsOuvert) fermerMenuBuffs();
+  if (aideOuverte) fermerAide();
+  if (succesOuvert) fermerSucces();
+  if (optionsOuvertes) fermerOptions();
+  fermerMenuTactile();
+  maledictionOuverte = true;
+  maledictionAChange = false;
+  focusMalediction = 0;
+  maledictionMenuEl.classList.add('ouvert');
+  majMenuMalediction();
+}
+
+function fermerMalediction() {
+  if (!maledictionOuverte) return;
+  maledictionOuverte = false;
+  maledictionMenuEl.classList.remove('ouvert');
+  if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réappuie sur un bouton
+  // partie pas encore lancée : on la prépare à nouveau avec les malus (cœurs, vitesse...)
+  if (maledictionAChange && waitingToStart && !countdownActive && !tutoActif()) init();
+  maledictionAChange = false;
+  majHudMalediction();
+}
+
+document.getElementById('maledictionLever').addEventListener('click', () => {
+  if (progression.maledictions.length) maledictionAChange = true;
+  progression.maledictions = [];
+  sauverProgression();
+  majMenuMalediction();
+});
+document.getElementById('maledictionFermer').addEventListener('click', fermerMalediction);
+maledictionMenuEl.addEventListener('click', (e) => {
+  if (e.target === maledictionMenuEl) fermerMalediction(); // clic sur le fond sombre
+});
+['maledictionBtn', 'maledictionJeuBtn'].forEach(id => document.getElementById(id).addEventListener('click', (e) => {
+  e.currentTarget.blur();
+  ouvrirMalediction();
+}));
+
+// tant que le panneau est ouvert, il garde le clavier : Échap ou M le ferme, flèches et Entrée / Espace choisissent
+window.addEventListener('keydown', (e) => {
+  if (!maledictionOuverte) return;
+  e.stopImmediatePropagation();
+  const lignes = maledictionListeEl.querySelectorAll('.malediction-ligne');
+  if (e.key === 'Escape' || e.code === touches.malediction) {
+    e.preventDefault();
+    fermerMalediction();
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const i = Array.prototype.indexOf.call(lignes, document.activeElement);
+    const suivant = i < 0 ? 0 : (i + (e.key === 'ArrowDown' ? 1 : -1) + lignes.length) % lignes.length;
+    lignes[suivant].focus();
+  }
+}, true);
+window.addEventListener('keyup', (e) => {
+  if (maledictionOuverte) e.stopImmediatePropagation();
+}, true);
+
+// manette : haut / bas pour choisir, A pour basculer, B, X ou Start pour fermer
+function manetteDansMalediction(dy, vientDAppuyer) {
+  const lignes = maledictionListeEl.querySelectorAll('.malediction-ligne');
+  const now = performance.now();
+  if (dy !== 0) {
+    if (dy !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
+      focusMalediction = (focusMalediction + dy + lignes.length) % lignes.length;
+      repetitionMenuManette = now + (dy !== directionMenuManettePrecedente ? 400 : 150);
+      majMenuMalediction();
+    }
+  }
+  directionMenuManettePrecedente = dy;
+  if (vientDAppuyer(MANETTE.A)) lignes[focusMalediction].click();
+  if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.X) || vientDAppuyer(MANETTE.START)) fermerMalediction();
+}
+
+// écran de départ : bandeau sous le titre (y = son haut), malus choisis ou invitation à en choisir ;
+// renvoie la hauteur occupée (le tutoriel se dessine dessous)
+function dessinerBandeauMalediction(haut) {
+  if (tutoActif() || enEcranInvite()) return 0;
+  const liste = progression.maledictions;
+  const commande = texteCommande(nomTouche(touches.malediction), 'X', 'bouton 💀');
+  const texte = liste.length
+    ? '💀 ' + iconesMaledictions(liste) + '  +' + Math.round(bonusMaledictions(liste) * 100) + ' % d\'Écailles  (' + commande + ')'
+    : '💀 Malédiction (' + commande + ') : plus dur, plus d\'Écailles';
+  const y = haut + 13;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = (liste.length ? 'bold 12px ' : '11px ') + currentTheme.fontFamily;
+  const largeur = Math.min(largeurPlateau - 16, ctx.measureText(texte).width + 20);
+  if (liste.length) {
+    ctx.fillStyle = 'rgba(120, 0, 0, 0.75)';
+    ctx.strokeStyle = '#ff5252';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(largeurPlateau / 2 - largeur / 2, y - 11, largeur, 22, 8);
+    else ctx.rect(largeurPlateau / 2 - largeur / 2, y - 11, largeur, 22);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffd7d7';
+  } else {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+    ctx.shadowBlur = 4;
+  }
+  ctx.fillText(texte, largeurPlateau / 2, y + 1);
+  ctx.restore();
+  return 26;
+}
+// ============================================================
 // --- Options : volume, plein écran, taille du plateau, touches ---
 // ============================================================
 // Ouvert par « ⚙️ Options » du menu ☰, le bouton ⚙️ à côté du plateau ou la touche O (modifiable).
@@ -17403,6 +17827,7 @@ const actionsTouches = [
   {groupe: '📋 Menus'},
   {action: 'pause', nom: 'Pause'},
   {action: 'buffs', nom: 'Boutique'},
+  {action: 'malediction', nom: 'Malédiction'},
   {action: 'aide', nom: 'Aide'},
   {action: 'succes', nom: 'Succès'},
   {action: 'tuto', nom: 'Tutoriel'},
@@ -18162,7 +18587,7 @@ function majSucces(now, delta) {
   if (duree >= 15 * 60000) debloquerSucces('marathon');
   if (score >= 1000) debloquerSucces('score_1000');
   if (score >= 10000) debloquerSucces('score_10000');
-  if (capacitesActives.bouclier || capacitesActives.sprint) partieSucces.sansCapacites = false;
+  if (bouclierDisponible() || sprintDisponible()) partieSucces.sansCapacites = false;
   if (!capacitesActives.collisionJoueurs) partieSucces.collisionOk = false;
   if (joueursEnJeu().some(j => j.boosting)) {
     partieSucces.sprintMs += delta;
@@ -18976,6 +19401,7 @@ function lancerTuto() {
   enemies = [];
   pendingSpawnWarning = null;
   baseTickInterval = tickIntervalDifficile / vitesseTuto;
+  majHudMalediction(); // jamais de malédiction dans le tutoriel
   joueurs[0].tickInterval = baseTickInterval;
   waitingToStart = false;
   countdownActive = true;
