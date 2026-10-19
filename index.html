@@ -460,11 +460,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     touch-action: none; /* le doigt pilote le jeu, la page ne défile pas */
   }
 
-  /* --- Menu des buffs --- */
+  /* --- Boutique : l'échoppe de Sifflet (js/16-menu-buffs.js) --- */
+  #touchBouclier.capacite-off { display: none; }
   #buffMenu {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.7);
     display: none;
     align-items: center;
     justify-content: center;
@@ -472,130 +473,319 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     padding: 16px;
     box-sizing: border-box;
   }
-  #buffMenu.ouvert {
-    display: flex;
-  }
+  #buffMenu.ouvert { display: flex; }
   #buffMenuPanel {
-    background: var(--bg-canvas);
-    border: 2px solid var(--accent);
-    border-radius: 12px;
-    padding: 18px;
-    width: 100%;
-    max-width: 380px;
-    max-height: 100%;
-    overflow-y: auto;
-    box-sizing: border-box;
-  }
-  .buff-menu-sous-titre {
-    margin: 14px 0 8px 0;
-    font-size: 15px;
-    color: var(--text-color);
-  }
-  #touchBouclier.capacite-off { display: none; }
-  #buffMenuPanel h2 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
-    text-align: center;
-  }
-  #buffMenuPanel .buff-menu-aide {
-    margin: 0 0 12px 0;
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-  }
-  .buff-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 9px 10px;
-    margin-bottom: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    color: var(--text-color);
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-  .buff-option:focus-visible, .buff-option.focus-manette {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-  }
-  .buff-option .buff-option-icone {
-    font-size: 20px;
-    width: 26px;
-    text-align: center;
-  }
-  .buff-option .buff-option-texte {
-    flex: 1;
+    --bois: #6b4423;
+    --bois-clair: #a0693a;
+    --bois-fonce: #3b2414;
+    --or: #ffd740;
     display: flex;
     flex-direction: column;
-    font-size: 13px;
+    width: 100%;
+    max-width: 980px;
+    height: min(660px, 100%);
+    background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 4px, transparent 4px 72px),
+      linear-gradient(#2a1a10, var(--bois-fonce) 60%, #24150b);
+    border: 4px solid var(--bois-clair);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #f0f0f0;
   }
-  .buff-option .buff-option-texte small {
-    color: var(--text-muted);
-    font-size: 11px;
-  }
-  .buff-option .buff-interrupteur {
-    width: 38px;
-    height: 20px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    position: relative;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .buff-option .buff-interrupteur::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #fff;
-    transition: left 0.15s;
-  }
-  .buff-option.actif .buff-interrupteur {
-    background: var(--accent);
-  }
-  .buff-option.actif .buff-interrupteur::after {
-    left: 20px;
-  }
-  .buff-option:not(.actif) {
-    opacity: 0.55;
-  }
-  #buffMenuAvertissement {
-    min-height: 16px;
-    font-size: 12px;
-    color: #ff9100;
-    text-align: center;
-    margin: 4px 0 8px 0;
-  }
-  #buffMenuActions {
+  #echoppeHaut {
     display: flex;
-    gap: 8px;
+    align-items: center;
     justify-content: center;
+    gap: 14px;
+    padding: 10px 12px 6px;
+    position: relative;
   }
-  #buffMenuActions button {
-    padding: 8px 14px;
-    font-size: 13px;
-    background: transparent;
-    border: 1px solid var(--accent);
+  #buffMenuTitre { margin: 0; }
+  #buffMenuTitre .enseigne {
+    display: inline-block;
+    padding: 4px 22px;
+    background: #5d3a1a;
+    border: 3px solid var(--bois-clair);
     border-radius: 6px;
-    color: var(--text-color);
-    cursor: pointer;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--or);
+    box-shadow: 0 5px 0 #24150b;
   }
-  #buffMenuActions button.focus-manette {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+  #boutiqueSolde {
+    margin: 0;
+    padding: 3px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--or);
   }
   #buffMenuFermer {
-    background: var(--accent) !important;
-    color: #14141f !important;
-    font-weight: bold;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 16px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid var(--bois-clair);
+    border-radius: 8px;
+    cursor: pointer;
   }
+  #echoppeCorps {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 310px;
+  }
+  /* étagères */
+  #boutiqueEtageres {
+    overflow-y: auto;
+    padding: 4px 14px 10px 18px;
+    scrollbar-color: var(--bois-clair) transparent;
+  }
+  .etagere { margin: 18px 0 6px; position: relative; }
+  .etagere .etiquette {
+    display: inline-block;
+    margin: 0 0 4px -6px;
+    padding: 1px 8px;
+    background: var(--or);
+    color: #14141f;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .etagere-objets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    padding: 4px 6px 0;
+    border-bottom: 14px solid var(--bois-clair);
+    box-shadow: 0 6px 0 #5d3a1a;
+    background-image: linear-gradient(transparent calc(100% - 1px), transparent);
+  }
+  .objet {
+    position: relative;
+    width: 76px;
+    padding: 16px 2px 4px;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-family: inherit;
+    color: #f0f0f0;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .objet:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
+  .objet .objet-icone { font-size: 38px; line-height: 1; height: 40px; }
+  .objet.verrouille .objet-icone { filter: grayscale(1) brightness(0.6); }
+  .objet.coupe .objet-icone { opacity: 0.45; }
+  .objet.choisi { border-color: var(--or); background: rgba(255, 215, 64, 0.12); }
+  .objet:focus-visible, .objet.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  .objet .objet-niveau {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 6px;
+  }
+  .objet .objet-niveau:empty { display: none; }
+  .objet.verrouille .objet-niveau { background: #8b93a5; }
+  .objet.coupe .objet-niveau { background: #8b93a5; }
+  .objet .objet-niveau.max { background: var(--or); }
+  .objet-pips { display: flex; gap: 3px; min-height: 0; }
+  .objet-pips i { display: block; width: 12px; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+  .objet-pips i.plein { background: #4caf50; }
+  .objet.coupe .objet-pips i.plein { background: #8b93a5; }
+  .objet .objet-prix {
+    display: none;
+    padding: 0 6px;
+    font-size: 12px;
+    color: var(--or);
+    background: #14141f;
+    border: 1px solid var(--or);
+    border-radius: 4px;
+  }
+  .objet .objet-prix.visible { display: block; }
+  .objet .objet-prix::before { content: '◉ '; font-size: 9px; }
+  .objet.trop-cher .objet-prix { opacity: 0.55; }
+  .objet.actif::after {
+    content: '✔';
+    position: absolute;
+    right: 4px;
+    top: 16px;
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+    line-height: 16px;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 50%;
+  }
+  .objet.achete { animation: objetAchete 0.6s ease-out; }
+  @keyframes objetAchete {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35) rotate(-6deg); }
+    100% { transform: scale(1); }
+  }
+  /* comptoir : Sifflet, sa bulle, la fiche de l'objet */
+  #boutiqueComptoir {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 14px 12px 4px;
+    min-height: 0;
+  }
+  #siffletZone { position: relative; flex: 1; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  #sifflet {
+    width: 150px;
+    height: 150px;
+    image-rendering: pixelated;
+    border: none;
+    background: none;
+    animation: siffletRespire 2.4s ease-in-out infinite;
+  }
+  @keyframes siffletRespire { 50% { transform: translateY(3px); } }
+  #siffletZone.saute #sifflet { animation: siffletSaute 0.5s ease-out 2; }
+  @keyframes siffletSaute { 40% { transform: translateY(-18px); } }
+  #siffletZone.secoue #sifflet { animation: siffletSecoue 0.4s ease-in-out; }
+  @keyframes siffletSecoue { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  #boutiqueMessage.bulle {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #14141f;
+    background: #f0f0f0;
+    border-radius: 10px;
+  }
+  #boutiqueMessage.bulle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    border: 7px solid transparent;
+    border-top-color: #f0f0f0;
+  }
+  #boutiqueFiche {
+    padding: 10px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 10px;
+    box-shadow: 0 -6px 0 var(--bois-clair), 0 -14px 0 var(--bois);
+  }
+  #ficheTitre { display: flex; align-items: center; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 17px; }
+  #ficheIcone { font-size: 24px; }
+  #ficheNiveau { margin-top: 6px; font-size: 13px; color: #c9cfdb; }
+  #ficheNiveau.niveaux { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #4caf50; }
+  #ficheNiveau .objet-pips i { width: 20px; height: 9px; }
+  #ficheDetail { margin: 6px 0 8px; font-size: 12px; color: #c9cfdb; display: flex; flex-direction: column; gap: 3px; }
+  #ficheDetail span + span { color: var(--or); }
+  #ficheBoutons { display: flex; gap: 8px; flex-wrap: wrap; }
+  #ficheBoutons button {
+    flex: 1;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  #ficheAcheter { color: #14141f; background: var(--or); border: none; }
+  #ficheAcheter.trop-cher { color: #f0f0f0; background: rgba(255, 215, 64, 0.22); }
+  #ficheAcheter.max { color: #8b93a5; background: transparent; border: 1px solid #4b5263; cursor: default; }
+  #ficheBasculer { color: #14141f; background: #4caf50; border: none; }
+  #ficheBasculer.couper { color: #f0f0f0; background: transparent; border: 1px solid #8b93a5; }
+  #ficheBoutons button:focus-visible, #ficheBoutons button.focus-manette,
+  #buffMenuFermer.focus-manette, #buffMenuActions button.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  #buffMenuAvertissement { font-size: 12px; color: #ff9100; text-align: center; }
+  #buffMenuAvertissement:empty { display: none; }
+  #buffMenuActions { display: flex; gap: 8px; }
+  #buffMenuActions button {
+    flex: 1;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--bois-clair);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #buffMenu.lecture-seule #ficheBoutons button, #buffMenu.lecture-seule #buffMenuActions button { opacity: 0.45; cursor: not-allowed; }
+  .piece-vol {
+    position: fixed;
+    z-index: 60;
+    font-size: 20px;
+    pointer-events: none;
+    animation: pieceVole 0.8s ease-in both;
+  }
+  @keyframes pieceVole {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    40% { transform: translate(calc(-50% + var(--dx) * 0.4), calc(-50% + var(--dy) * 0.4 - 50px)) scale(1.2); }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.6); opacity: 0.2; }
+  }
+  #boutiqueDev { text-align: center; font-size: 12px; color: #ff9100; }
+  #boutiqueDev:empty { display: none; }
+  #boutiqueDev p { margin: 0 0 6px 0; }
+  #boutiqueDev button {
+    margin: 0 4px 6px 4px;
+    padding: 4px 10px;
+    font-family: inherit;
+    color: #f0f0f0;
+    background: transparent;
+    border: 1px solid #ff9100;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  /* téléphone : étagères en haut, comptoir compact en bas */
+  @media (max-width: 720px) {
+    #buffMenu { padding: 6px; }
+    #buffMenuPanel { height: 100%; }
+    #buffMenuTitre .enseigne { font-size: 17px; padding: 3px 12px; }
+    #boutiqueSolde { font-size: 15px; }
+    #buffMenuFermer { top: 8px; right: 8px; width: 32px; height: 32px; }
+    #echoppeHaut { justify-content: flex-start; padding-left: 10px; }
+    #echoppeCorps { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    #boutiqueEtageres { padding: 0 8px 6px 12px; }
+    .etagere { margin-top: 12px; }
+    .etagere-objets { gap: 10px 4px; }
+    .objet { width: 66px; }
+    .objet .objet-icone { font-size: 32px; height: 34px; }
+    #boutiqueComptoir { padding: 6px 8px 8px; border-top: 4px solid var(--bois-clair); background: rgba(0, 0, 0, 0.25); }
+    #siffletZone { flex-direction: row-reverse; align-items: flex-end; min-height: 0; flex: none; gap: 6px; }
+    #sifflet { width: 64px; height: 64px; flex-shrink: 0; }
+    #boutiqueMessage.bulle { margin: 0 0 14px; font-size: 12px; min-height: 0; }
+    #boutiqueMessage.bulle::after { left: auto; right: -12px; bottom: 10px; border-top-color: transparent; border-left-color: #f0f0f0; }
+    #boutiqueFiche { box-shadow: none; padding: 8px 10px; }
+    #ficheDetail { margin: 4px 0 6px; }
+  }
+  #buffMenuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @keyframes boutiqueNouveau {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+    50% { box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8); }
+  }
+  .theme-btn.verrouille, .skin-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
   .legend-buffs li.buff-desactive {
     text-decoration: line-through;
     opacity: 0.5;
@@ -832,6 +1022,43 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     #optionsJeuBtn { top: 6px; right: 98px; }
   }
   body.mode-tactile #optionsJeuBtn { display: none; }
+  /* bouton Boutique (js/16-menu-buffs.js), sous le bouton Options ; sur écran tactile, entre deux parties seulement */
+  #boutiqueJeuBtn {
+    position: absolute;
+    top: 144px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #boutiqueJeuBtn:hover { background: #ffd700; }
+  #boutiqueJeuSolde {
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    transform: translateX(-50%);
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #14141f;
+    background: #ffd700;
+    border-radius: 6px;
+  }
+  #boutiqueJeuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @media (max-width: 600px) {
+    #boutiqueJeuBtn { top: 6px; right: 144px; }
+  }
+  body.mode-tactile #boutiqueJeuBtn { position: fixed; top: 12px; right: 72px; display: none; z-index: 16; }
+  body.mode-tactile.entre-parties #boutiqueJeuBtn { display: block; }
   /* ordinateur, page épurée comme sur téléphone : les réglages sont dans le menu ☰ */
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
@@ -1453,6 +1680,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   }
   #succesFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
   #statsSucces h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  #statsEcailles h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  .stats-ecailles-vide { font-size: 12px; color: var(--text-muted); margin: 0; }
   .stats-succes-liste { display: flex; flex-wrap: wrap; gap: 4px; }
   .stats-succes-puce {
     padding: 2px 6px;
@@ -1475,6 +1704,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.plateau-adapte #optionsBtn,
   body.plateau-adapte #aideBtn,
   body.plateau-adapte #optionsJeuBtn,
+  body.plateau-adapte #boutiqueJeuBtn,
   body.plateau-adapte #aidePanel,
   body.plateau-adapte #succesPanel,
   body.plateau-adapte #optionsPanel,
@@ -1536,6 +1766,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   #optionsContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
   #optionsContenu h3 { margin: 14px 0 8px 0; font-size: 15px; color: var(--accent); }
   #optionsContenu h3:first-child { margin-top: 0; }
+  #sauvegardeCode {
+    width: 100%; box-sizing: border-box; resize: vertical; font: 11px monospace; padding: 6px;
+    background: rgba(0, 0, 0, 0.35); color: var(--text-color); border: 1px solid var(--text-muted); border-radius: 6px;
+  }
   #optionsContenu h4 { margin: 10px 0 4px 0; font-size: 13px; color: var(--text-muted); font-weight: normal; }
   .options-ligne {
     display: flex;
@@ -1631,7 +1865,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <div id="controlBar">
       <button id="pauseBtn">⏸️ Pause</button>
       <button id="muteBtn">🔊 Son</button>
-      <button id="buffMenuBtn">🧪 Buffs</button>
+      <button id="buffMenuBtn">🛒 Boutique</button>
       <button id="modeBtn">👤 Solo</button>
       <button id="difficulteBtn">🟡 Normal</button>
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
@@ -1659,6 +1893,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button id="optionsBtn" title="Options">☰</button>
       <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
       <button id="optionsJeuBtn" title="Options : volume, plein écran, touches (O)">⚙️</button>
+      <button id="boutiqueJeuBtn" title="Boutique (B)">🛒<span id="boutiqueJeuSolde"></span></button>
     </div>
     <div id="touchControls">
       <button class="touch-btn" id="touchBoost">🚀 Boost</button>
@@ -1738,15 +1973,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 <div id="buffMenu" role="dialog" aria-modal="true" aria-labelledby="buffMenuTitre">
   <div id="buffMenuPanel">
-    <h2 id="buffMenuTitre">🧪 Buffs de la pomme bleue</h2>
-    <p class="buff-menu-aide">Choisis les buffs que la pomme bleue peut te donner.</p>
-    <div id="buffMenuListe"></div>
-    <div id="buffMenuAvertissement"></div>
-    <h3 class="buff-menu-sous-titre">🐍 Capacités du serpent</h3>
-    <div id="capacitesMenuListe"></div>
-    <div id="buffMenuActions">
-      <button id="buffMenuTout">Tout activer</button>
-      <button id="buffMenuFermer">Fermer</button>
+    <div id="echoppeHaut">
+      <h2 id="buffMenuTitre"><span class="enseigne">Chez Sifflet</span></h2>
+      <p id="boutiqueSolde"></p>
+      <button id="buffMenuFermer" title="Fermer (Échap)">✖</button>
+    </div>
+    <div id="boutiqueDev"></div>
+    <div id="echoppeCorps">
+      <div id="boutiqueEtageres"></div>
+      <div id="boutiqueComptoir">
+        <div id="siffletZone">
+          <div id="boutiqueMessage" class="bulle" aria-live="polite"></div>
+          <canvas id="sifflet" width="20" height="20"></canvas>
+        </div>
+        <div id="boutiqueFiche">
+          <div id="ficheTitre"><span id="ficheIcone"></span><b id="ficheNom"></b></div>
+          <div id="ficheNiveau"></div>
+          <p id="ficheDetail"></p>
+          <div id="ficheBoutons">
+            <button id="ficheAcheter"></button>
+            <button id="ficheBasculer"></button>
+          </div>
+        </div>
+        <div id="buffMenuAvertissement"></div>
+        <div id="buffMenuActions">
+          <button id="boutiqueRembourser">↺ Rembourser</button>
+          <button id="buffMenuTout">Tout activer</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2497,6 +2751,71 @@ kbbbbkkbbbbk
 ......xxxxx.
 .......xxx..
 ........x...`,
+  chariot: `
+kk..........
+.k..........
+.kkkkkkkkkkk
+.kggggggggk.
+..kggggggk..
+..kggggggk..
+...kkkkkkk..
+...k........
+...kkkkkkkk.
+....kk...kk.
+....kk...kk.
+............`,
+  sablier: `
+.kkkkkkkkkk.
+..kyyyyyyk..
+..kyyyyyyk..
+...kyyyyk...
+....kyyk....
+.....kk.....
+.....kk.....
+....k..k....
+...k.yy.k...
+..k.yyyy.k..
+..kyyyyyyk..
+.kkkkkkkkkk.`,
+  aimant: `
+............
+.kkkk..kkkk.
+.kwwk..kwwk.
+.kwwk..kwwk.
+.krrk..krrk.
+.krrk..krrk.
+.krrk..krrk.
+.krrrkkrrrk.
+..krrrrrrk..
+...kkkkkk...
+............
+............`,
+  exporter: `
+.....kk.....
+....kbbk....
+...kbbbbk...
+..kbbbbbbk..
+..kkkbbkkk..
+....kbbk....
+kl..kbbk..lk
+kl..kkkk..lk
+kllllllllllk
+kggggggggggk
+kkkkkkkkkkkk
+............`,
+  disquette: `
+kkkkkkkkkkk.
+kbbklllkbbk.
+kbbklldkbbkk
+kbbklllkbbbk
+kbbkkkkkbbbk
+kbbbbbbbbbbk
+kbkkkkkkkkbk
+kbkwwwwwwkbk
+kbkwggggwkbk
+kbkwwwwwwkbk
+kbkwggggwkbk
+kkkkkkkkkkkk`,
   importer: `
 ....kkkk....
 ....kbbk....
@@ -3147,7 +3466,7 @@ const EMOJI_ICONE = {
   '👑': 'couronne', '⏱': 'chrono', '💀': 'crane', '☠': 'crane', '🎉': 'fete', '🎆': 'feu_artifice',
   '🎨': 'palette', '🦔': 'oursin', '🦇': 'chauve_souris', '👻': 'fantome', '🪼': 'meduse', '👁': 'oeil', '🤖': 'robot', '🕷': 'araignee', '🦀': 'crabe', '🎃': 'citrouille', '🍄': 'champignon', '⚙': 'engrenage',
   '🔊': 'son', '🔇': 'muet', '📖': 'livre', '↺': 'recommencer', '📋': 'presse_papier', '📊': 'graphique',
-  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer',
+  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer', '📤': 'exporter', '🛒': 'chariot', '⏳': 'sablier', '🧲': 'aimant', '💾': 'disquette',
   '🐢': 'tortue', '↑': 'fleche', '⬆': 'fleche', '→': 'fleche_droite', '➡': 'fleche_droite',
   '↓': 'fleche_bas', '⬇': 'fleche_bas', '←': 'fleche_gauche', '⬅': 'fleche_gauche',
   '⌨': 'clavier', '📱': 'telephone', '✛': 'croix_pad', '🖱': 'souris', '💢': 'colere', '🧱': 'brique',
@@ -3675,7 +3994,11 @@ function applyTheme(name) {
 }
 
 document.querySelectorAll('.theme-btn').forEach(btn => {
-  btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+  btn.addEventListener('click', () => {
+    // thème pas encore acheté : la Boutique s'ouvre pour le montrer (js/16-menu-buffs.js)
+    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs('theme:' + btn.dataset.theme);
+    applyTheme(btn.dataset.theme);
+  });
 });
 
 // le canvas n'attend pas les polices : on les charge toutes dès le départ (elles sont dans le fichier)
@@ -3851,7 +4174,7 @@ const blueAppleRadius = 9;
 // --- Buffs (déclenchés par la pomme bleue) ---
 const buffTypes = ['freeze', 'laser', 'autoaim', 'explode', 'invincible', 'doublepoints'];
 
-// --- Menu des buffs : le joueur choisit quels buffs la pomme bleue peut donner (sauvegardé) ---
+// --- Boutique : le joueur choisit quels buffs débloqués la pomme bleue peut donner (sauvegardé) ---
 const buffDescriptions = {
   freeze: {icon: '❄️', nom: 'Gel des ennemis', detail: 'Fige tous les ennemis pendant 10s'},
   laser: {icon: '⚡', nom: 'Tourelle laser', detail: 'Les tirs deviennent un laser perçant pendant 30s'},
@@ -3917,15 +4240,16 @@ function sauverCapacites() {
   }
 }
 
-// tire un buff au hasard parmi ceux activés dans le menu (null si aucun)
+// tire un buff au hasard parmi ceux activés et débloqués dans la Boutique (null si aucun)
 function tirerBuffAleatoire() {
-  if (!buffsActifs.length) return null;
-  return buffsActifs[Math.floor(Math.random() * buffsActifs.length)];
+  const dispo = buffsDisponibles();
+  if (!dispo.length) return null;
+  return dispo[Math.floor(Math.random() * dispo.length)];
 }
 // durées de base des buffs (ms), multipliées par reglagesDifficulte().dureeBuffs (x1,5 en Facile)
 const dureesBuffs = {freeze: 10000, laser: 30000, autoaim: 30000, explode: 5000, invincible: 10000, doublepoints: 30000};
 function dureeBuff(type) {
-  return dureesBuffs[type] * reglagesDifficulte().dureeBuffs;
+  return dureesBuffs[type] * reglagesDifficulte().dureeBuffs * (1 + bonusProgression('dureeBuffs'));
 }
 // remplace la durée écrite dans un texte (« 10s ») par la durée réelle du buff, ex. « 15s » en Facile
 function texteAvecDureeBuff(texte, type) {
@@ -4154,6 +4478,451 @@ function tryRollback() {
 const popupLifetime = 800; // ms
 
 // ============================================================
+// --- Progression entre les parties : les Écailles 🪙 ---
+// ============================================================
+// Chaque partie rapporte des Écailles (même perdue), et chaque succès en rapporte à son premier déblocage.
+// Tout l'équilibrage est dans reglagesProgression : changer un gain ou un prix, c'est changer un nombre ici.
+// Le jeu ne lit ces valeurs que par gainPartie(), bonusProgression(cle) et contenuDebloque(type, cle).
+// Les Écailles se dépensent dans la Boutique (js/16-menu-buffs.js), entre deux parties : améliorations,
+// buffs de la pomme bleue, thèmes. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
+// Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
+// reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
+// Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
+// boutons pour se donner des Écailles ou tout débloquer, pas de succès.
+
+const reglagesProgression = {
+  gains: {
+    parSegments: 5, // 1 Écaille pour 5 de longueur atteinte
+    parEnnemis: 5, // 1 Écaille pour 5 ennemis tués
+    boss: 20, // par boss vaincu
+    pommeOr: 3, // par pomme en or mangée
+    victoire: 50, // longueur 400 atteinte
+    dureeMinSecondes: 10, // une partie plus courte ne rapporte rien (pas de gain en relançant en boucle)
+    // succès, une seule fois chacun : valeur par catégorie, sinon parDefaut ; parSucces passe avant tout
+    succes: {
+      parDefaut: 25,
+      parCategorie: {debut: 10, difficulte: 50},
+      parSucces: {bon_eleve: 50, platine: 100, kamikaze: 10}
+    }
+  },
+  multiplicateurDifficulte: {facile: 1, normal: 1.25, difficile: 1.5},
+  // ce qu'un nouveau joueur a dès le début
+  depart: {
+    themes: ['neon', 'espace', 'ocean'],
+    skins: ['urchin', 'ghost', 'pixel'],
+    buffs: ['doublepoints']
+  },
+  // ce que gardent les joueurs qui avaient une sauvegarde avant la Boutique (tout ce qui existait alors)
+  ancienJoueur: {
+    themes: ['lave'],
+    skins: ['slime', 'bat'],
+    buffs: ['freeze', 'invincible', 'laser', 'autoaim', 'explode']
+  },
+  // prix en Écailles
+  buffs: {freeze: 100, invincible: 150, laser: 150, autoaim: 150, explode: 250},
+  themes: {lave: 300, aurore: 300, foret: 300, desert: 300, synthwave: 300, halloween: 300},
+  // skin d'ennemi -> succès qui le débloque ; jamais « Bestiaire » ni « Boss de chaque espèce »,
+  // qui demandent d'avoir affronté tous les skins
+  skinsParSucces: {
+    slime: 'ca_pousse', bat: 'tueur_geant', jelly: 'boa', crab: 'chasseur', pumpkin: 'increvable',
+    mushroom: 'gourmand', eye: 'trophees', drone: 'gros_bras', spider: 'hardcore'
+  },
+  // améliorations permanentes : effet par niveau, et un prix par niveau (ajouter un prix = ajouter un niveau)
+  ameliorations: {
+    coeur: {effet: 1, prix: [400]}, // cœurs en plus au départ
+    dureeBuffs: {effet: 0.10, prix: [100, 200, 300]}, // durée des buffs (+10 %)
+    bouclier: {effet: 0.10, prix: [80, 160, 240]}, // recharge du bouclier (-10 %)
+    pommeBleue: {effet: 0.01, prix: [150, 300]}, // chance de pomme bleue (+1 point de %)
+    aimant: {effet: 30, prix: [120, 240]}, // rayon (px) où les pommes en or et bleues glissent vers la tête
+    balles: {effet: 0.15, prix: [150, 300]}, // vitesse des tirs (+15 %)
+    avarice: {effet: 0.10, prix: [100, 200, 300]} // Écailles gagnées (+10 %)
+  },
+  vitesseAimant: 0.12 // px par ms : vitesse à laquelle l'aimant attire une pomme
+};
+
+// textes de la Boutique ; {n} = l'effet total au niveau affiché
+const textesAmeliorations = {
+  coeur: {icone: '❤️', nom: 'Cœur de réserve', detail: n => '+' + n + ' cœur au départ'},
+  dureeBuffs: {icone: '⏳', nom: 'Buffs prolongés', detail: n => '+' + Math.round(n * 100) + ' % de durée des buffs'},
+  bouclier: {icone: '🛡️', nom: 'Bouclier rapide', detail: n => '-' + Math.round(n * 100) + ' % de recharge du bouclier'},
+  pommeBleue: {icone: '🔵', nom: 'Pomme bleue', detail: n => '+' + Math.round(n * 100) + ' % de chance qu\'un ennemi en laisse une'},
+  aimant: {icone: '🧲', nom: 'Aimant', detail: n => 'Pommes en or et bleues attirées à ' + n + ' px de la tête'},
+  balles: {icone: '🔫', nom: 'Balles rapides', detail: n => '+' + Math.round(n * 100) + ' % de vitesse des tirs'},
+  avarice: {icone: '🪙', nom: 'Avarice', detail: n => '+' + Math.round(n * 100) + ' % d\'Écailles gagnées'}
+};
+
+const modeDev = /[?&]dev(=|&|$)/.test(location.search);
+
+// --- Sauvegarde ---
+const cleStockageProgression = modeDev ? 'snakeProgression_dev' : 'snakeProgression';
+const cleStockageProgressionPrec = cleStockageProgression + '_prec';
+const versionProgression = 1;
+
+function progressionVide() {
+  return {
+    version: versionProgression,
+    ecailles: 0, // à dépenser
+    total: 0, // gagnées depuis le début
+    parties: 0, // parties qui ont rapporté
+    achats: {}, // amélioration ou contenu -> niveau acheté
+    inactifs: [], // améliorations coupées dans la Boutique
+    succesPayes: [], // succès dont les Écailles ont déjà été données
+    migre: false, // anciens joueurs déjà traités (ancienJoueur)
+    boutiqueVue: false // la Boutique a déjà été ouverte (sinon on la signale)
+  };
+}
+
+// lit une sauvegarde ; renvoie null si elle est absente ou illisible
+function lireProgression(cle) {
+  try {
+    const lu = JSON.parse(localStorage.getItem(cle));
+    if (!lu || typeof lu !== 'object' || typeof lu.ecailles !== 'number' || !isFinite(lu.ecailles)) return null;
+    const p = progressionVide();
+    ['ecailles', 'total', 'parties'].forEach(c => {
+      if (typeof lu[c] === 'number' && isFinite(lu[c])) p[c] = Math.max(0, Math.floor(lu[c]));
+    });
+    if (lu.achats && typeof lu.achats === 'object') {
+      Object.keys(lu.achats).forEach(c => {
+        if (typeof lu.achats[c] === 'number') p.achats[c] = lu.achats[c];
+      });
+    }
+    ['inactifs', 'succesPayes'].forEach(c => {
+      if (Array.isArray(lu[c])) p[c] = lu[c].filter(x => typeof x === 'string');
+    });
+    ['migre', 'boutiqueVue'].forEach(c => { p[c] = lu[c] === true; });
+    return p;
+  } catch (e) {
+    return null;
+  }
+}
+
+let progression = lireProgression(cleStockageProgression) || lireProgression(cleStockageProgressionPrec) || progressionVide();
+
+function sauverProgression() {
+  try {
+    // la version précédente, si elle est saine, devient la copie de secours
+    if (lireProgression(cleStockageProgression)) {
+      localStorage.setItem(cleStockageProgressionPrec, localStorage.getItem(cleStockageProgression));
+    }
+    localStorage.setItem(cleStockageProgression, JSON.stringify(progression));
+  } catch (e) {
+    // stockage indisponible : la progression vaut pour cette session seulement
+  }
+  if (typeof rafraichirMenuBuffs === 'function') rafraichirMenuBuffs(); // solde du bouton 🛒 Boutique
+}
+
+// demande au navigateur de ne pas effacer les données du jeu quand il manque de place
+function demanderStockagePersistant() {
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) {
+    // pas grave : le navigateur décide seul
+  }
+}
+
+// --- Améliorations ---
+function niveauAchete(cle) {
+  return progression.achats[cle] || 0;
+}
+
+function niveauAmelioration(cle) {
+  if (progression.inactifs.includes(cle)) return 0;
+  return niveauAchete(cle);
+}
+
+// bonus total d'une amélioration : effet par niveau x niveau acheté et activé
+// (0 pendant le tutoriel, pour que tout le monde l'ait dans les mêmes conditions)
+function bonusProgression(cle) {
+  const a = reglagesProgression.ameliorations[cle];
+  if (!a || enTuto()) return 0;
+  return a.effet * niveauAmelioration(cle);
+}
+
+// tutoActif() sans erreur pendant le chargement de la page (le tutoriel est défini plus loin, js/18-tuto.js)
+function enTuto() {
+  try {
+    return tutoActif();
+  } catch (e) {
+    return false;
+  }
+}
+
+// prix du prochain niveau, ou null au niveau maximum
+function prixProchainNiveau(cle) {
+  const prix = reglagesProgression.ameliorations[cle].prix;
+  const n = niveauAchete(cle);
+  return n < prix.length ? prix[n] : null;
+}
+
+function depenser(prix) {
+  if (prix === null || prix === undefined || progression.ecailles < prix) return false;
+  progression.ecailles -= prix;
+  return true;
+}
+
+function acheterAmelioration(cle) {
+  if (!depenser(prixProchainNiveau(cle))) return false;
+  progression.achats[cle] = niveauAchete(cle) + 1;
+  progression.inactifs = progression.inactifs.filter(c => c !== cle);
+  sauverProgression();
+  return true;
+}
+
+function basculerAmelioration(cle) {
+  if (!niveauAchete(cle)) return;
+  if (progression.inactifs.includes(cle)) progression.inactifs = progression.inactifs.filter(c => c !== cle);
+  else progression.inactifs.push(cle);
+  sauverProgression();
+}
+
+// rend toutes les Écailles dépensées en améliorations (les buffs et thèmes achetés restent)
+function rembourserAmeliorations() {
+  let rendu = 0;
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const prix = reglagesProgression.ameliorations[cle].prix;
+    for (let i = 0; i < Math.min(niveauAchete(cle), prix.length); i++) rendu += prix[i];
+    delete progression.achats[cle];
+  });
+  progression.ecailles += rendu;
+  progression.inactifs = progression.inactifs.filter(c => !reglagesProgression.ameliorations[c]);
+  sauverProgression();
+  return rendu;
+}
+
+// --- Contenu : buffs, thèmes, skins d'ennemis ---
+// type : 'buff', 'theme' ou 'skin'
+const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins'};
+
+function contenuDebloque(type, cle) {
+  if (modeDev) return true;
+  if (reglagesProgression.depart[listesDepart[type]].includes(cle)) return true;
+  if (progression.achats[type + ':' + cle]) return true;
+  if (type === 'skin') {
+    const succes = reglagesProgression.skinsParSucces[cle];
+    return !succes || !!succesSauves.obtenus[succes];
+  }
+  if (type === 'buff') return reglagesProgression.buffs[cle] === undefined;
+  if (type === 'theme') return reglagesProgression.themes[cle] === undefined;
+  return true;
+}
+
+// prix d'un buff ou d'un thème (les skins ne s'achètent pas)
+function prixContenu(type, cle) {
+  const table = type === 'buff' ? reglagesProgression.buffs : type === 'theme' ? reglagesProgression.themes : {};
+  return table[cle] !== undefined ? table[cle] : null;
+}
+
+function acheterContenu(type, cle) {
+  if (contenuDebloque(type, cle) || !depenser(prixContenu(type, cle))) return false;
+  progression.achats[type + ':' + cle] = 1;
+  sauverProgression();
+  return true;
+}
+
+// buffs que la pomme bleue peut donner : activés dans la Boutique et débloqués
+function buffsDisponibles() {
+  return buffsActifs.filter(t => contenuDebloque('buff', t));
+}
+
+// --- Effets des améliorations dans la partie ---
+function dureeRechargeBouclier() {
+  return shieldCooldownDuration * (1 - bonusProgression('bouclier'));
+}
+
+// Aimant : une pomme en or ou bleue proche d'une tête glisse vers elle
+function attirerPomme(pomme, deltaMs) {
+  const rayon = bonusProgression('aimant');
+  if (!rayon) return;
+  let cible = null, meilleure = Infinity;
+  joueursEnJeu().forEach(j => {
+    const t = j.snake[0];
+    const d = Math.hypot(t.x * gridSize + gridSize / 2 - pomme.x, t.y * gridSize + gridSize / 2 - pomme.y);
+    if (d < rayon + pomme.radius && d < meilleure) { meilleure = d; cible = t; }
+  });
+  if (!cible || meilleure < 1) return;
+  const pas = Math.min(meilleure, reglagesProgression.vitesseAimant * deltaMs);
+  pomme.x += (cible.x * gridSize + gridSize / 2 - pomme.x) / meilleure * pas;
+  pomme.y += (cible.y * gridSize + gridSize / 2 - pomme.y) / meilleure * pas;
+}
+
+// --- Gains ---
+function ajouterEcailles(n) {
+  if (!(n > 0)) return;
+  progression.ecailles += n;
+  progression.total += n;
+}
+
+// Écailles d'un succès (une seule fois par succès)
+function ecaillesSucces(id) {
+  const g = reglagesProgression.gains.succes;
+  if (g.parSucces[id] !== undefined) return g.parSucces[id];
+  const s = succesParId[id];
+  if (s && g.parCategorie[s.cat] !== undefined) return g.parCategorie[s.cat];
+  return g.parDefaut;
+}
+
+// appelé au déblocage d'un succès ; renvoie les Écailles données
+function payerSucces(id) {
+  if (progression.succesPayes.includes(id)) return 0;
+  const n = ecaillesSucces(id);
+  progression.succesPayes.push(id);
+  ajouterEcailles(n);
+  sauverProgression();
+  partieProgression.succes += n;
+  if (dernierGainPartie) majRecapEcailles(); // succès gagné après la fin (podium...)
+  // un succès peut débloquer un skin d'ennemi
+  Object.keys(reglagesProgression.skinsParSucces).forEach(skin => {
+    if (reglagesProgression.skinsParSucces[skin] !== id || progression.achats['skin:' + skin]) return;
+    const btn = document.querySelector('.skin-btn[data-skin="' + skin + '"]');
+    afficherBanniereSucces({titre: '🔓 Nouveau skin d\'ennemi', icone: '👾', nom: btn ? btn.dataset.nom || btn.textContent : skin});
+    majVerrous();
+  });
+  return n;
+}
+
+// au lancement : les joueurs qui avaient déjà une sauvegarde gardent tout ce qui existait avant la Boutique
+function migrerAncienJoueur() {
+  if (progression.migre) return;
+  progression.migre = true;
+  let ancien = false;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const cle = localStorage.key(i);
+      if (cle === 'snakeTutoFait' || cle.startsWith('snakeHighscores')) ancien = true;
+    }
+  } catch (e) {
+    // stockage indisponible : nouveau joueur
+  }
+  if (Object.keys(succesSauves.obtenus).length) ancien = true;
+  if (ancien && !modeDev) {
+    const a = reglagesProgression.ancienJoueur;
+    a.themes.forEach(c => { progression.achats['theme:' + c] = 1; });
+    a.skins.forEach(c => { progression.achats['skin:' + c] = 1; });
+    a.buffs.forEach(c => { progression.achats['buff:' + c] = 1; });
+  }
+  sauverProgression();
+}
+
+// au lancement : paie les succès obtenus avant l'arrivée des Écailles (ou dont le paiement a été perdu)
+function rattraperSuccesProgression() {
+  migrerAncienJoueur();
+  let n = 0;
+  Object.keys(succesSauves.obtenus).forEach(id => {
+    if (progression.succesPayes.includes(id)) return;
+    progression.succesPayes.push(id);
+    n += ecaillesSucces(id);
+  });
+  if (n > 0) {
+    ajouterEcailles(n);
+    sauverProgression();
+  }
+  return n;
+}
+
+// Écailles gagnées par les succès pendant la partie en cours (remis à zéro par init)
+let partieProgression = {succes: 0};
+let dernierGainPartie = null; // détail du gain de la dernière partie terminée (écran de fin)
+
+function progressionNouvellePartie() {
+  partieProgression = {succes: 0};
+  dernierGainPartie = null;
+}
+
+// calcul pur : ce que rapporte une partie, ligne par ligne
+// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte}
+function gainPartie(partie) {
+  const g = reglagesProgression.gains;
+  const lignes = [];
+  if (partie.dureeSecondes < g.dureeMinSecondes) return {lignes, base: 0, multiplicateur: 1, total: 0};
+  const ajouter = (libelle, n) => { if (n > 0) lignes.push([libelle, n]); };
+  ajouter('📏 Longueur ' + partie.longueur, Math.floor(partie.longueur / g.parSegments));
+  const pluriel = (n, mot) => n + ' ' + mot + (n > 1 ? 's' : '');
+  ajouter('👾 ' + pluriel(partie.ennemis, 'ennemi'), Math.floor(partie.ennemis / g.parEnnemis));
+  ajouter('👑 ' + partie.boss + ' boss', partie.boss * g.boss);
+  ajouter('🟡 ' + nomPomme('or') + ' × ' + partie.pommesOr, partie.pommesOr * g.pommeOr);
+  if (partie.victoire) ajouter('🎉 Victoire', g.victoire);
+  const base = lignes.reduce((s, l) => s + l[1], 0);
+  const multiplicateur = (reglagesProgression.multiplicateurDifficulte[partie.difficulte] || 1) *
+    (1 + bonusProgression('avarice'));
+  return {lignes, base, multiplicateur, total: Math.round(base * multiplicateur)};
+}
+
+// fin de partie (perdue ou gagnée) : calcule le gain, l'ajoute et le garde pour l'écran de fin
+function progressionFinPartie(victoire) {
+  if (tutoActif() || enEcranInvite() || !partieSucces.commencee) return;
+  const gain = gainPartie({
+    longueur: stats.maxSnakeLength,
+    ennemis: stats.enemiesKilled,
+    boss: partieSucces.boss,
+    pommesOr: stats.goldenApplesEaten,
+    victoire,
+    dureeSecondes: (performance.now() - stats.startTime) / 1000,
+    difficulte
+  });
+  ajouterEcailles(gain.total);
+  if (gain.total > 0) progression.parties++;
+  sauverProgression();
+  dernierGainPartie = gain;
+  // jeu en ligne : l'ami gagne les mêmes Écailles que l'hôte pour cette partie
+  if (enLigne && enLigne.role === 'hote' && enLigne.invite && gain.total > 0) {
+    enLigne.envoyer({t: 'ecailles', n: gain.total}, enLigne.invite);
+  }
+}
+
+// écran de l'invité : Écailles de la partie jouée chez l'hôte
+function recevoirEcaillesHote(n) {
+  n = Math.floor(n);
+  if (!(n > 0) || n > 5000) return;
+  ajouterEcailles(n);
+  sauverProgression();
+  afficherBanniereSucces({icone: '🪙', nom: '+' + n + ' Écailles', detail: 'Gagnées avec ton ami (total : ' + progression.ecailles + ')'});
+}
+
+// texte court pour l'écran de fin : « 🪙 +42 Écailles (total 310) »
+function texteGainPartie() {
+  if (!dernierGainPartie) return '';
+  const n = dernierGainPartie.total + partieProgression.succes;
+  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + '  (total ' + progression.ecailles + ')';
+}
+
+// détail du gain sous le jeu, dans les stats de fin de partie
+function majRecapEcailles() {
+  const zone = document.getElementById('statsEcailles');
+  if (!zone) return;
+  zone.textContent = '';
+  const g = dernierGainPartie;
+  if (!g) return;
+  const lignes = g.lignes.slice();
+  if (g.base > 0 && g.multiplicateur !== 1) {
+    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, '×' + String(Math.round(g.multiplicateur * 100) / 100).replace('.', ',')]);
+  }
+  if (partieProgression.succes > 0) lignes.push(['🏆 Succès', partieProgression.succes]);
+  const h = document.createElement('h3');
+  const n = g.total + partieProgression.succes;
+  h.textContent = '🪙 ' + n + ' Écaille' + (n > 1 ? 's' : '') + ' gagnée' + (n > 1 ? 's' : '') +
+    ' (total : ' + progression.ecailles + ')';
+  zone.appendChild(h);
+  if (!lignes.length) {
+    const p = document.createElement('p');
+    p.className = 'stats-ecailles-vide';
+    p.textContent = 'Partie trop courte : elle doit durer au moins ' + reglagesProgression.gains.dureeMinSecondes + ' secondes.';
+    zone.appendChild(p);
+    return;
+  }
+  const ul = document.createElement('ul');
+  lignes.forEach(([libelle, valeur]) => {
+    const li = document.createElement('li');
+    const a = document.createElement('span');
+    a.textContent = libelle;
+    const b = document.createElement('span');
+    b.className = 'stat-value';
+    b.textContent = typeof valeur === 'number' ? '+' + valeur : valeur;
+    li.append(a, b);
+    ul.appendChild(li);
+  });
+  zone.appendChild(ul);
+}
+// ============================================================
 // --- Joueurs : un ou deux serpents (mode solo ou coop) ---
 // ============================================================
 // Tout l'état propre à un serpent vit dans un objet joueur. Les anciens noms globaux
@@ -4218,7 +4987,7 @@ function nouveauJoueur(numero) {
     direction: {x: 0, y: 0},
     nextDirection: {x: 0, y: 0},
     directionLockedThisTick: false, // un seul virage entre deux déplacements (évite le demi-tour en 2 appuis rapides)
-    lives: maxLives,
+    lives: maxLives + bonusProgression('coeur'), // + Cœur de réserve (js/03-progression.js)
     pendingGrowth: 0, // nombre de prochains ticks où la queue ne doit pas être retirée (croissance différée)
     tongueUntil: 0,
     snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~6 dernières secondes
@@ -4485,13 +5254,9 @@ function majBoutonMode() {
   boutonVisee.textContent = '🎯 Visée auto : ' + (optionViseeAuto ? 'oui' : 'non');
   boutonVisee.classList.toggle('active', optionViseeAuto);
   boutonVisee.title = 'La tourelle vise seule l\'ennemi le plus proche, tu tires toi-même';
-  // durées des buffs (plus longues en Facile) dans la légende et le menu des buffs
+  // durées des buffs (plus longues en Facile) dans la légende (la Boutique les recalcule à l'affichage)
   document.querySelectorAll('#legendList li[data-buff]').forEach(li => {
     li.textContent = texteAvecDureeBuff(li.textContent, li.dataset.buff);
-  });
-  document.querySelectorAll('#buffMenuListe .buff-option').forEach(btn => {
-    const petit = btn.querySelector('small');
-    if (petit) petit.textContent = texteAvecDureeBuff(buffDescriptions[btn.dataset.buff].detail, btn.dataset.buff);
   });
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
@@ -5135,6 +5900,7 @@ function init() {
   };
   statsPanelEl.style.display = 'none';
   succesNouvellePartie();
+  progressionNouvellePartie();
   killThreshold = randomKillThreshold();
   heartPickup = null;
   lootApples = [];
@@ -5382,7 +6148,7 @@ function dropBossLoot(x, y) {
 
   // pomme bleue avec le buff x2 (s'ajoute à une éventuelle pomme bleue déjà présente)
   // si x2 est désactivé dans le menu, on prend un autre buff actif ; aucun buff actif = pas de pomme bleue
-  const bossBuff = buffsActifs.includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
+  const bossBuff = buffsDisponibles().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
   if (bossBuff) {
     const blueSpot = pickSafeDropPosition(Math.PI * 0.25);
     const angleBlue = Math.random() * Math.PI * 2;
@@ -5475,7 +6241,8 @@ function awardEnemyKill(e, facon) {
       changeDirTimer: 800 + Math.random() * 1000,
       ne: performance.now() // pour le succès « Rattrapé ! »
     });
-  } else if (!blueApples.length && buffsActifs.length && Math.random() < reglagesDifficulte().chancePommeBleue) {
+  } else if (!blueApples.length && buffsDisponibles().length &&
+      Math.random() < reglagesDifficulte().chancePommeBleue + bonusProgression('pommeBleue')) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
     const angle = Math.random() * Math.PI * 2;
     blueApples.push({
@@ -5914,8 +6681,8 @@ function fireProjectile(angleOverride) {
     projectiles.push({
       x: turretPixelPos.x,
       y: turretPixelPos.y,
-      vx: Math.cos(angle) * projectileSpeed,
-      vy: Math.sin(angle) * projectileSpeed,
+      vx: Math.cos(angle) * projectileSpeed * (1 + bonusProgression('balles')),
+      vy: Math.sin(angle) * projectileSpeed * (1 + bonusProgression('balles')),
       joueur: joueurActif // pour attribuer les kills et les buffs au bon joueur
     });
     playShootSound();
@@ -6040,6 +6807,8 @@ function updateCombat(deltaMs) {
   };
   goldenApples.forEach(p => deplacerPommeMobile(p, goldenAppleSpeed));
   blueApples.forEach(p => deplacerPommeMobile(p, blueAppleSpeed));
+  goldenApples.forEach(p => attirerPomme(p, deltaMs)); // amélioration Aimant
+  blueApples.forEach(p => attirerPomme(p, deltaMs));
 
   // ramassage des pommes mobiles, auto-visée : pour chaque serpent en jeu
   joueursEnJeu().forEach(j => avecJoueur(j, () => {
@@ -6536,6 +7305,7 @@ pauseBtn.addEventListener('click', togglePause);
 
 document.querySelectorAll('.skin-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs('skin:' + btn.dataset.skin); // skin gagné par un succès
     enemySkin = btn.dataset.skin;
     document.querySelectorAll('.skin-btn').forEach(b => b.classList.toggle('active', b === btn));
   });
@@ -7556,7 +8326,7 @@ function drawPauseOverlay() {
   const texteReprise = modeEntree === 'manette' ? 'Appuie sur START pour reprendre'
     : modeEntree === 'tactile' ? 'Touche le jeu pour reprendre'
     : 'Appuie sur Échap ou ' + nomTouche(touches.pause) + ' pour reprendre';
-  ctx.fillText(menuBuffsOuvert ? 'Menu des buffs ouvert' : texteReprise, largeurPlateau / 2, hauteurPlateau / 2 + 20);
+  ctx.fillText(menuBuffsOuvert ? 'Boutique ouverte' : texteReprise, largeurPlateau / 2, hauteurPlateau / 2 + 20);
   ctx.restore();
 }
 
@@ -7727,7 +8497,7 @@ function drawControlsTutorial() {
   // --- menu des buffs ---
   ctx.textAlign = 'center';
   ctx.font = '13px ' + currentTheme.fontFamily;
-  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' +
+  ctx.fillText(nomTouche(touches.buffs) + ' : boutique  •  ' + nomTouche(touches.pause) + ' : pause  •  ' +
     nomTouche(touches.aide) + ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, mouseY + 78);
   dessinerInvitationTuto(nomTouche(touches.tuto) + ' : tutoriel');
 
@@ -7796,9 +8566,9 @@ function drawTutorielCoop() {
   ctx.fillText(partage ? '🎮 Branche une manette pour J2' : '⌨️ Clavier + souris = J1  •  🎮 Manette = J2', largeurPlateau / 2, y);
   ctx.fillText('Score commun • un ❤️ réanime ton coéquipier', largeurPlateau / 2, y + 22);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' + nomTouche(touches.aide) +
+  ctx.fillText(nomTouche(touches.buffs) + ' : boutique  •  ' + nomTouche(touches.pause) + ' : pause  •  ' + nomTouche(touches.aide) +
     ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, y + 44);
-  ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (menu B)' : '👻 Les serpents se traversent (menu B)',
+  ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (options)' : '👻 Les serpents se traversent (options)',
     largeurPlateau / 2, y + 66);
 
   ctx.fillStyle = '#ffffff';
@@ -7818,7 +8588,7 @@ function drawControlsTutorialListe(mode) {
         ['🔫', 'RT / R2, RB ou X', 'tirer'],
         ['🚀', 'A / Croix', 'démarrer, puis accélère (maintenir)'],
         ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'],
-        ['🧪', 'Y / Triangle ou Select', 'menu des buffs'],
+        ['🛒', 'Y / Triangle ou Select', 'boutique'],
         ['⏸️', 'Start', 'pause']
       ]
     : [
@@ -12103,7 +12873,7 @@ function drawShieldCooldownRing(headPos) {
   // masquée dès que le bouclier est prêt (ou pendant qu'il est actif, déjà géré à l'appel)
   if (remaining <= 0) return;
 
-  const progress = 1 - Math.min(1, remaining / shieldCooldownDuration);
+  const progress = 1 - Math.min(1, remaining / dureeRechargeBouclier());
 
   const cx = headPos.x * gridSize + gridSize / 2;
   const cy = headPos.y * gridSize + gridSize / 2;
@@ -12262,6 +13032,7 @@ function triggerWin() {
   restartBtn.style.display = 'inline-block';
   playVictorySound();
   succesFinPartie(true);
+  progressionFinPartie(true);
   saveHighscore(score);
   showEndGameStats();
   launchFireworks();
@@ -12395,6 +13166,7 @@ function endGame() {
     infos.nouveauRecord = infos.score > 0 && (infos.meilleur === null || infos.score > infos.meilleur);
   }).catch(() => {}).finally(() => saveHighscore(infos.score));
   succesFinPartie(false);
+  progressionFinPartie(false);
   showEndGameStats();
 }
 
@@ -12518,11 +13290,27 @@ function dessinerEcranGameOver() {
     ctx.font = 'bold 16px ' + currentTheme.fontFamily;
     ctx.fillText(invite, w / 2, 340);
   }
+  // Écailles gagnées (js/03-progression.js)
+  const gainEcailles = texteGainPartie();
+  if (gainEcailles) {
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px ' + currentTheme.fontFamily;
+    ctx.fillText(gainEcailles, w / 2, 364);
+  }
   ctx.globalAlpha = contenu * 0.7;
   ctx.shadowBlur = 0;
   ctx.fillStyle = currentTheme.textMuted;
   ctx.font = '12px ' + currentTheme.fontFamily;
-  ctx.fillText('Détails de la partie sous le jeu', w / 2, 368);
+  // tant que la Boutique n'a jamais été ouverte, on la signale à la place
+  const signalerBoutique = gainEcailles && !progression.boutiqueVue;
+  if (signalerBoutique) {
+    ctx.globalAlpha = contenu;
+    ctx.fillStyle = '#ffd700';
+  }
+  ctx.fillText(signalerBoutique
+    ? '🛒 Dépense-les dans la Boutique (' + texteCommande('touche ' + nomTouche(touches.buffs), 'Y', 'menu ☰') + ')'
+    : 'Détails de la partie sous le jeu', w / 2, gainEcailles ? 384 : 368);
   ctx.restore();
 }
 
@@ -12557,8 +13345,9 @@ function showEndGameStats() {
     rows.map(([label, value]) =>
       '<li><span>' + label + '</span><span class="stat-value">' + value + '</span></li>'
     ).join('') +
-    '</ul><div id="statsSucces"></div>';
+    '</ul><div id="statsEcailles"></div><div id="statsSucces"></div>';
   statsPanelEl.style.display = 'block';
+  majRecapEcailles();
   majRecapSucces();
 }
 
@@ -12754,7 +13543,7 @@ function activerBouclier(j = joueurs[0]) {
   const now = performance.now();
   if (now >= shieldReadyAt) {
     shieldActiveUntil = now + shieldDuration;
-    shieldReadyAt = now + shieldCooldownDuration;
+    shieldReadyAt = now + dureeRechargeBouclier();
     playShieldSound();
   }
 }
@@ -12841,10 +13630,13 @@ document.addEventListener('keydown', (e) => {
   if (modeEntree !== 'clavier') modeEntree = 'clavier';
 
   if (menuBuffsOuvert) {
-    // le menu garde la main : Échap ou B le ferme, Tab/Entrée/Espace naviguent dans ses boutons
+    // le menu garde la main : Échap ou B le ferme, flèches / Tab / Entrée / Espace naviguent dans ses boutons
     if (key === 'Escape' || e.code === touches.buffs) {
       e.preventDefault();
       fermerMenuBuffs();
+    } else if (key.startsWith('Arrow')) {
+      e.preventDefault();
+      naviguerBoutique(key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0, key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0);
     }
     return;
   }
@@ -12957,53 +13749,367 @@ function toucheCoop(e) {
 }
 
 // ============================================================
-// --- Menu des buffs ---
+// --- Boutique : l'échoppe de Sifflet (ancien menu des buffs) ---
 // ============================================================
+// Bouton 🛒 (à côté du plateau et dans le menu), touche B, Y / Select à la manette. Entre deux parties, on y
+// dépense ses Écailles (prix dans reglagesProgression, js/03-progression.js) et on choisit ce qu'on emporte.
+// Une étagère par catégorie ; toucher un objet le pose sur le comptoir (sa fiche : niveau, effet, Acheter,
+// Activer / Couper). Sifflet, le marchand, commente (répliques dans REPLIQUES_SIFFLET, faciles à changer).
+// Pendant une partie, la boutique s'ouvre en lecture seule (sauf en ?dev).
 const buffMenuEl = document.getElementById('buffMenu');
-const buffMenuListeEl = document.getElementById('buffMenuListe');
 const buffMenuAvertissementEl = document.getElementById('buffMenuAvertissement');
 const buffMenuBtn = document.getElementById('buffMenuBtn');
+const boutiqueMessageEl = document.getElementById('boutiqueMessage'); // la bulle de Sifflet
+const boutiqueJeuBtn = document.getElementById('boutiqueJeuBtn'); // 🛒 à côté du plateau
+const etageresEl = document.getElementById('boutiqueEtageres');
+const ficheAcheterEl = document.getElementById('ficheAcheter');
+const ficheBasculerEl = document.getElementById('ficheBasculer');
 let menuBuffsOuvert = false;
 let menuAMisEnPause = false; // le menu a mis la partie en pause : il la relance en se fermant
 let focusMenuManette = 0; // index du bouton sélectionné à la manette
+let boutiqueAChange = false; // un achat ou un réglage à appliquer à la partie qui attend de démarrer
+let boutiqueConstruite = false;
+let objetChoisi = 'amelioration:coeur'; // clé de l'objet posé sur le comptoir
+const objetsBoutique = {}; // clé -> {categorie, icone, nom, etat()}
 
-function construireMenuBuffs() {
-  buffMenuListeEl.innerHTML = '';
+// --- Répliques de Sifflet : {nom}, {prix}, {manque}, {niveau}, {succes} sont remplacés ---
+const REPLIQUES_SIFFLET = {
+  accueil: ['Sss… bienvenue chez Sifflet !', 'Des Écailles fraîches ? J\'ai ce qu\'il te faut.',
+    'Entre, entre. Tout est fait main… enfin, fait queue.', 'Ah, mon client préféré !'],
+  amelioration: ['« {nom} » niveau {niveau} ? Excellent choix.', '{nom}, niveau {niveau}. Ça va te changer la vie.'],
+  ameliorationMax: ['Tu as le niveau maximum. Je n\'ai rien de plus fort.'],
+  contenu: ['« {nom} », pour {prix} Écailles. Une affaire !', '« {nom} » ? Il t\'attend depuis longtemps.'],
+  possede: ['« {nom} » est à toi. Touche le bouton pour l\'emporter ou le laisser.', 'Déjà payé. Tu choisis s\'il part avec toi.'],
+  theme: ['Un nouveau décor, ça change tout.', 'Le thème « {nom} » te va très bien.'],
+  skinVerrouille: ['Celui-là ne se vend pas. Réussis « {succes} » et il est à toi.'],
+  skin: ['Ces ennemis-là ? Ils sont tout à fait effrayants.', 'Bon choix d\'ennemis, sss.'],
+  capacite: ['Coupe-la si tu veux corser la partie. Moi je dis ça…'],
+  achat: ['Merci ! Bonne partie, l\'ami.', 'Kaching ! Ça fait plaisir.', 'Vendu ! Reviens vite.'],
+  tropCher: ['Reviens avec {manque} Écailles de plus, l\'ami.', 'Il te manque {manque} Écailles. Une partie ou deux ?'],
+  rembourse: ['Je te rends {prix} Écailles. Choisis mieux cette fois, sss.'],
+  rienARembourser: ['Rien à te rendre : tu n\'as encore rien acheté.'],
+  lectureSeule: ['Chut, une partie est en cours. On fait les comptes après.']
+};
+
+function repliqueSifflet(type, valeurs) {
+  const liste = REPLIQUES_SIFFLET[type];
+  let texte = liste[Math.floor(Math.random() * liste.length)];
+  Object.keys(valeurs || {}).forEach(k => { texte = texte.split('{' + k + '}').join(valeurs[k]); });
+  return texte;
+}
+
+// --- Sifflet : petit dessin 20 x 20 (couleurs de PALETTE_ICONES, js/00-icones.js) ---
+const SIFFLET_HAUT = [
+  '......kkkkkkk.......', '......kvvvvvk.......', '......kvvvvvk.......', '......kvvvvvk.......',
+  '......kyyyyyk.......', '....kkkkkkkkkkk.....', '.....kGGGGGGGk......', '....kGGGGGGGGGk.....'];
+const SIFFLET_BAS = [
+  '......kGGGGGk.......', '.....kGGLLLGGk......', '....kGGLLLLLGGk.....', '...kGGGGGGGGGGGk....', '..kGGGGGGGGGGGGGk...'];
+const SIFFLET_VISAGES = {
+  repos: ['....kGwkGGGwkGk.....', '....kGwwGGGwwGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkkkGGk......', '......kGGrGGk.......', '.......kGrGk........'],
+  langue: ['....kGwkGGGwkGk.....', '....kGwwGGGwwGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkrkGGk......', '......kGGrGGk.......', '......krGGGrk.......'],
+  cligne: ['....kGGGGGGGGGk.....', '....kGkkGGGkkGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkkkGGk......', '......kGGGGGk.......', '.......kGGGk........'],
+  content: ['....kGGkGGGkGGk.....', '....kGkGkGkGkGk.....', '....kGGGGGGGGGk.....', '....kLpGGGGGpLk.....',
+    '.....kGkGGGkGk......', '......kGkkkGk.......', '.......kGrGk........'],
+  decu: ['....kGkkGGGkkGk.....', '....kGwkGGGwkGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGGGGGGk......', '......kGkkkGk.......', '.......kGGGk........']
+};
+const siffletCtx = document.getElementById('sifflet').getContext('2d');
+let humeurSifflet = 'repos', finHumeurSifflet = 0, finClignement = 0;
+
+function dessinerSifflet(visage) {
+  siffletCtx.clearRect(0, 0, 20, 20);
+  SIFFLET_HAUT.concat(SIFFLET_VISAGES[visage], SIFFLET_BAS).forEach((ligne, y) => {
+    for (let x = 0; x < ligne.length; x++) {
+      if (ligne[x] === '.') continue;
+      siffletCtx.fillStyle = PALETTE_ICONES[ligne[x]];
+      siffletCtx.fillRect(x, y, 1, 1);
+    }
+  });
+}
+
+// humeur passagère (content après un achat, déçu quand c'est trop cher), clignements et langue au repos
+function humeur(visage, duree) {
+  humeurSifflet = visage;
+  finHumeurSifflet = performance.now() + (duree || 1800);
+  dessinerSifflet(visage);
+  const sifflet = document.getElementById('siffletZone');
+  sifflet.classList.remove('saute', 'secoue');
+  void sifflet.offsetWidth; // relance l'animation
+  if (visage === 'content') sifflet.classList.add('saute');
+  if (visage === 'decu') sifflet.classList.add('secoue');
+}
+
+setInterval(() => {
+  if (!menuBuffsOuvert) return;
+  const now = performance.now();
+  if (humeurSifflet !== 'repos' && now < finHumeurSifflet) return;
+  humeurSifflet = 'repos';
+  if (now > finClignement && Math.random() < 0.08) {
+    finClignement = now + 160;
+    dessinerSifflet(Math.random() < 0.4 ? 'langue' : 'cligne');
+  } else if (now > finClignement) {
+    dessinerSifflet('repos');
+  }
+}, 120);
+
+// --- Sons de caisse ---
+function sonBoutique(notes, type) {
+  if (isMuted) return;
+  const ctx = getAudioCtx();
+  notes.forEach(([freq, decalage, duree]) => {
+    const debut = ctx.currentTime + decalage;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, debut);
+    gain.gain.setValueAtTime(0.001, debut);
+    gain.gain.linearRampToValueAtTime(0.1, debut + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, debut + duree);
+    osc.connect(gain);
+    gain.connect(sortieAudio);
+    osc.start(debut);
+    osc.stop(debut + duree);
+  });
+}
+const sonCaisse = () => sonBoutique([[1975.5, 0, 0.08], [2637, 0.07, 0.35]], 'square');
+const sonRefus = () => sonBoutique([[220, 0, 0.12], [174.6, 0.1, 0.22]], 'sawtooth');
+
+// --- Contenu des étagères ---
+const CATEGORIES_BOUTIQUE = [
+  {cle: 'ameliorations', nom: 'Améliorations'},
+  {cle: 'buffs', nom: 'Buffs de la pomme bleue'},
+  {cle: 'capacites', nom: 'Capacités'},
+  {cle: 'themes', nom: 'Thèmes'},
+  {cle: 'skins', nom: 'Skins d\'ennemis'}
+];
+const ICONES_THEMES = {neon: '💡', espace: '🔭', lave: '🌋', ocean: '🐢', aurore: '❄️', foret: '🌱', desert: '🧭', synthwave: '📼', halloween: '🎃'};
+const ICONES_SKINS = {urchin: '🦔', ghost: '👻', pixel: '🕹️', slime: '🟢', bat: '🦇', jelly: '🪼', eye: '👁️', drone: '🤖',
+  spider: '🕷️', crab: '🦀', pumpkin: '🎃', mushroom: '🍄'};
+
+// nom affiché des thèmes et skins : texte de leur bouton dans le menu ☰, sans l'emoji
+document.querySelectorAll('.skin-btn, .theme-btn').forEach(b => {
+  b.dataset.nom = b.textContent.replace(/^[^\p{L}]+/u, '').trim();
+});
+
+// achats et réglages seulement entre deux parties (avant le départ ou après la fin)
+function boutiqueModifiable() {
+  return modeDev || ((waitingToStart || gameOver) && !tutoActif() && !enEcranInvite());
+}
+
+function texteEcailles(n) {
+  return '🪙 ' + n.toLocaleString('fr-FR');
+}
+
+function messageBoutique(texte) {
+  boutiqueMessageEl.textContent = texte;
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(boutiqueMessageEl);
+}
+
+// valeur de l'effet d'une amélioration au niveau n (arrondie pour l'affichage)
+function effetAmelioration(cle, n) {
+  return Math.round(reglagesProgression.ameliorations[cle].effet * n * 100) / 100;
+}
+
+// L'état d'un objet, recalculé à chaque affichage :
+// niveau / max (améliorations), verrouille, actif, prix (null si rien à acheter), detail (lignes de la fiche),
+// basculer (fonction ou null), texteBasculer, replique (ce que dit Sifflet quand on le choisit)
+function definirObjets() {
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const t = textesAmeliorations[cle];
+    objetsBoutique['amelioration:' + cle] = {categorie: 'ameliorations', icone: t.icone, nom: t.nom, etat: () => {
+      const max = reglagesProgression.ameliorations[cle].prix.length;
+      const n = niveauAchete(cle);
+      const prix = prixProchainNiveau(cle);
+      const actif = n > 0 && !progression.inactifs.includes(cle);
+      const detail = [n > 0 ? 'Actuel : ' + t.detail(effetAmelioration(cle, n)) : 'Pas encore acheté'];
+      if (prix !== null) detail.push('Niveau ' + (n + 1) + ' : ' + t.detail(effetAmelioration(cle, n + 1)));
+      return {niveau: n, max, verrouille: n === 0, actif, prix, detail,
+        acheter: () => acheterAmelioration(cle), quoi: t.nom + ' niveau ' + (n + 1),
+        basculer: n > 0 ? () => { basculerAmelioration(cle); boutiqueAChange = true; } : null,
+        texteBasculer: actif ? 'Couper' : 'Activer',
+        replique: prix === null ? repliqueSifflet('ameliorationMax') : repliqueSifflet('amelioration', {nom: t.nom, niveau: n + 1})};
+    }};
+  });
+
   buffTypes.forEach(type => {
     const d = buffDescriptions[type];
-    const btn = document.createElement('button');
-    btn.className = 'buff-option';
-    btn.dataset.buff = type;
-    btn.innerHTML =
-      '<span class="buff-option-icone">' + d.icon + '</span>' +
-      '<span class="buff-option-texte">' + d.nom + '<small>' + texteAvecDureeBuff(d.detail, type) + '</small></span>' +
-      '<span class="buff-interrupteur"></span>';
-    btn.addEventListener('click', () => basculerBuff(type));
-    buffMenuListeEl.appendChild(btn);
+    objetsBoutique['buff:' + type] = {categorie: 'buffs', icone: d.icon, nom: d.nom, etat: () => {
+      const debloque = contenuDebloque('buff', type);
+      const prix = debloque ? null : prixContenu('buff', type);
+      const actif = debloque && buffsActifs.includes(type);
+      return {verrouille: !debloque, actif, prix, detail: [texteAvecDureeBuff(d.detail, type)],
+        acheter: () => acheterContenu('buff', type), quoi: d.nom,
+        basculer: debloque ? () => basculerBuff(type) : null,
+        texteBasculer: actif ? 'Laisser à la maison' : 'Emporter',
+        replique: debloque ? repliqueSifflet('possede', {nom: d.nom}) : repliqueSifflet('contenu', {nom: d.nom, prix})};
+    }};
   });
-  const capacitesListeEl = document.getElementById('capacitesMenuListe');
-  capacitesListeEl.innerHTML = '';
-  Object.keys(capaciteDescriptions).forEach(cle => {
+
+  ['bouclier', 'sprint'].forEach(cle => {
     const d = capaciteDescriptions[cle];
-    const btn = document.createElement('button');
-    btn.className = 'buff-option';
-    btn.dataset.capacite = cle;
-    btn.innerHTML =
-      '<span class="buff-option-icone">' + d.icon + '</span>' +
-      '<span class="buff-option-texte">' + d.nom + '<small>' + d.detail + '</small></span>' +
-      '<span class="buff-interrupteur"></span>';
-    btn.addEventListener('click', () => basculerCapacite(cle));
-    capacitesListeEl.appendChild(btn);
+    objetsBoutique['capacite:' + cle] = {categorie: 'capacites', icone: d.icon, nom: d.nom, etat: () => ({
+      actif: !!capacitesActives[cle], prix: null, detail: [d.detail],
+      basculer: () => basculerCapacite(cle), texteBasculer: capacitesActives[cle] ? 'Couper' : 'Activer',
+      replique: repliqueSifflet('capacite')
+    })};
   });
+
+  document.querySelectorAll('.theme-btn').forEach(tb => {
+    const theme = tb.dataset.theme;
+    const nom = tb.dataset.nom;
+    objetsBoutique['theme:' + theme] = {categorie: 'themes', icone: ICONES_THEMES[theme] || '🎨', nom, etat: () => {
+      const debloque = contenuDebloque('theme', theme);
+      const prix = debloque ? null : prixContenu('theme', theme);
+      const actuel = theme === currentThemeName;
+      return {verrouille: !debloque, actif: actuel, prix,
+        detail: [!debloque ? 'Un décor de jeu à acheter' : actuel ? 'C\'est le thème de ta partie' : 'Un décor de jeu à toi'],
+        acheter: () => acheterContenu('theme', theme), quoi: 'thème ' + nom,
+        basculer: debloque && !actuel ? () => applyTheme(theme) : null, texteBasculer: 'Jouer avec',
+        replique: debloque ? repliqueSifflet('theme', {nom}) : repliqueSifflet('contenu', {nom, prix})};
+    }};
+  });
+
+  document.querySelectorAll('.skin-btn').forEach(sb => {
+    const skin = sb.dataset.skin;
+    const nom = sb.dataset.nom;
+    objetsBoutique['skin:' + skin] = {categorie: 'skins', icone: ICONES_SKINS[skin] || '👾', nom, etat: () => {
+      const debloque = contenuDebloque('skin', skin);
+      const succes = succesParId[reglagesProgression.skinsParSucces[skin]];
+      const actuel = skin === enemySkin;
+      return {verrouille: !debloque, actif: actuel, prix: null,
+        detail: [!debloque && succes ? '🔒 Succès « ' + succes.nom + ' » : ' + succes.detail
+          : actuel ? 'Ce sont les ennemis de ta partie' : 'Des ennemis à ce look'],
+        basculer: debloque && !actuel ? () => sb.click() : null, texteBasculer: 'Jouer contre',
+        replique: !debloque && succes ? repliqueSifflet('skinVerrouille', {succes: succes.nom}) : repliqueSifflet('skin')};
+    }};
+  });
+}
+
+function construireMenuBuffs() {
+  definirObjets();
+  etageresEl.innerHTML = '';
+  CATEGORIES_BOUTIQUE.forEach(cat => {
+    const etagere = document.createElement('section');
+    etagere.className = 'etagere';
+    etagere.dataset.categorie = cat.cle;
+    etagere.innerHTML = '<h3 class="etiquette"></h3><div class="etagere-objets"></div>';
+    etagere.querySelector('.etiquette').textContent = cat.nom;
+    const rangee = etagere.querySelector('.etagere-objets');
+    Object.keys(objetsBoutique).filter(cle => objetsBoutique[cle].categorie === cat.cle).forEach(cle => {
+      const o = objetsBoutique[cle];
+      const btn = document.createElement('button');
+      btn.className = 'objet';
+      btn.dataset.cle = cle;
+      btn.title = o.nom;
+      btn.innerHTML = '<span class="objet-niveau"></span><span class="objet-icone"></span><span class="objet-pips"></span>' +
+        '<span class="objet-prix"></span>';
+      btn.querySelector('.objet-icone').textContent = o.icone;
+      btn.addEventListener('click', () => choisirObjet(cle, true));
+      rangee.appendChild(btn);
+    });
+    etageresEl.appendChild(etagere);
+  });
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(etageresEl);
+
+  // ?dev : de quoi tester un réglage en quelques secondes
+  const devEl = document.getElementById('boutiqueDev');
+  devEl.innerHTML = '';
+  if (modeDev) {
+    devEl.innerHTML = '<p>🧪 Mode dev : progression à part, tout est débloqué, pas de succès.</p>' +
+      '<button id="devEcailles">+1 000 🪙</button><button id="devZero">Remise à zéro</button>';
+    document.getElementById('devEcailles').addEventListener('click', () => {
+      ajouterEcailles(1000);
+      sauverProgression();
+      rafraichirMenuBuffs();
+    });
+    document.getElementById('devZero').addEventListener('click', () => {
+      progression = progressionVide();
+      progression.migre = true;
+      sauverProgression();
+      boutiqueAChange = true;
+      rafraichirMenuBuffs();
+    });
+  }
+  boutiqueConstruite = true;
+  dessinerSifflet('repos');
   rafraichirMenuBuffs();
 }
+
+// pose un objet sur le comptoir ; parler = Sifflet le commente
+function choisirObjet(cle, parler) {
+  if (!objetsBoutique[cle]) return;
+  objetChoisi = cle;
+  rafraichirMenuBuffs();
+  if (parler) {
+    messageBoutique(boutiqueModifiable() ? objetsBoutique[cle].etat().replique : repliqueSifflet('lectureSeule'));
+    humeur('repos');
+  }
+}
+
+// pièces qui volent du solde vers le comptoir
+function piecesQuiVolent() {
+  const depart = document.getElementById('boutiqueSolde').getBoundingClientRect();
+  const arrivee = document.getElementById('boutiqueFiche').getBoundingClientRect();
+  for (let i = 0; i < 6; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'piece-vol';
+    piece.innerHTML = htmlIcone('🪙');
+    piece.style.left = (depart.left + depart.width / 2) + 'px';
+    piece.style.top = (depart.top + depart.height / 2) + 'px';
+    piece.style.setProperty('--dx', (arrivee.left + arrivee.width / 2 - depart.left - depart.width / 2 + (Math.random() - 0.5) * 80) + 'px');
+    piece.style.setProperty('--dy', (arrivee.top + 20 - depart.top - depart.height / 2) + 'px');
+    piece.style.animationDelay = (i * 50) + 'ms';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 900 + i * 50);
+  }
+}
+
+// achat commun : vérifie le solde, Sifflet réagit
+function payer(prix, faire, quoi) {
+  if (prix === null) return;
+  if (progression.ecailles < prix) {
+    messageBoutique(repliqueSifflet('tropCher', {manque: (prix - progression.ecailles).toLocaleString('fr-FR')}) +
+      ' (' + quoi + ')');
+    humeur('decu');
+    sonRefus();
+    return;
+  }
+  if (faire()) {
+    boutiqueAChange = true;
+    sonCaisse();
+    piecesQuiVolent();
+    humeur('content', 2200);
+    messageBoutique('✅ ' + quoi + ' ! ' + repliqueSifflet('achat'));
+    const objet = etageresEl.querySelector('.objet[data-cle="' + objetChoisi + '"]');
+    if (objet) {
+      objet.classList.remove('achete');
+      void objet.offsetWidth;
+      objet.classList.add('achete');
+    }
+  }
+}
+
+ficheAcheterEl.addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
+  const e = objetsBoutique[objetChoisi].etat();
+  if (typeof e.prix === 'number') payer(e.prix, e.acheter, e.quoi);
+  rafraichirMenuBuffs();
+});
+ficheBasculerEl.addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
+  const e = objetsBoutique[objetChoisi].etat();
+  if (e.basculer) e.basculer();
+  rafraichirMenuBuffs();
+});
 
 function basculerCapacite(cle) {
   capacitesActives[cle] = !capacitesActives[cle];
   sauverCapacites();
   if (cle === 'sprint' && !capacitesActives.sprint) joueurs.forEach(j => arreterBoost(j));
   if (cle === 'bouclier' && !capacitesActives.bouclier) joueurs.forEach(j => j.shieldActiveUntil = 0);
-  rafraichirMenuBuffs();
 }
 
 function basculerBuff(type) {
@@ -13015,58 +14121,199 @@ function basculerBuff(type) {
   sauverBuffsActifs();
   // une pomme bleue déjà sur le terrain avec un buff désactivé change de buff (ou disparaît s'il n'en reste aucun)
   blueApples = blueApples.filter(pomme => {
-    if (buffsActifs.includes(pomme.buffType)) return true;
+    if (buffsDisponibles().includes(pomme.buffType)) return true;
     const remplacant = tirerBuffAleatoire();
     if (remplacant) pomme.buffType = remplacant;
     return !!remplacant;
   });
-  rafraichirMenuBuffs();
+}
+
+// pastilles de niveau (pleines jusqu'au niveau acheté)
+function pipsNiveau(el, n, max) {
+  el.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const p = document.createElement('i');
+    if (i < n) p.className = 'plein';
+    el.appendChild(p);
+  }
 }
 
 function rafraichirMenuBuffs() {
-  buffMenuListeEl.querySelectorAll('.buff-option').forEach(btn => {
-    const actif = buffsActifs.includes(btn.dataset.buff);
-    btn.classList.toggle('actif', actif);
-    btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
+  if (!boutiqueConstruite) return;
+  const modifiable = boutiqueModifiable();
+  document.getElementById('boutiqueSolde').innerHTML = htmlIcone('🪙') + ' ' + progression.ecailles.toLocaleString('fr-FR');
+  buffMenuEl.classList.toggle('lecture-seule', !modifiable);
+
+  // étagères
+  etageresEl.querySelectorAll('.objet').forEach(btn => {
+    const o = objetsBoutique[btn.dataset.cle];
+    const e = o.etat();
+    const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+    btn.classList.toggle('verrouille', !!e.verrouille);
+    btn.classList.toggle('actif', !e.verrouille && !!e.actif);
+    btn.classList.toggle('coupe', !e.verrouille && !e.actif && !aChoisir);
+    btn.classList.toggle('choisi', btn.dataset.cle === objetChoisi);
+    btn.classList.toggle('trop-cher', typeof e.prix === 'number' && progression.ecailles < e.prix);
+    const niveau = btn.querySelector('.objet-niveau');
+    const pips = btn.querySelector('.objet-pips');
+    const prix = btn.querySelector('.objet-prix');
+    if (e.max) {
+      niveau.textContent = e.niveau >= e.max ? 'MAX' : 'Niv. ' + e.niveau;
+      niveau.classList.toggle('max', e.niveau >= e.max);
+      pipsNiveau(pips, e.niveau, e.max);
+    } else {
+      niveau.textContent = '';
+      pips.innerHTML = '';
+    }
+    prix.classList.toggle('visible', typeof e.prix === 'number');
+    if (typeof e.prix === 'number') prix.textContent = e.prix.toLocaleString('fr-FR');
+    btn.setAttribute('aria-pressed', e.actif ? 'true' : 'false');
+    btn.setAttribute('aria-label', o.nom + (e.max ? ', niveau ' + e.niveau + ' sur ' + e.max : '') +
+      (typeof e.prix === 'number' ? ', ' + e.prix + ' Écailles' : ''));
   });
-  document.querySelectorAll('#capacitesMenuListe .buff-option').forEach(btn => {
-    const actif = !!capacitesActives[btn.dataset.capacite];
-    btn.classList.toggle('actif', actif);
-    btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
-  });
+
+  // comptoir : la fiche de l'objet choisi
+  const o = objetsBoutique[objetChoisi];
+  const e = o.etat();
+  const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+  document.getElementById('ficheIcone').innerHTML = htmlIcone(o.icone);
+  document.getElementById('ficheNom').textContent = o.nom;
+  const niveauEl = document.getElementById('ficheNiveau');
+  niveauEl.classList.toggle('niveaux', !!e.max);
+  if (e.max) {
+    niveauEl.innerHTML = '<span class="fiche-niv"></span><span class="objet-pips"></span>';
+    niveauEl.querySelector('.fiche-niv').textContent = e.niveau >= e.max ? 'Niveau ' + e.niveau + ' / ' + e.max + ' · MAX'
+      : 'Niveau ' + e.niveau + ' / ' + e.max;
+    pipsNiveau(niveauEl.querySelector('.objet-pips'), e.niveau, e.max);
+  } else {
+    niveauEl.textContent = e.verrouille ? '🔒 Pas encore à toi' : aChoisir ? (e.actif ? '✔️ Dans ta partie' : 'À toi')
+      : e.actif ? '✔️ Emporté dans tes parties' : 'Laissé à la maison';
+  }
+  const detailEl = document.getElementById('ficheDetail');
+  detailEl.innerHTML = '';
+  e.detail.forEach(l => { const d = document.createElement('span'); d.textContent = l; detailEl.appendChild(d); });
+  const peutAcheter = typeof e.prix === 'number';
+  const auMax = !!e.max && e.niveau >= e.max;
+  ficheAcheterEl.style.display = peutAcheter || auMax ? '' : 'none';
+  ficheAcheterEl.textContent = peutAcheter ? 'Acheter ' + texteEcailles(e.prix) : 'Niveau max';
+  ficheAcheterEl.classList.toggle('max', !peutAcheter);
+  ficheAcheterEl.classList.toggle('trop-cher', peutAcheter && progression.ecailles < e.prix);
+  ficheBasculerEl.style.display = e.basculer ? '' : 'none';
+  ficheBasculerEl.textContent = e.texteBasculer || '';
+  ficheBasculerEl.classList.toggle('couper', !!e.actif && !aChoisir);
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(document.getElementById('boutiqueFiche'));
+
   // boutons tactiles : bouclier masqué, Boost ne sert plus qu'à démarrer
   document.getElementById('touchBouclier').classList.toggle('capacite-off', !capacitesActives.bouclier);
   document.getElementById('touchBoost').textContent = capacitesActives.sprint ? '🚀 Boost' : '▶️ Démarrer';
+  const dispo = buffsDisponibles();
   document.querySelectorAll('.legend-buffs li[data-buff]').forEach(li => {
-    li.classList.toggle('buff-desactive', !buffsActifs.includes(li.dataset.buff));
+    li.classList.toggle('buff-desactive', !dispo.includes(li.dataset.buff));
   });
-  buffMenuAvertissementEl.textContent = buffsActifs.length
-    ? buffsActifs.length + ' / ' + buffTypes.length + ' buffs actifs'
-    : '⚠️ Aucun buff actif : la pomme bleue n\'apparaîtra plus';
-  buffMenuBtn.textContent = '🧪 Buffs ' + buffsActifs.length + '/' + buffTypes.length;
+  buffMenuAvertissementEl.textContent = dispo.length ? '' : '⚠️ Aucun buff emporté : la pomme bleue n\'apparaîtra plus';
+  buffMenuBtn.textContent = '🛒 Boutique ' + texteEcailles(progression.ecailles);
+  buffMenuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
+  document.getElementById('boutiqueJeuSolde').textContent = progression.ecailles.toLocaleString('fr-FR');
+  boutiqueJeuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
+  majVerrous();
 }
 
+// menu ☰ : thèmes et skins verrouillés grisés, avec ce qu'il faut faire en bulle d'aide
+function majVerrous() {
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    const ok = contenuDebloque('theme', b.dataset.theme);
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok ? '' : 'À acheter dans la Boutique (' + prixContenu('theme', b.dataset.theme) + ' Écailles)';
+  });
+  document.querySelectorAll('.skin-btn').forEach(b => {
+    const ok = contenuDebloque('skin', b.dataset.skin);
+    const succes = succesParId[reglagesProgression.skinsParSucces[b.dataset.skin]];
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok || !succes ? '' : 'Se débloque avec le succès « ' + succes.nom + ' »';
+  });
+}
+
+// --- Navigation au clavier et à la manette : vers le bouton le plus proche dans la direction ---
 function boutonsMenuBuffs() {
-  return Array.from(buffMenuEl.querySelectorAll('.buff-option, #buffMenuActions button'));
+  return Array.from(buffMenuEl.querySelectorAll('#buffMenuFermer, #boutiqueDev button, .objet, #boutiqueFiche button, #buffMenuActions button'))
+    .filter(b => b.style.display !== 'none' && b.offsetParent !== null);
 }
 
 function majFocusManette() {
   const boutons = boutonsMenuBuffs();
+  if (!boutons.length) return;
   focusMenuManette = (focusMenuManette + boutons.length) % boutons.length;
   boutons.forEach((b, i) => b.classList.toggle('focus-manette', modeEntree === 'manette' && i === focusMenuManette));
+  const b = boutons[focusMenuManette];
+  if (b && b.scrollIntoView) b.scrollIntoView({block: 'nearest'});
+  // passer sur un objet le pose sur le comptoir
+  if (b && b.classList.contains('objet') && b.dataset.cle !== objetChoisi) choisirObjet(b.dataset.cle, true);
 }
 
-function ouvrirMenuBuffs() {
+function naviguerBoutique(dx, dy) {
+  const boutons = boutonsMenuBuffs();
+  const courant = document.activeElement && boutons.includes(document.activeElement) && modeEntree !== 'manette'
+    ? boutons.indexOf(document.activeElement) : focusMenuManette;
+  const actuel = boutons[courant] || boutons[0];
+  if (!actuel) return;
+  const a = actuel.getBoundingClientRect();
+  const ax = a.left + a.width / 2, ay = a.top + a.height / 2;
+  let meilleur = boutons.indexOf(actuel), score = Infinity;
+  boutons.forEach((b, i) => {
+    if (b === actuel) return;
+    const r = b.getBoundingClientRect();
+    const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+    const avance = dx ? (bx - ax) * dx : (by - ay) * dy;
+    const ecart = dx ? Math.abs(by - ay) : Math.abs(bx - ax);
+    if (avance <= 4) return;
+    const s = dy ? avance * 3 + ecart : avance + ecart * 3; // en vertical : la rangée la plus proche d'abord
+    if (s < score) { score = s; meilleur = i; }
+  });
+  focusMenuManette = meilleur;
+  majFocusManette();
+  const b = boutonsMenuBuffs()[focusMenuManette];
+  if (b && modeEntree !== 'manette') b.focus();
+}
+
+// A à la manette : sur un objet, va sur le premier bouton utile de la fiche ; ailleurs, appuie sur le bouton
+function validerBoutonBoutique() {
+  const b = boutonsMenuBuffs()[focusMenuManette];
+  if (!b) return;
+  if (b.classList.contains('objet')) {
+    choisirObjet(b.dataset.cle, true);
+    const cible = [ficheAcheterEl, ficheBasculerEl].find(x => x.style.display !== 'none' && !x.classList.contains('max'));
+    if (cible) focusMenuManette = boutonsMenuBuffs().indexOf(cible);
+    majFocusManette();
+    return;
+  }
+  b.click();
+  majFocusManette();
+}
+
+// cle : objet à montrer en ouvrant (ex. 'theme:lave'), sinon le dernier choisi
+function ouvrirMenuBuffs(cle) {
   if (menuBuffsOuvert) return;
   menuBuffsOuvert = true;
   menuAMisEnPause = false;
+  boutiqueAChange = false;
   if (!isPaused && !waitingToStart && !countdownActive && !gameOver) {
     togglePause();
     menuAMisEnPause = true;
   }
   joueurs.forEach(j => arreterBoost(j));
+  if (!progression.boutiqueVue && boutiqueModifiable()) {
+    progression.boutiqueVue = true;
+    sauverProgression();
+  }
+  const montre = typeof cle === 'string' && objetsBoutique[cle];
+  if (montre) objetChoisi = cle;
   buffMenuEl.classList.add('ouvert');
-  focusMenuManette = 0;
+  rafraichirMenuBuffs();
+  messageBoutique(!boutiqueModifiable() ? repliqueSifflet('lectureSeule')
+    : montre ? objetsBoutique[cle].etat().replique : repliqueSifflet('accueil'));
+  humeur('repos');
+  const objet = etageresEl.querySelector('.objet[data-cle="' + objetChoisi + '"]');
+  focusMenuManette = Math.max(0, boutonsMenuBuffs().indexOf(objet));
   majFocusManette();
 }
 
@@ -13077,34 +14324,50 @@ function fermerMenuBuffs() {
   if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réactive un bouton du menu
   if (menuAMisEnPause && isPaused) togglePause();
   menuAMisEnPause = false;
+  // partie pas encore lancée : on la prépare à nouveau pour appliquer les achats (cœurs de départ...)
+  if (boutiqueAChange && waitingToStart && !countdownActive && !tutoActif()) init();
+  boutiqueAChange = false;
 }
 
-buffMenuBtn.addEventListener('click', () => {
-  buffMenuBtn.blur();
+[buffMenuBtn, boutiqueJeuBtn].forEach(b => b.addEventListener('click', () => {
+  b.blur();
   ouvrirMenuBuffs();
-});
+}));
+// le 🛒 du plateau se montre aussi sur mobile, mais seulement entre deux parties
+setInterval(() => {
+  document.body.classList.toggle('entre-parties', !!((waitingToStart || gameOver) && !countdownActive));
+}, 250);
 document.getElementById('buffMenuFermer').addEventListener('click', fermerMenuBuffs);
 document.getElementById('buffMenuTout').addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
   buffsActifs = buffTypes.slice();
   sauverBuffsActifs();
-  // la collision entre joueurs est une règle, pas un bonus : « Tout activer » la laisse telle quelle
+  progression.inactifs = [];
+  sauverProgression();
   capacitesActives = {bouclier: true, sprint: true, collisionJoueurs: capacitesActives.collisionJoueurs};
   sauverCapacites();
+  boutiqueAChange = true;
+  rafraichirMenuBuffs();
+});
+document.getElementById('boutiqueRembourser').addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
+  const rendu = rembourserAmeliorations();
+  boutiqueAChange = true;
+  messageBoutique(rendu ? '↺ ' + repliqueSifflet('rembourse', {prix: rendu.toLocaleString('fr-FR')})
+    : repliqueSifflet('rienARembourser'));
   rafraichirMenuBuffs();
 });
 // clic sur le fond sombre = fermer
 buffMenuEl.addEventListener('click', (e) => {
   if (e.target === buffMenuEl) fermerMenuBuffs();
 });
-
-construireMenuBuffs();
-
+// construite au démarrage (js/19-demarrage.js), une fois les succès chargés
 // ============================================================
 // --- Manette (Gamepad API, disposition standard Xbox / PlayStation) ---
 // ============================================================
 // A/Croix : démarrer, rejouer, boost (maintenu) — B/Rond ou LB : bouclier
 // RT/R2, RB ou X/Carré : tirer — stick droit : viser — stick gauche ou croix : se déplacer
-// Start : pause — Select/Back ou Y/Triangle : menu des buffs — LT/L2 : aide (et tutoriel)
+// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel)
 const MANETTE = {A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, SELECT: 8, START: 9, HAUT: 12, BAS: 13, GAUCHE: 14, DROITE: 15};
 const zoneMorteStick = 0.5; // seuil pour qu'un stick compte comme une direction
 const zoneMorteVisee = 0.3;
@@ -13211,20 +14474,16 @@ function lireUneManette(pad, numero, now) {
   }
 
   if (menuBuffsOuvert) {
-    // navigation dans le menu : haut/bas avec répétition si maintenu, A pour basculer, B/Y/Select pour fermer
-    if (dy !== 0) {
-      if (dy !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
-        focusMenuManette += dy;
-        majFocusManette();
-        repetitionMenuManette = now + (dy !== directionMenuManettePrecedente ? 400 : 150);
+    // navigation dans la boutique : croix ou stick (répétition si maintenu), A pour choisir / appuyer, B/Y/Select pour fermer
+    const direction = dx * 10 + dy;
+    if (direction !== 0) {
+      if (direction !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
+        naviguerBoutique(dx, dy);
+        repetitionMenuManette = now + (direction !== directionMenuManettePrecedente ? 400 : 150);
       }
     }
-    directionMenuManettePrecedente = dy;
-    if (vientDAppuyer(MANETTE.A)) {
-      const bouton = boutonsMenuBuffs()[focusMenuManette];
-      if (bouton) bouton.click();
-      majFocusManette();
-    }
+    directionMenuManettePrecedente = direction;
+    if (vientDAppuyer(MANETTE.A)) validerBoutonBoutique();
     if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.Y) || vientDAppuyer(MANETTE.SELECT) || vientDAppuyer(MANETTE.START)) {
       fermerMenuBuffs();
     }
@@ -13349,7 +14608,7 @@ const pagesAide = [
             ['🔫', 'RT / R2, RB ou X', 'tirer'],
             ['🚀', 'A / Croix', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
             capacitesActives.bouclier ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
-            ['🧪', 'Y / Triangle ou Select', 'menu des buffs'],
+            ['🛒', 'Y / Triangle ou Select', 'boutique'],
             ['❓', 'LT / L2', 'cette aide'],
             ['⏸️', 'Start', 'pause']
           ]
@@ -13368,7 +14627,7 @@ const pagesAide = [
               capacitesActives.bouclier ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
               ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
-              ['🧪', nomTouche(touches.buffs), 'menu des buffs'],
+              ['🛒', nomTouche(touches.buffs), 'boutique'],
               ['❓', nomTouche(touches.aide), 'cette aide  •  ' + nomTouche(touches.tuto) + ' sur l\'écran de départ : tutoriel'],
               ['🏆', nomTouche(touches.succes), 'tes succès'],
               ['⚙️', nomTouche(touches.options), 'options : volume, plein écran (' + nomTouche(touches.pleinEcran) + '), touches'],
@@ -13430,12 +14689,13 @@ const pagesAide = [
   {
     onglet: '🧪', titre: 'Buffs',
     remplir(zone) {
-      zone.appendChild(paragrapheAide('Chaque ' + nomPomme('bleue') + ' donne un de ces buffs. Le menu des buffs (' +
-        texteCommande('touche B', 'Y / Triangle', 'menu ☰') + ') permet de choisir ceux qui peuvent sortir.'));
+      zone.appendChild(paragrapheAide('Chaque ' + nomPomme('bleue') + ' donne un de ces buffs. Au début, seul Points x2 est débloqué : ' +
+        'les autres s\'achètent avec des Écailles dans la Boutique (' + texteCommande('touche ' + nomTouche(touches.buffs), 'Y / Triangle', 'menu ☰') +
+        '), qui permet aussi de choisir ceux qui peuvent sortir.'));
       buffTypes.forEach(type => {
         const b = buffDescriptions[type];
-        const off = !buffsActifs.includes(type);
-        zone.appendChild(ligneAide(b.icon, b.nom + (off ? ' (désactivé)' : ''), texteAvecDureeBuff(b.detail, type)));
+        const etat = !contenuDebloque('buff', type) ? ' (à débloquer)' : !buffsActifs.includes(type) ? ' (désactivé)' : '';
+        zone.appendChild(ligneAide(b.icon, b.nom + etat, texteAvecDureeBuff(b.detail, type)));
       });
       zone.appendChild(paragrapheAide('Les buffs en cours et leur temps restant s\'affichent en haut ; ils clignotent 3 secondes avant de finir.'));
     }
@@ -13476,7 +14736,7 @@ const pagesAide = [
         zone.appendChild(ligneAide(n.icone, n.nom + (cle === difficulte ? ' (actuel)' : ''), details));
       });
       zone.appendChild(ligneAide('👥', 'Coop à 2', 'Score commun. Un joueur KO revient quand l\'autre ramasse un cœur. ' +
-        'Option « Collision entre joueurs » dans le menu des buffs.'));
+        'Option « Collision entre joueurs » dans les options.'));
       zone.appendChild(ligneAide('🌐', 'En ligne', 'Crée une partie et donne le code à ton ami : il joue le serpent J2 depuis son appareil.'));
       zone.appendChild(paragrapheAide('Difficulté, Solo / Coop, thèmes et skins se changent dans le menu ☰. Les meilleurs scores sont gardés par difficulté.'));
     }
@@ -14604,7 +15864,7 @@ const actionsTouches = [
   {action: 'rollbackJ2', nom: 'Rollback'},
   {groupe: '📋 Menus'},
   {action: 'pause', nom: 'Pause'},
-  {action: 'buffs', nom: 'Menu des buffs'},
+  {action: 'buffs', nom: 'Boutique'},
   {action: 'aide', nom: 'Aide'},
   {action: 'succes', nom: 'Succès'},
   {action: 'tuto', nom: 'Tutoriel'},
@@ -14658,6 +15918,13 @@ optionsMenuEl.innerHTML = `
         </div>
       </div>
       <p class="options-note" id="optionsInfoAffichage"></p>
+
+      <h3>👥 Coop</h3>
+      <div class="options-ligne">
+        <span>Collision entre joueurs</span>
+        <button id="optionsCollision" class="options-bascule"></button>
+      </div>
+      <p class="options-note">Activée, toucher le serpent de l'autre coûte un cœur.</p>
 
       <h3>⌨️ Touches</h3>
       <p class="options-note">Clique sur une touche puis appuie sur la nouvelle. Une touche déjà prise est échangée.
@@ -14716,6 +15983,9 @@ function majMenuOptions() {
   const plein = document.getElementById('optionsPleinEcran');
   plein.textContent = (enPleinEcran() ? '✔ Oui' : 'Non') + '  (' + nomTouche(touches.pleinEcran) + ')';
   plein.classList.toggle('actif', enPleinEcran());
+  const collision = document.getElementById('optionsCollision');
+  collision.textContent = capacitesActives.collisionJoueurs ? '💥 Activée' : '👻 Non';
+  collision.classList.toggle('actif', capacitesActives.collisionJoueurs);
   document.querySelectorAll('#optionsTaille button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionTaillePlateau));
   document.querySelectorAll('#optionsQualite button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionQualite));
   optionsTouchesEl.querySelectorAll('button').forEach(b => {
@@ -14812,6 +16082,11 @@ optionsVolumeEl.addEventListener('input', () => {
 optionsVolumeEl.addEventListener('change', () => playApplePickupSound());
 document.getElementById('optionsMuet').addEventListener('click', toggleMute);
 document.getElementById('optionsPleinEcran').addEventListener('click', basculerPleinEcran);
+document.getElementById('optionsCollision').addEventListener('click', () => {
+  capacitesActives.collisionJoueurs = !capacitesActives.collisionJoueurs;
+  sauverCapacites();
+  majMenuOptions();
+});
 document.querySelectorAll('#optionsTaille button').forEach(b => b.addEventListener('click', () => {
   optionTaillePlateau = b.dataset.valeur;
   ecrireOption('taillePlateau', optionTaillePlateau);
@@ -14845,6 +16120,8 @@ document.getElementById('optionsJeuBtn').addEventListener('click', (e) => {
 window.addEventListener('keydown', (e) => {
   if (!optionsOuvertes) return;
   e.stopImmediatePropagation();
+  // code de sauvegarde en cours de saisie (js/18-sauvegarde.js) : seule Échap ferme
+  if (e.target instanceof HTMLTextAreaElement && e.key !== 'Escape') return;
   if (actionEnAttente) {
     e.preventDefault();
     if (e.code === 'Escape') {
@@ -14875,6 +16152,106 @@ function manetteDansOptions(vientDAppuyer) {
 
 majBoutonMuet();
 // premier réglage du plateau : à la fin du script (js/20-en-ligne.js), quand tout est chargé
+// ============================================================
+// --- Sauvegarde : exporter / importer toute la progression ---
+// ============================================================
+// Section « 💾 Sauvegarde » du menu ⚙️ Options. Exporter donne un code texte qui contient tout ce que le jeu
+// garde dans le navigateur (Écailles, succès, scores, réglages : les clés « snake... »). Importer remplace tout
+// par le contenu d'un code, après confirmation, et garde l'état d'avant dans snakeAvantImport.
+
+const prefixeCodeSauvegarde = 'SNAKE1:';
+const cleStockageAvantImport = 'snakeAvantImport';
+
+function donneesSauvegarde() {
+  const d = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const cle = localStorage.key(i);
+    if (cle && cle.startsWith('snake') && cle !== cleStockageAvantImport) d[cle] = localStorage.getItem(cle);
+  }
+  return d;
+}
+
+function exporterSauvegarde() {
+  const json = JSON.stringify({v: 1, date: Date.now(), d: donneesSauvegarde()});
+  return prefixeCodeSauvegarde + btoa(unescape(encodeURIComponent(json)));
+}
+
+// renvoie les clés à écrire, ou lève une erreur avec un message lisible
+function lireCodeSauvegarde(code) {
+  code = String(code || '').replace(/\s+/g, '');
+  if (!code.startsWith(prefixeCodeSauvegarde)) throw new Error('Ce n\'est pas un code de sauvegarde Super Snake.');
+  let donnees;
+  try {
+    donnees = JSON.parse(decodeURIComponent(escape(atob(code.slice(prefixeCodeSauvegarde.length)))));
+  } catch (e) {
+    throw new Error('Code incomplet ou abîmé : recopie-le en entier.');
+  }
+  if (!donnees || typeof donnees.d !== 'object' || !donnees.d) throw new Error('Code illisible.');
+  const cles = Object.keys(donnees.d);
+  if (!cles.length || cles.some(c => !c.startsWith('snake') || typeof donnees.d[c] !== 'string')) {
+    throw new Error('Code illisible.');
+  }
+  return donnees.d;
+}
+
+function importerSauvegarde(code) {
+  const d = lireCodeSauvegarde(code);
+  localStorage.setItem(cleStockageAvantImport, exporterSauvegarde());
+  Object.keys(donneesSauvegarde()).forEach(c => localStorage.removeItem(c));
+  Object.keys(d).forEach(c => localStorage.setItem(c, d[c]));
+}
+
+(function () {
+  const contenu = document.getElementById('optionsContenu');
+  const section = document.createElement('div');
+  section.id = 'optionsSauvegarde';
+  section.innerHTML = `
+    <h3>💾 Sauvegarde</h3>
+    <p class="options-note">Tes Écailles, succès, scores et réglages sont gardés dans ce navigateur.
+      Exporte-les pour les mettre à l'abri ou les reprendre sur un autre appareil.</p>
+    <div class="options-ligne">
+      <button id="sauvegardeExporter">📤 Exporter</button>
+      <button id="sauvegardeImporter">📥 Importer</button>
+    </div>
+    <textarea id="sauvegardeCode" rows="3" spellcheck="false" autocomplete="off"
+      placeholder="Le code apparaît ici. Pour importer, colle un code puis appuie sur Importer."></textarea>
+    <div id="sauvegardeMessage" class="options-note"></div>`;
+  contenu.appendChild(section);
+  const zone = document.getElementById('sauvegardeCode');
+  const message = document.getElementById('sauvegardeMessage');
+
+  document.getElementById('sauvegardeExporter').addEventListener('click', () => {
+    try {
+      zone.value = exporterSauvegarde();
+    } catch (e) {
+      message.textContent = '⚠️ Stockage du navigateur indisponible : rien à exporter.';
+      return;
+    }
+    zone.select();
+    const ok = () => { message.textContent = '✅ Code copié. Garde-le dans une note ou un message.'; };
+    const manuel = () => { message.textContent = 'Copie le code ci-dessus et garde-le dans une note ou un message.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(zone.value).then(ok, manuel);
+    else manuel();
+  });
+
+  document.getElementById('sauvegardeImporter').addEventListener('click', () => {
+    let d;
+    try {
+      d = lireCodeSauvegarde(zone.value);
+    } catch (e) {
+      message.textContent = '⚠️ ' + e.message;
+      return;
+    }
+    if (!confirm('Remplacer toute ta progression sur cet appareil par celle de ce code ?')) return;
+    try {
+      importerSauvegarde(zone.value);
+    } catch (e) {
+      message.textContent = '⚠️ Impossible d\'écrire la sauvegarde dans ce navigateur.';
+      return;
+    }
+    location.reload();
+  });
+})();
 // ============================================================
 // --- Succès : 58 défis débloqués en jouant, gardés sur l'appareil ---
 // ============================================================
@@ -15082,7 +16459,7 @@ function succesNouvellePartie() {
 
 // pas de succès pendant le tutoriel, ni sur l'écran de l'invité (c'est l'hôte qui fait tourner la partie)
 function succesActifs() {
-  return !tutoActif() && !enEcranInvite();
+  return !tutoActif() && !enEcranInvite() && !modeDev;
 }
 
 function debloquerSucces(id, depuisHote) {
@@ -15091,6 +16468,7 @@ function debloquerSucces(id, depuisHote) {
   if (!depuisHote && tutoActif() && id !== 'bon_eleve' && id !== 'curieux') return;
   succesSauves.obtenus[id] = Date.now();
   sauverSucces();
+  payerSucces(id); // Écailles du succès (js/03-progression.js)
   partieSucces.debloques.push(id);
   afficherBanniereSucces(s);
   playSuccesSound();
@@ -15105,8 +16483,8 @@ function debloquerSucces(id, depuisHote) {
 
 // --- Ce que le jeu signale ---
 function succesDebutPartie() {
+  if (!tutoActif() && !enEcranInvite()) partieSucces.commencee = true; // compte aussi pour les Écailles (même en ?dev)
   if (!succesActifs()) return;
-  partieSucces.commencee = true;
   if (compterSucces('parties') >= 50) debloquerSucces('accro');
   if (ajouterSucces('themesJoues', currentThemeName) >= themesSucces.length) debloquerSucces('touriste');
   if (enCoop()) debloquerSucces('duo');
@@ -15301,7 +16679,7 @@ function afficherBanniereSucces(s) {
   const texte = document.createElement('span');
   texte.className = 'succes-banniere-texte';
   const titre = document.createElement('small');
-  titre.textContent = '🏆 Succès débloqué !';
+  titre.textContent = s.titre || '🏆 Succès débloqué !';
   const nom = document.createElement('b');
   nom.textContent = s.nom;
   texte.appendChild(titre);
@@ -16286,10 +17664,13 @@ document.getElementById('viseeAutoBtn').addEventListener('click', () => {
   majBoutonMode();
 });
 
+construireMenuBuffs();
 applyTheme('neon');
 majBoutonMode();
 init();
 initHighscores();
+rattraperSuccesProgression();
+demanderStockagePersistant();
 // ============================================================
 // --- Jeu à deux en ligne (code de salle) ---
 // ============================================================
@@ -16593,6 +17974,8 @@ async function rejoindrePartieEnLigne(saisie) {
       etatEnLigne('Cette partie a déjà deux joueurs.');
     } else if (m.t === 'hud' && id === enLigne.hote && Array.isArray(m.textes)) {
       afficherHudInvite(m.textes);
+    } else if (m.t === 'ecailles' && id === enLigne.hote && typeof m.n === 'number') {
+      recevoirEcaillesHote(m.n); // Écailles de la partie jouée chez l'hôte (js/03-progression.js)
     } else if (m.t === 'succes' && id === enLigne.hote && typeof m.id === 'string') {
       debloquerSucces(m.id, true); // succès gagné ensemble dans la partie de l'hôte
     }
