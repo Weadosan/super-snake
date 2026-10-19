@@ -1,0 +1,1803 @@
+  /* polices libres (SIL OFL 1.1, voir polices/LICENCES.txt), intégrées au fichier par build.js :
+     le jeu s'affiche pareil sur Windows, Mac, Linux et téléphone, même hors connexion */
+  @font-face { font-family: 'Share Tech Mono'; font-weight: 400; font-display: block; src: url(polices/share-tech-mono-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Exo 2'; font-weight: 400; font-display: block; src: url(polices/exo-2-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Exo 2'; font-weight: 700; font-display: block; src: url(polices/exo-2-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Oswald'; font-weight: 400; font-display: block; src: url(polices/oswald-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Oswald'; font-weight: 700; font-display: block; src: url(polices/oswald-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Alegreya'; font-weight: 400; font-display: block; src: url(polices/alegreya-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Alegreya'; font-weight: 700; font-display: block; src: url(polices/alegreya-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Comfortaa'; font-weight: 400; font-display: block; src: url(polices/comfortaa-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Comfortaa'; font-weight: 700; font-display: block; src: url(polices/comfortaa-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'MedievalSharp'; font-weight: 400; font-display: block; src: url(polices/medievalsharp-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Cinzel'; font-weight: 400; font-display: block; src: url(polices/cinzel-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Cinzel'; font-weight: 700; font-display: block; src: url(polices/cinzel-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Audiowide'; font-weight: 400; font-display: block; src: url(polices/audiowide-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Creepster'; font-weight: 400; font-display: block; src: url(polices/creepster-latin-400-normal.woff2) format('woff2'); }
+  :root {
+    --bg-page: #1e1e2e;
+    --bg-canvas: #14141f;
+    --border-canvas: #4caf50;
+    --text-color: #f0f0f0;
+    --text-muted: #aaa;
+    --accent: #4caf50;
+    --accent-hover: #45a049;
+    --font-family: 'Share Tech Mono', monospace;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-page);
+    font-family: var(--font-family);
+    color: var(--text-color);
+    transition: background 0.3s, color 0.3s;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  /* les boutons et champs prennent aussi la police du thème (sinon : police du système, différente partout) */
+  button, input, select { font-family: inherit; }
+  #layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #gameColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #highscoreSidebar {
+    width: 180px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px;
+    box-sizing: border-box;
+  }
+  #highscoreSidebar h2 {
+    margin: 0 0 10px 0;
+    font-size: 15px;
+    text-align: center;
+  }
+  #legendTitle {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  #legendList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-color);
+  }
+  #legendList li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-buffs {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    padding-left: 22px;
+    margin-top: -2px;
+  }
+  .legend-buffs ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  #legendList canvas.legende-icone {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    margin: 0;
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+  #highscoreList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #highscoreList li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  #highscoreList li.current-score {
+    background: var(--accent);
+    color: #14141f;
+    font-weight: bold;
+  }
+  #highscoreList li.highscore-empty {
+    justify-content: center;
+    color: var(--text-muted);
+    font-style: italic;
+    background: none;
+  }
+  h1 {
+    font-family: var(--font-titre, var(--font-family));
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  #themeSelector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 360px;
+  }
+  .theme-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .theme-btn.active {
+    background: var(--accent);
+    color: #14141f;
+    font-weight: bold;
+  }
+  #controlBar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  #controlBar button {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  #controlBar button:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  #controlBar button.active {
+    background: var(--accent);
+    color: #14141f;
+    font-weight: bold;
+  }
+  #enemySkinSelector, #snakeSkinSelector, #turretSkinSelector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 420px;
+  }
+  .skin-btn, .serpent-btn, .tourelle-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .skin-btn:hover, .serpent-btn:hover, .tourelle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .skin-btn.active, .serpent-btn.active, .tourelle-btn.active {
+    background: var(--accent);
+    color: #14141f;
+    font-weight: bold;
+  }
+  #score {
+    margin-bottom: 4px;
+    font-size: 18px;
+  }
+  #hearts {
+    margin-bottom: 4px;
+    font-size: 20px;
+    letter-spacing: 4px;
+  }
+  #segmentCounter {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #killProgress, #difficulteHud {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #shieldStatus {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+  #buffStatus {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    min-height: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .buff-icon {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 7px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid currentColor;
+  }
+  .buff-icon.buff-expiring {
+    animation: buffExpireFlash 0.6s ease-in-out infinite;
+  }
+  @keyframes buffExpireFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  canvas {
+    background: var(--bg-canvas);
+    border: 4px solid var(--border-canvas);
+    border-radius: 8px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  #message {
+    margin-top: 12px;
+    font-size: 16px;
+    min-height: 24px;
+    color: #ff6b6b;
+  }
+  #statsPanel {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    font-size: 13px;
+    width: 220px;
+    box-sizing: border-box;
+  }
+  #statsPanel h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    text-align: center;
+  }
+  #statsPanel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  #statsPanel li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  #statsPanel .stat-value {
+    font-weight: bold;
+    color: var(--accent);
+  }
+  #restart {
+    margin-top: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    display: none;
+  }
+  #restart:hover {
+    background: var(--accent-hover);
+  }
+
+  /* --- Canvas adaptatif (smartphone) --- */
+  #game {
+    width: min(400px, calc(100vw - 48px));
+    height: auto;
+    aspect-ratio: 1 / 1;
+    touch-action: none; /* le doigt pilote le jeu, la page ne défile pas */
+  }
+
+  /* --- Boutique : l'échoppe de Sifflet (js/16-menu-buffs.js) --- */
+  #touchBouclier.capacite-off { display: none; }
+  #buffMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #buffMenu.ouvert { display: flex; }
+  #buffMenuPanel {
+    --bois: #6b4423;
+    --bois-clair: #a0693a;
+    --bois-fonce: #3b2414;
+    --or: #ffd740;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 980px;
+    height: min(660px, 100%);
+    background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 4px, transparent 4px 72px),
+      linear-gradient(#2a1a10, var(--bois-fonce) 60%, #24150b);
+    border: 4px solid var(--bois-clair);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #f0f0f0;
+  }
+  #echoppeHaut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 10px 12px 6px;
+    position: relative;
+  }
+  #buffMenuTitre { margin: 0; }
+  #buffMenuTitre .enseigne {
+    display: inline-block;
+    padding: 4px 22px;
+    background: #5d3a1a;
+    border: 3px solid var(--bois-clair);
+    border-radius: 6px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--or);
+    box-shadow: 0 5px 0 #24150b;
+  }
+  #boutiqueSolde {
+    margin: 0;
+    padding: 3px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--or);
+  }
+  #buffMenuFermer {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 16px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid var(--bois-clair);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #echoppeCorps {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 310px;
+  }
+  /* étagères */
+  #boutiqueEtageres {
+    overflow-y: auto;
+    padding: 4px 14px 10px 18px;
+    scrollbar-color: var(--bois-clair) transparent;
+  }
+  .etagere { margin: 18px 0 6px; position: relative; }
+  .etagere .etiquette {
+    display: inline-block;
+    margin: 0 0 4px -6px;
+    padding: 1px 8px;
+    background: var(--or);
+    color: #14141f;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .etagere-objets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    padding: 4px 6px 0;
+    border-bottom: 14px solid var(--bois-clair);
+    box-shadow: 0 6px 0 #5d3a1a;
+    background-image: linear-gradient(transparent calc(100% - 1px), transparent);
+  }
+  .objet {
+    position: relative;
+    width: 76px;
+    padding: 16px 2px 4px;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-family: inherit;
+    color: #f0f0f0;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .objet:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
+  .objet .objet-icone { position: relative; font-size: 38px; line-height: 1; height: 48px; }
+  /* icônes 24 x 24 de la Boutique (js/16-icones-boutique.js), agrandies sans flou */
+  .ib { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.22em; background: no-repeat center / contain;
+    image-rendering: pixelated; font-style: normal; }
+  .objet .objet-icone .ib { width: 48px; height: 48px; vertical-align: top; }
+  .objet.verrouille .objet-icone { filter: saturate(0.6) brightness(0.75); }
+  .objet.cadenas .objet-icone { filter: grayscale(0.7) brightness(0.62); }
+  .objet .objet-cadenas { display: none; position: absolute; top: 34px; left: 50%; margin-left: 10px; font-size: 18px; }
+  .objet.cadenas .objet-cadenas { display: block; }
+  .objet.coupe .objet-icone { opacity: 0.45; }
+  .objet.choisi { border-color: var(--or); background: rgba(255, 215, 64, 0.12); }
+  .objet:focus-visible, .objet.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  .objet .objet-niveau {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 6px;
+  }
+  .objet .objet-niveau:empty { display: none; }
+  .objet.verrouille .objet-niveau { background: #8b93a5; }
+  .objet.coupe .objet-niveau { background: #8b93a5; }
+  .objet .objet-niveau.max { background: var(--or); }
+  .objet-pips { display: flex; gap: 3px; min-height: 0; }
+  .objet-pips i { display: block; width: 12px; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+  .objet-pips i.plein { background: #4caf50; }
+  .objet.coupe .objet-pips i.plein { background: #8b93a5; }
+  .objet .objet-prix {
+    display: none;
+    padding: 0 6px;
+    font-size: 12px;
+    color: var(--or);
+    background: #14141f;
+    border: 1px solid var(--or);
+    border-radius: 4px;
+  }
+  .objet .objet-prix.visible { display: block; }
+  .objet .objet-prix::before { content: '◉ '; font-size: 9px; }
+  .objet.trop-cher .objet-prix { opacity: 0.55; }
+  .objet.actif::after {
+    content: '✔';
+    position: absolute;
+    right: 4px;
+    top: 16px;
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+    line-height: 16px;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 50%;
+  }
+  .objet.achete { animation: objetAchete 0.6s ease-out; }
+  @keyframes objetAchete {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35) rotate(-6deg); }
+    100% { transform: scale(1); }
+  }
+  /* comptoir : Sifflet, sa bulle, la fiche de l'objet */
+  #boutiqueComptoir {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 14px 12px 4px;
+    min-height: 0;
+  }
+  #siffletZone { position: relative; flex: 1; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  #sifflet {
+    cursor: pointer;
+    width: 150px;
+    height: 150px;
+    image-rendering: pixelated;
+    border: none;
+    background: none;
+    animation: siffletRespire 2.4s ease-in-out infinite;
+  }
+  @keyframes siffletRespire { 50% { transform: translateY(3px); } }
+  #siffletZone.saute #sifflet { animation: siffletSaute 0.5s ease-out 2; }
+  @keyframes siffletSaute { 40% { transform: translateY(-18px); } }
+  #siffletZone.secoue #sifflet { animation: siffletSecoue 0.4s ease-in-out; }
+  @keyframes siffletSecoue { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  #boutiqueMessage.bulle {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #14141f;
+    background: #f0f0f0;
+    border-radius: 10px;
+  }
+  #boutiqueMessage.bulle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    border: 7px solid transparent;
+    border-top-color: #f0f0f0;
+  }
+  #boutiqueFiche {
+    padding: 10px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 10px;
+    box-shadow: 0 -6px 0 var(--bois-clair), 0 -14px 0 var(--bois);
+  }
+  #ficheTitre { display: flex; align-items: center; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 17px; }
+  #ficheIcone { font-size: 24px; }
+  #ficheIcone .ib { width: 36px; height: 36px; vertical-align: middle; }
+  #ficheNiveau { margin-top: 6px; font-size: 13px; color: #c9cfdb; }
+  #ficheNiveau.niveaux { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #4caf50; }
+  #ficheNiveau .objet-pips i { width: 20px; height: 9px; }
+  #ficheDetail { margin: 6px 0 8px; font-size: 12px; color: #c9cfdb; display: flex; flex-direction: column; gap: 3px; }
+  #ficheDetail span + span { color: var(--or); }
+  #ficheBoutons { display: flex; gap: 8px; flex-wrap: wrap; }
+  #ficheBoutons button {
+    flex: 1;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  #ficheAcheter { color: #14141f; background: var(--or); border: none; }
+  #ficheAcheter.trop-cher { color: #f0f0f0; background: rgba(255, 215, 64, 0.22); }
+  #ficheAcheter.max { color: #8b93a5; background: transparent; border: 1px solid #4b5263; cursor: default; }
+  #ficheBasculer { color: #14141f; background: #4caf50; border: none; }
+  #ficheBasculer.couper { color: #f0f0f0; background: transparent; border: 1px solid #8b93a5; }
+  #ficheBoutons button:focus-visible, #ficheBoutons button.focus-manette,
+  #buffMenuFermer.focus-manette, #buffMenuActions button.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  #buffMenuAvertissement { font-size: 12px; color: #ff9100; text-align: center; }
+  #buffMenuAvertissement:empty { display: none; }
+  #buffMenuActions { display: flex; gap: 8px; }
+  #buffMenuActions button {
+    flex: 1;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--bois-clair);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #buffMenu.lecture-seule #ficheBoutons button, #buffMenu.lecture-seule #buffMenuActions button { opacity: 0.45; cursor: not-allowed; }
+  .piece-vol {
+    position: fixed;
+    z-index: 60;
+    font-size: 20px;
+    pointer-events: none;
+    animation: pieceVole 0.8s ease-in both;
+  }
+  @keyframes pieceVole {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    40% { transform: translate(calc(-50% + var(--dx) * 0.4), calc(-50% + var(--dy) * 0.4 - 50px)) scale(1.2); }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.6); opacity: 0.2; }
+  }
+  #boutiqueDev { text-align: center; font-size: 12px; color: #ff9100; }
+  #boutiqueDev:empty { display: none; }
+  #boutiqueDev p { margin: 0 0 6px 0; }
+  #boutiqueDev button {
+    margin: 0 4px 6px 4px;
+    padding: 4px 10px;
+    font-family: inherit;
+    color: #f0f0f0;
+    background: transparent;
+    border: 1px solid #ff9100;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  /* téléphone : étagères en haut, comptoir compact en bas */
+  @media (max-width: 720px) {
+    #buffMenu { padding: 6px; }
+    #buffMenuPanel { height: 100%; }
+    #buffMenuTitre .enseigne { font-size: 17px; padding: 3px 12px; }
+    #boutiqueSolde { font-size: 15px; }
+    #buffMenuFermer { top: 8px; right: 8px; width: 32px; height: 32px; }
+    #echoppeHaut { justify-content: flex-start; padding-left: 10px; }
+    #echoppeCorps { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    #boutiqueEtageres { padding: 0 8px 6px 12px; }
+    .etagere { margin-top: 12px; }
+    .etagere-objets { gap: 10px 4px; }
+    .objet { width: 66px; }
+    .objet .objet-icone { font-size: 32px; height: 40px; }
+    .objet .objet-icone .ib { width: 40px; height: 40px; }
+    .objet .objet-cadenas { top: 28px; }
+    #boutiqueComptoir { padding: 6px 8px 8px; border-top: 4px solid var(--bois-clair); background: rgba(0, 0, 0, 0.25); }
+    #siffletZone { flex-direction: row-reverse; align-items: flex-end; min-height: 0; flex: none; gap: 6px; }
+    #sifflet {
+    cursor: pointer; width: 64px; height: 64px; flex-shrink: 0; }
+    #boutiqueMessage.bulle { margin: 0 0 14px; font-size: 12px; min-height: 0; }
+    #boutiqueMessage.bulle::after { left: auto; right: -12px; bottom: 10px; border-top-color: transparent; border-left-color: #f0f0f0; }
+    #boutiqueFiche { box-shadow: none; padding: 8px 10px; }
+    #ficheDetail { margin: 4px 0 6px; }
+  }
+  #buffMenuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @keyframes boutiqueNouveau {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+    50% { box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8); }
+  }
+  .theme-btn.verrouille, .skin-btn.verrouille, .serpent-btn.verrouille, .tourelle-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
+  .legend-buffs li.buff-desactive {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+
+  /* --- Commandes tactiles (affichées seulement sur écran tactile) --- */
+  /* Sur écran tactile, le jeu passe en « écran de jeu » plein écran : plateau, infos, zones,
+     stick et boutons sont placés selon la disposition réglable (js/18-disposition.js).
+     Le reste de la page (thèmes, Solo/Coop, scores…) s'ouvre avec le bouton ☰. */
+  #hud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #touchControls,
+  #menuTactileBarre,
+  .zone-tactile,
+  #editeurDisposition {
+    display: none;
+  }
+  .touch-btn {
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--text-color);
+    font-family: inherit;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+    font-weight: bold;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .touch-btn.appuye {
+    background: var(--accent);
+    color: #14141f;
+  }
+  #touchAide {
+    display: none;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  /* écran de jeu tactile */
+  body.mode-tactile:not(.menu-tactile-ouvert) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body.mode-tactile:not(.menu-tactile-ouvert) h1,
+  body.mode-tactile:not(.menu-tactile-ouvert) #themeSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #controlBar,
+  body.mode-tactile:not(.menu-tactile-ouvert) #gamepadStatus,
+  body.mode-tactile:not(.menu-tactile-ouvert) #enemySkinSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #snakeSkinSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #turretSkinSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #restart,
+  body.mode-tactile:not(.menu-tactile-ouvert) #message,
+  body.mode-tactile:not(.menu-tactile-ouvert) #statsPanel,
+  body.mode-tactile:not(.menu-tactile-ouvert) #highscoreSidebar {
+    display: none !important;
+  }
+  body.mode-tactile #game,
+  body.mode-tactile #hud,
+  body.mode-tactile .touch-btn,
+  body.mode-tactile .zone-tactile,
+  body.mode-tactile #stickBase {
+    position: fixed;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  body.mode-tactile #game { z-index: 20; max-width: none; }
+  body.mode-tactile #hud {
+    z-index: 25;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0 0.6em;
+    overflow: hidden;
+    pointer-events: none;
+    line-height: 1.25;
+  }
+  body.mode-tactile #hud > * { margin: 0; font-size: 1em; }
+  body.mode-tactile #hud #score { font-size: 1.15em; font-weight: bold; }
+  body.mode-tactile #hud #hearts { font-size: 1.15em; letter-spacing: 1px; }
+  body.mode-tactile #hud #buffStatus { min-height: 0; justify-content: flex-start; }
+  body.mode-tactile #touchControls { display: block; }
+  body.mode-tactile .touch-btn { z-index: 35; font-size: 14px; }
+  body.mode-tactile #touchMenu { font-size: 20px; }
+  .zone-tactile {
+    z-index: 15;
+    border: 2px dashed var(--accent);
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0.22;
+  }
+  .zone-tactile span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-color);
+  }
+  body.mode-tactile.zones-visibles.en-partie .zone-tactile { display: block; }
+
+  /* stick virtuel : au repos à sa place, sous le doigt quand on le tient (sauf en stick fixe) */
+  #stickBase {
+    display: none;
+    position: fixed;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 40;
+    box-sizing: border-box;
+  }
+  body.mode-tactile.en-partie #stickBase,
+  #stickBase.tenu {
+    display: block;
+  }
+  #stickBase.tenu {
+    opacity: 0.8;
+  }
+  #stickBase.tir {
+    border-color: #ff5252;
+    box-shadow: 0 0 14px rgba(255, 82, 82, 0.6);
+  }
+  #stickBouton {
+    position: absolute;
+    left: 27.5%;
+    top: 27.5%;
+    width: 45%;
+    height: 45%;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.85;
+  }
+
+  /* menu ☰ : le reste de la page, par-dessus l'écran de jeu */
+  body.menu-tactile-ouvert #layout {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    overflow-y: auto;
+    background: var(--bg-page);
+    padding: 10px 10px 24px 10px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.menu-tactile-ouvert #plateauConteneur,
+  body.menu-tactile-ouvert #hud,
+  body.menu-tactile-ouvert #touchControls,
+  body.menu-tactile-ouvert #stickBase,
+  body.menu-tactile-ouvert .zone-tactile {
+    display: none !important;
+  }
+  body.menu-tactile-ouvert #menuTactileBarre,
+  body.mode-tactile.menu-tactile-ouvert #touchAide {
+    display: flex;
+  }
+  body.menu-tactile-ouvert #layout { align-items: center; }
+  body:not(.mode-tactile) #menuTactileDisposition { display: none; }
+
+  /* bouton Options sur ordinateur : en haut à droite du plateau */
+  #plateauConteneur { position: relative; }
+  #optionsBtn {
+    position: absolute;
+    top: 0;
+    right: -52px; /* à côté du plateau, pour ne pas cacher le titre */
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 22px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #optionsBtn:hover { background: var(--accent); color: #14141f; }
+  @media (max-width: 600px) {
+    #optionsBtn { top: 6px; right: 6px; }
+  }
+  body.mode-tactile #optionsBtn { display: none; }
+  /* bouton Aide, sous le bouton Options */
+  #aideBtn {
+    position: absolute;
+    top: 48px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #aideBtn:hover { background: var(--accent); }
+  @media (max-width: 600px) {
+    #aideBtn { top: 6px; right: 52px; }
+  }
+  body.mode-tactile #aideBtn { display: none; }
+  /* bouton Options (js/18-options.js), sous le bouton Aide */
+  #optionsJeuBtn {
+    position: absolute;
+    top: 96px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #optionsJeuBtn:hover { background: var(--accent); }
+  @media (max-width: 600px) {
+    #optionsJeuBtn { top: 6px; right: 98px; }
+  }
+  body.mode-tactile #optionsJeuBtn { display: none; }
+  /* bouton Boutique (js/16-menu-buffs.js), sous le bouton Options ; sur écran tactile, entre deux parties seulement */
+  #boutiqueJeuBtn {
+    position: absolute;
+    top: 144px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #boutiqueJeuBtn:hover { background: #ffd700; }
+  #boutiqueJeuSolde {
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    transform: translateX(-50%);
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #14141f;
+    background: #ffd700;
+    border-radius: 6px;
+  }
+  #boutiqueJeuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @media (max-width: 600px) {
+    #boutiqueJeuBtn { top: 6px; right: 144px; }
+  }
+  body.mode-tactile #boutiqueJeuBtn { position: fixed; top: 12px; right: 72px; display: none; z-index: 16; }
+  body.mode-tactile.entre-parties #boutiqueJeuBtn { display: block; }
+  /* ordinateur, page épurée comme sur téléphone : les réglages sont dans le menu ☰ */
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #enemySkinSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #snakeSkinSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #turretSkinSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #highscoreSidebar {
+    display: none;
+  }
+  /* catégories du menu ☰ (Thèmes, Skin des ennemis, Options) */
+  .titre-categorie { display: none; }
+  body.menu-tactile-ouvert .titre-categorie {
+    display: block;
+    width: min(360px, 100%);
+    margin: 12px 0 8px 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 15px;
+    text-align: center;
+    color: var(--accent);
+  }
+  #menuTactileBarre {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  #menuTactileBarre button {
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-color);
+  }
+  #menuTactileFermer {
+    background: var(--accent) !important;
+    color: #14141f !important;
+    font-weight: bold;
+  }
+
+  /* --- éditeur de disposition --- */
+  body.edition-disposition #editeurDisposition {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    touch-action: none;
+    background: rgba(0, 0, 0, 0.25);
+  }
+  body.edition-disposition #stickBase,
+  body.edition-disposition #touchControls {
+    display: block;
+  }
+  body.edition-disposition .zone-tactile {
+    display: block;
+    opacity: 0.45;
+  }
+  .cadre-disposition {
+    position: absolute;
+    box-sizing: border-box;
+    border: 2px solid #ffeb3b;
+    background: rgba(255, 235, 59, 0.08);
+    border-radius: 6px;
+    touch-action: none;
+    cursor: move;
+  }
+  .cadre-disposition.zone { border-style: dashed; border-color: #80d8ff; background: rgba(128, 216, 255, 0.07); }
+  .cadre-disposition.selectionne { border-width: 3px; background: rgba(255, 235, 59, 0.2); }
+  .cadre-disposition.zone.selectionne { background: rgba(128, 216, 255, 0.2); }
+  .cadre-etiquette {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    max-width: calc(100% - 36px);
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1.2;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+  .cadre-poignee {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px 0 6px 0;
+    background: #ffeb3b;
+    cursor: nwse-resize;
+    touch-action: none;
+  }
+  .cadre-disposition.zone .cadre-poignee { background: #80d8ff; }
+  .cadre-poignee::after {
+    content: '⤡';
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    line-height: 26px;
+    font-size: 16px;
+    color: #14141f;
+  }
+  #editeurBarre {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 6px;
+    z-index: 100000; /* toujours devant les cadres */
+    width: max-content;
+    max-width: calc(100% - 12px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(20, 20, 31, 0.92);
+    border: 1px solid var(--accent);
+    font-size: 12px;
+  }
+  #editeurBarre.en-bas { top: auto; bottom: 6px; }
+  #editeurBarre button {
+    padding: 6px 9px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color);
+  }
+  #editeurBarre label { display: flex; align-items: center; gap: 4px; }
+  #editeurTitre { font-weight: bold; color: var(--accent); }
+  #editeurTermine {
+    background: var(--accent) !important;
+    color: #14141f !important;
+    font-weight: bold;
+  }
+  #editeurBarre.repliee > :not(#editeurReplier):not(#editeurTermine) { display: none; }
+  #gamepadStatus {
+    font-size: 11px;
+    color: var(--text-muted);
+    min-height: 14px;
+    margin-bottom: 6px;
+  }
+  #gamepadStatus:empty {
+    display: none;
+  }
+  /* écran étroit (smartphone) : en-tête compact pour garder jeu + commandes à l'écran */
+  @media (max-width: 600px) {
+    body { padding: 8px; align-items: flex-start; }
+    h1 { margin: 4px 0; font-size: 24px; }
+    #themeSelector, #controlBar, #enemySkinSelector, #snakeSkinSelector, #turretSkinSelector { margin-bottom: 6px; }
+    .theme-btn, .skin-btn, .serpent-btn, .tourelle-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
+    #score { font-size: 15px; margin-bottom: 2px; }
+    #hearts { font-size: 16px; margin-bottom: 2px; }
+    #segmentCounter, #killProgress, #difficulteHud { display: inline; margin: 0 4px; }
+    #shieldStatus { margin: 2px 0 4px 0; }
+    #buffStatus { margin-bottom: 6px; }
+    #game { width: min(400px, calc(100vw - 32px)); }
+  }
+  /* --- mode coop : étiquettes J1 / J2 dans le HUD --- */
+  .etiquette-joueur {
+    font-weight: bold;
+    text-shadow: 0 0 6px currentColor;
+  }
+  .separateur-joueurs {
+    margin: 0 8px;
+    opacity: 0.5;
+  }
+  #editeurTexte {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100001;
+    width: min(360px, calc(100% - 24px));
+    max-height: calc(100% - 24px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    font-size: 12px;
+  }
+  #editeurTexte.ouvert { display: block; }
+  #editeurTexte p { margin: 0 0 8px 0; color: var(--text-muted); }
+  #editeurTexteZone {
+    width: 100%;
+    height: 110px;
+    box-sizing: border-box;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-color);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    touch-action: auto;
+  }
+  #editeurTexteErreur { min-height: 14px; color: #ff9100; margin: 4px 0; }
+  .editeur-texte-actions { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .editeur-texte-actions button {
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color);
+  }
+  /* pad 4 directions */
+  #padDirections {
+    display: none;
+    position: fixed;
+    width: 140px;
+    height: 140px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas: ". haut ." "gauche centre droite" ". bas .";
+    gap: 3px;
+    z-index: 36;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+  body.mode-tactile.pad-visible:not(.menu-tactile-ouvert) #padDirections,
+  body.edition-disposition.pad-visible #padDirections {
+    display: grid;
+  }
+  .pad-fleche, .pad-centre {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent);
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--text-color);
+    font-size: 1em;
+    pointer-events: none;
+  }
+  .pad-fleche[data-dir="haut"] { grid-area: haut; border-radius: 10px 10px 4px 4px; }
+  .pad-fleche[data-dir="bas"] { grid-area: bas; border-radius: 4px 4px 10px 10px; }
+  .pad-fleche[data-dir="gauche"] { grid-area: gauche; border-radius: 10px 4px 4px 10px; }
+  .pad-fleche[data-dir="droite"] { grid-area: droite; border-radius: 4px 10px 10px 4px; }
+  .pad-centre { grid-area: centre; border-radius: 50%; opacity: 0.4; }
+  .pad-fleche.appuye {
+    background: var(--accent);
+    color: #14141f;
+  }
+  /* cadenas de chaque cadre de l'éditeur */
+  .cadre-verrou {
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    width: 30px;
+    height: 30px;
+    border-radius: 0 6px 0 6px;
+    background: rgba(0, 0, 0, 0.75);
+    font-size: 16px;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .cadre-disposition.verrouille {
+    border-color: #9e9e9e !important;
+    border-style: solid;
+    background: repeating-linear-gradient(45deg, rgba(158, 158, 158, 0.12) 0 8px, transparent 8px 16px);
+    cursor: default;
+  }
+  .cadre-disposition.verrouille .cadre-poignee { display: none; }
+  .cadre-disposition.verrouille .cadre-verrou { background: #9e9e9e; }
+  #plateauConteneur > #game { display: block; }
+  /* aperçu du thème et des ennemis dans le menu ☰ */
+  #apercuMenu { display: none; }
+  body.menu-tactile-ouvert #apercuMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 4px 0 10px 0;
+  }
+  #apercuCarte {
+    width: min(240px, 66vw);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    background: var(--bg-canvas);
+  }
+  #apercuLegende { font-size: 12px; color: var(--text-muted); }
+
+  /* --- Jeu à deux en ligne (js/20-en-ligne.js) --- */
+  #controlBar { flex-wrap: wrap; justify-content: center; }
+  #enLigneMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100002;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #enLigneMenu.ouvert { display: flex; }
+  #enLignePanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 18px;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    text-align: center;
+  }
+  #enLignePanel h2 { margin: 0 0 8px 0; font-size: 18px; }
+  .en-ligne-aide, #enLigneEtat p { margin: 8px 0; font-size: 13px; color: var(--text-muted); }
+  #enLignePanel button {
+    padding: 8px 14px;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #enLignePanel button.en-ligne-principal { background: var(--accent); color: #14141f; font-weight: bold; }
+  #enLigneCreer { width: 100%; margin: 6px 0 14px 0; padding: 12px !important; font-size: 16px !important; }
+  .en-ligne-rejoindre { display: flex; gap: 8px; justify-content: center; }
+  #enLigneCodeSaisi {
+    width: 110px;
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg-page);
+    color: var(--text-color);
+  }
+  .en-ligne-code {
+    font-size: 44px;
+    font-weight: bold;
+    letter-spacing: 10px;
+    color: var(--accent);
+    margin: 10px 0 4px 0;
+    user-select: all;
+  }
+  #enLigneActions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+
+  /* écran de l'invité : il regarde la partie de l'hôte et pilote J2 */
+  #ecranInvite { display: none; }
+  body.invite-en-ligne #ecranInvite {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    box-sizing: border-box;
+    background: var(--bg-page);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.invite-en-ligne #layout,
+  body.invite-en-ligne #stickBase,
+  body.invite-en-ligne #padDirections,
+  body.invite-en-ligne .zone-tactile { display: none !important; }
+  #inviteHud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    justify-content: center;
+    font-size: 13px;
+    min-height: 18px;
+  }
+  #inviteVideoCadre {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+  #inviteVideo {
+    width: 300px;
+    height: 300px;
+    box-sizing: border-box;
+    object-fit: contain;
+    border: 2px solid var(--border-canvas);
+    border-radius: 4px;
+    background: var(--bg-canvas);
+    pointer-events: none;
+  }
+  #inviteMessage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.75);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    max-width: 80%;
+  }
+  #inviteBoutons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  #inviteBoutons button {
+    padding: 12px 14px;
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--text-color);
+    touch-action: none;
+  }
+  #inviteBoost { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #inviteAide { font-size: 11px; color: var(--text-muted); text-align: center; max-width: 520px; }
+
+  /* --- Aide (js/18-aide.js) --- */
+  #aideMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #aideMenu.ouvert { display: flex; }
+  #aidePanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 440px;
+    height: min(640px, 100%); /* même taille pour toutes les pages : le panneau ne saute pas */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #aidePanel h2 { margin: 0 0 10px 0; font-size: 18px; text-align: center; }
+  #aideOnglets { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+  #aideOnglets button, #aideNavigation button {
+    width: 42px;
+    height: 36px;
+    font-size: 18px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #aideOnglets button.actif { border: 2px solid var(--accent); background: rgba(255, 255, 255, 0.08); }
+  #aideContenu {
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    padding-right: 4px;
+  }
+  #aideContenu h3 { margin: 0 0 8px 0; font-size: 15px; color: var(--accent); }
+  #aideContenu canvas#aideCanvasEnnemis {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .aide-ligne { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
+  .aide-icone { font-size: 19px; width: 26px; flex-shrink: 0; text-align: center; line-height: 1.2; }
+  .aide-icone canvas { width: 22px; height: 22px; }
+  .aide-texte { display: flex; flex-direction: column; font-size: 13px; }
+  .aide-texte small { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+  .aide-note { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px 0; }
+  #aideNavigation { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0 8px 0; font-size: 12px; color: var(--text-muted); }
+  #aideActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  #aideActions button {
+    padding: 8px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #aideTuto, #aideFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #aideAstuces:not(.actif) { opacity: 0.6; }
+
+  /* --- Succès (js/18-succes.js) --- */
+  #succesBannieres {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100002;
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+  }
+  .succes-banniere {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 10px;
+    background: rgba(20, 20, 31, 0.94);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .succes-banniere.visible { opacity: 1; transform: none; }
+  .succes-banniere-icone { font-size: 26px; line-height: 1; }
+  .succes-banniere-texte { display: flex; flex-direction: column; }
+  .succes-banniere-texte small { color: #ffd700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .succes-banniere-texte b { font-size: 15px; }
+
+  #succesMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #succesMenu.ouvert { display: flex; }
+  #succesPanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 560px;
+    height: min(680px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #succesPanel h2 { margin: 0 0 8px 0; font-size: 18px; text-align: center; }
+  #succesResume { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  #succesCompte { white-space: nowrap; font-weight: bold; color: #ffd700; }
+  .succes-barre {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .succes-barre > div { height: 100%; background: #ffd700; border-radius: 4px; }
+  .succes-barre.petite { height: 4px; margin-top: 4px; flex: none; }
+  .succes-barre.petite > div { background: var(--accent); }
+  #succesContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
+  #succesContenu h3 { margin: 12px 0 6px 0; font-size: 14px; color: var(--accent); }
+  #succesContenu h3:first-child { margin-top: 0; }
+  .succes-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+  .succes-carte {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.62;
+  }
+  .succes-carte.obtenu { opacity: 1; border-color: rgba(255, 215, 0, 0.7); background: rgba(255, 215, 0, 0.07); }
+  .succes-carte-icone { font-size: 20px; width: 26px; flex-shrink: 0; text-align: center; line-height: 1.2; }
+  .succes-carte:not(.obtenu) .succes-carte-icone { filter: grayscale(1); }
+  .succes-carte-texte { display: flex; flex-direction: column; font-size: 13px; min-width: 0; flex: 1; }
+  .succes-carte-texte small { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+  .succes-carte-texte small.succes-carte-date { color: #ffd700; }
+  .succes-carte-texte small.succes-carte-progres { font-size: 10px; }
+  #succesActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  #succesActions button {
+    padding: 8px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  #succesFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
+  #statsSucces h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  #statsEcailles h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  .stats-ecailles-vide { font-size: 12px; color: var(--text-muted); margin: 0; }
+  .stats-succes-liste { display: flex; flex-wrap: wrap; gap: 4px; }
+  .stats-succes-puce {
+    padding: 2px 6px;
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  /* --- Plateau à la taille de l'écran (ordinateur, js/18-options.js) --- */
+  body.plateau-adapte:not(.mode-tactile) #game {
+    width: var(--cote-plateau, min(400px, calc(100vw - 48px)));
+  }
+  /* textes, boutons et fenêtres agrandis en 1440p / 4K */
+  body.plateau-adapte h1,
+  body.plateau-adapte #hud,
+  body.plateau-adapte #gamepadStatus,
+  body.plateau-adapte #restart,
+  body.plateau-adapte #message,
+  body.plateau-adapte #statsPanel,
+  body.plateau-adapte #optionsBtn,
+  body.plateau-adapte #aideBtn,
+  body.plateau-adapte #optionsJeuBtn,
+  body.plateau-adapte #boutiqueJeuBtn,
+  body.plateau-adapte #aidePanel,
+  body.plateau-adapte #succesPanel,
+  body.plateau-adapte #optionsPanel,
+  body.plateau-adapte #buffMenuPanel,
+  body.plateau-adapte #enLignePanel,
+  body.plateau-adapte #succesBannieres,
+  body.plateau-adapte.menu-tactile-ouvert #gameColumn {
+    zoom: var(--zoom-interface, 1);
+  }
+  body.plateau-adapte.menu-tactile-ouvert h1,
+  body.plateau-adapte.menu-tactile-ouvert #hud { zoom: 1; }
+  /* écran large : infos à gauche, plateau sur toute la hauteur */
+  body.plateau-large:not(.menu-tactile-ouvert) #gameColumn {
+    display: grid;
+    grid-template-columns: var(--colonne-infos, 250px) auto;
+    grid-template-rows: repeat(14, auto) 1fr;
+    column-gap: 24px;
+    align-items: start;
+    justify-items: center;
+  }
+  body.plateau-large:not(.menu-tactile-ouvert) #gameColumn > * { grid-column: 1; }
+  body.plateau-large:not(.menu-tactile-ouvert) #plateauConteneur {
+    grid-column: 2;
+    grid-row: 1 / 16;
+    margin-right: calc(56px * var(--zoom-interface, 1));
+  }
+  body.plateau-large:not(.menu-tactile-ouvert) h1 { margin-top: 0; }
+  body.plateau-large:not(.menu-tactile-ouvert) #statsPanel { width: 100%; }
+  body.plateau-large:not(.menu-tactile-ouvert) #message { text-align: center; }
+
+  /* --- Options (js/18-options.js) --- */
+  #optionsMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #optionsMenu.ouvert { display: flex; }
+  #optionsPanel {
+    background: var(--bg-canvas);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+  }
+  #optionsPanel h2 { margin: 0 0 8px 0; font-size: 18px; text-align: center; }
+  #optionsContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
+  #optionsContenu h3 { margin: 14px 0 8px 0; font-size: 15px; color: var(--accent); }
+  #optionsContenu h3:first-child { margin-top: 0; }
+  #sauvegardeCode {
+    width: 100%; box-sizing: border-box; resize: vertical; font: 11px monospace; padding: 6px;
+    background: rgba(0, 0, 0, 0.35); color: var(--text-color); border: 1px solid var(--text-muted); border-radius: 6px;
+  }
+  #optionsContenu h4 { margin: 10px 0 4px 0; font-size: 13px; color: var(--text-muted); font-weight: normal; }
+  .options-ligne {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .options-ligne input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .options-valeur { width: 42px; text-align: right; color: var(--text-muted); }
+  .options-note { font-size: 12px; color: var(--text-muted); margin: 2px 0 8px 0; min-height: 0; }
+  .options-ligne button, #optionsActions button {
+    padding: 6px 10px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .options-ligne button:hover, #optionsActions button:hover { border-color: var(--accent); }
+  .options-ligne button.actif { border: 2px solid var(--accent); background: rgba(255, 255, 255, 0.08); }
+  .options-choix { display: flex; gap: 4px; }
+  .options-touche { margin-bottom: 4px; }
+  .options-touche button { min-width: 120px; font-weight: bold; }
+  .options-touche button.modifiee { color: var(--accent); }
+  .options-touche button.en-attente {
+    border: 2px solid #ffd54f;
+    color: #ffd54f;
+    animation: buffExpireFlash 1s infinite;
+  }
+  #optionsActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  #optionsFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; border: none !important; }
+
+  /* --- Mode Malédiction (js/18-malediction.js) --- */
+  #maledictionJeuBtn {
+    position: absolute;
+    top: 200px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ff5252;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+    opacity: 0.6;
+  }
+  #maledictionJeuBtn.actif { opacity: 1; background: rgba(120, 0, 0, 0.8); box-shadow: 0 0 8px #ff5252; }
+  #maledictionJeuBtn:hover { background: #ff5252; opacity: 1; }
+  @media (max-width: 600px) {
+    #maledictionJeuBtn { top: 6px; right: 190px; }
+  }
+  body:not(.entre-parties) #maledictionJeuBtn { display: none; }
+  body.mode-tactile #maledictionJeuBtn { position: fixed; top: 12px; right: 120px; z-index: 16; }
+  body.plateau-adapte #maledictionJeuBtn,
+  body.plateau-adapte #maledictionPanel { zoom: var(--zoom-interface, 1); }
+  #maledictionHud { color: #ff8a80; }
+  #maledictionMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #maledictionMenu.ouvert { display: flex; }
+  #maledictionPanel {
+    background: var(--bg-canvas);
+    border: 2px solid #ff5252;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    box-shadow: 0 0 24px rgba(255, 23, 68, 0.35);
+  }
+  #maledictionPanel h2 { margin: 0 0 6px 0; font-size: 18px; text-align: center; color: #ff8a80; }
+  .malediction-intro { font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0; text-align: center; }
+  #maledictionListe { overflow-y: auto; min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 2px; }
+  .malediction-ligne {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .malediction-ligne:hover, .malediction-ligne:focus-visible, .malediction-ligne.focus-manette { border-color: #ff8a80; outline: none; }
+  .malediction-ligne.actif { border: 2px solid #ff5252; background: rgba(255, 23, 68, 0.18); }
+  .malediction-icone { font-size: 20px; width: 26px; text-align: center; }
+  .malediction-texte { flex: 1; display: flex; flex-direction: column; }
+  .malediction-texte b { font-size: 14px; }
+  .malediction-texte small { font-size: 11px; color: var(--text-muted); }
+  .malediction-bonus { font-weight: bold; color: #ffd700; font-size: 13px; white-space: nowrap; }
+  .malediction-ligne:not(.actif) .malediction-bonus { opacity: 0.55; }
+  #maledictionTotal { text-align: center; font-weight: bold; color: #ffd700; margin: 10px 0 0 0; font-size: 14px; }
+  #maledictionActions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  #maledictionActions button {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #maledictionFermer { background: #ff5252 !important; color: #14141f !important; font-weight: bold; border: none !important; }

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Snake</title>
+<style>
+/*@@STYLE@@*/
+</style>
+</head>
+<body>
+
+<div id="layout">
+  <div id="gameColumn">
+    <!-- menu ☰ de l'écran tactile -->
+    <div id="menuTactileBarre">
+      <button id="menuTactileFermer">▶️ Retour au jeu</button>
+      <button id="menuTactileDisposition">📐 Placer les commandes</button>
+    </div>
+    <h1>🐍 Snake</h1>
+
+    <!-- titres des catégories : visibles seulement dans le menu ☰ -->
+    <h3 class="titre-categorie">🎨 Thèmes</h3>
+    <div id="themeSelector">
+      <button class="theme-btn active" data-theme="neon">Néon</button>
+      <button class="theme-btn" data-theme="espace">Espace</button>
+      <button class="theme-btn" data-theme="lave">Lave</button>
+      <button class="theme-btn" data-theme="ocean">Océan</button>
+      <button class="theme-btn" data-theme="aurore">Aurore glacée</button>
+      <button class="theme-btn" data-theme="foret">Forêt enchantée</button>
+      <button class="theme-btn" data-theme="desert">Désert</button>
+      <button class="theme-btn" data-theme="synthwave">Synthwave</button>
+      <button class="theme-btn" data-theme="halloween">Halloween</button>
+    </div>
+
+    <h3 class="titre-categorie">👾 Skin des ennemis</h3>
+    <div id="enemySkinSelector">
+      <button class="skin-btn active" data-skin="urchin">🦔 Oursin</button>
+      <button class="skin-btn" data-skin="ghost">👻 Fantôme</button>
+      <button class="skin-btn" data-skin="pixel">🕹️ Pixel</button>
+      <button class="skin-btn" data-skin="slime">🟢 Slime</button>
+      <button class="skin-btn" data-skin="bat">🦇 Chauve-souris</button>
+      <button class="skin-btn" data-skin="jelly">🪼 Méduse</button>
+      <button class="skin-btn" data-skin="eye">👁️ Œil volant</button>
+      <button class="skin-btn" data-skin="drone">🤖 Drone</button>
+      <button class="skin-btn" data-skin="spider">🕷️ Araignée</button>
+      <button class="skin-btn" data-skin="crab">🦀 Crabe</button>
+      <button class="skin-btn" data-skin="pumpkin">🎃 Citrouille</button>
+      <button class="skin-btn" data-skin="mushroom">🍄 Champignon</button>
+    </div>
+
+    <h3 class="titre-categorie">🐍 Skin du serpent</h3>
+    <!-- boutons créés par js/08-skins-serpent.js -->
+    <div id="snakeSkinSelector"></div>
+
+    <h3 class="titre-categorie">🔫 Tourelle</h3>
+    <!-- boutons créés par js/13-skins-tourelle.js -->
+    <div id="turretSkinSelector"></div>
+
+    <!-- aperçu animé du thème (map) et des ennemis choisis, visible dans le menu ☰ -->
+    <div id="apercuMenu">
+      <canvas id="apercuCarte" width="400" height="400"></canvas>
+      <div id="apercuLegende"></div>
+    </div>
+
+    <h3 class="titre-categorie">⚙️ Options</h3>
+    <div id="controlBar">
+      <button id="pauseBtn">⏸️ Pause</button>
+      <button id="muteBtn">🔊 Son</button>
+      <button id="buffMenuBtn">🛒 Boutique</button>
+      <button id="maledictionBtn">💀 Malédiction</button>
+      <button id="modeBtn">👤 Solo</button>
+      <button id="difficulteBtn">🟡 Normal</button>
+      <button id="viseeAutoBtn">🎯 Visée auto : non</button>
+      <button id="enLigneBtn">🌐 En ligne</button>
+      <button id="optionsMenuBtn">⚙️ Options</button>
+      <button id="aideMenuBtn">❓ Aide</button>
+      <button id="succesBtn">🏆 Succès</button>
+      <button id="tutoBtn">🎓 Tutoriel</button>
+    </div>
+    <div id="gamepadStatus"></div>
+
+    <div id="hud">
+      <div id="score">Score : 0</div>
+      <div id="hearts">❤️❤️❤️</div>
+      <div id="segmentCounter">Segments : 3</div>
+      <div id="killProgress">Ennemis tués : 0 / 25 (❤️ bonus)</div>
+      <div id="difficulteHud">Difficulté : Normal</div>
+      <div id="maledictionHud"></div>
+      <div id="shieldStatus">Bouclier (Maj) : Prêt</div>
+      <div id="buffStatus"></div>
+    </div>
+    <button id="restart">Rejouer</button>
+    <div id="plateauConteneur">
+      <canvas id="game" width="400" height="400"></canvas>
+      <!-- bouton Options sur ordinateur (sur téléphone, c'est le bouton ☰ placé avec les commandes) -->
+      <button id="optionsBtn" title="Options">☰</button>
+      <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
+      <button id="optionsJeuBtn" title="Options : volume, plein écran, touches (O)">⚙️</button>
+      <button id="boutiqueJeuBtn" title="Boutique (B)">🛒<span id="boutiqueJeuSolde"></span></button>
+      <button id="maledictionJeuBtn" title="Malédiction (M) : plus dur, plus d'Écailles">💀</button>
+    </div>
+    <div id="touchControls">
+      <button class="touch-btn" id="touchBoost">🚀 Boost</button>
+      <button class="touch-btn" id="touchBouclier">🛡️ Bouclier</button>
+      <button class="touch-btn" id="touchMenu" aria-label="Menu">☰</button>
+    </div>
+    <div id="touchAide">Pad ou zone 👆 : tourner. Zone 🎯 : stick pour viser, poussé à fond pour tirer. « Placer les commandes » pour tout déplacer.</div>
+    <div id="message"></div>
+    <div id="statsPanel" style="display:none;"></div>
+  </div>
+
+  <div id="highscoreSidebar">
+    <h2 id="highscoreTitre">🏆 Meilleurs scores</h2>
+    <ol id="highscoreList">
+      <li class="highscore-empty">Aucun score enregistré</li>
+    </ol>
+
+    <h2 id="legendTitle">📖 Légende</h2>
+    <ul id="legendList">
+      <li>Tir : -2 points</li>
+      <li id="legendePomme"><span class="legend-swatch" style="background:#4caf50"></span> Pomme : +10 points</li>
+      <li id="legendePommeOr"><span class="legend-swatch" style="background:#ffd700; box-shadow:0 0 6px #ffd700"></span> Pomme en or : +100 points, +10 segments</li>
+      <li id="legendePommeBleue"><span class="legend-swatch" style="background:#2979ff; box-shadow:0 0 6px #40c4ff"></span> Pomme bleue : buff aléatoire</li>
+      <li class="legend-buffs">
+        <ul>
+          <li data-buff="freeze">❄️ Gel des ennemis (10s)</li>
+          <li data-buff="laser">⚡ Tourelle laser (30s)</li>
+          <li data-buff="autoaim">🎯 Auto-visée (30s)</li>
+          <li data-buff="explode">💥 Explosion générale (5s)</li>
+          <li data-buff="invincible">✨ Invincibilité (10s)</li>
+          <li data-buff="doublepoints">💰 Points x2 (30s)</li>
+        </ul>
+      </li>
+      <li><span class="legend-swatch">❤️</span> Cœur : +1 vie</li>
+    </ul>
+  </div>
+</div>
+
+<!-- stick virtuel de visée (écran tactile), dessiné par-dessus la page -->
+<div id="stickBase" aria-hidden="true"><div id="stickBouton"></div></div>
+<!-- pad 4 directions (écran tactile) : on peut glisser d'une flèche à l'autre sans lever le doigt -->
+<div id="padDirections" aria-hidden="true">
+  <span class="pad-fleche" data-dir="haut">▲</span>
+  <span class="pad-fleche" data-dir="gauche">◀</span>
+  <span class="pad-centre"></span>
+  <span class="pad-fleche" data-dir="droite">▶</span>
+  <span class="pad-fleche" data-dir="bas">▼</span>
+</div>
+<!-- zones tactiles : où glisser pour tourner, où tenir le stick -->
+<div id="zoneDeplacement" class="zone-tactile" aria-hidden="true"><span>👆 glisse pour tourner</span></div>
+<div id="zoneVisee" class="zone-tactile" aria-hidden="true"><span>🎯 vise et tire</span></div>
+
+<!-- éditeur de disposition des commandes tactiles (cadres ajoutés par le script) -->
+<div id="editeurDisposition">
+  <div id="editeurBarre">
+    <span id="editeurTitre">Portrait</span>
+    <label><input type="checkbox" id="editeurZonesVisibles"> Zones visibles</label>
+    <label><input type="checkbox" id="editeurStickFixe"> Stick fixe</label>
+    <label><input type="checkbox" id="editeurPadVisible"> Pad</label>
+    <button id="editeurReinitialiser">↺ Défaut</button>
+    <button id="editeurTexteBtn">📋 Texte</button>
+    <button id="editeurDeplacerBarre">⇅</button>
+    <button id="editeurReplier">–</button>
+    <button id="editeurTermine">✔ Terminé</button>
+  </div>
+  <div id="editeurTexte">
+    <p>Copie ce texte pour garder ta disposition (ou envoie-le pour qu'elle devienne celle par défaut), ou colles-en un autre puis « Appliquer ».</p>
+    <textarea id="editeurTexteZone" spellcheck="false"></textarea>
+    <div id="editeurTexteErreur"></div>
+    <div class="editeur-texte-actions">
+      <button id="editeurTexteCopier">📋 Copier</button>
+      <button id="editeurTexteAppliquer">📥 Appliquer</button>
+      <button id="editeurTexteFermer">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="buffMenu" role="dialog" aria-modal="true" aria-labelledby="buffMenuTitre">
+  <div id="buffMenuPanel">
+    <div id="echoppeHaut">
+      <h2 id="buffMenuTitre"><span class="enseigne">Chez Sifflet</span></h2>
+      <p id="boutiqueSolde"></p>
+      <button id="buffMenuFermer" title="Fermer (Échap)">✖</button>
+    </div>
+    <div id="boutiqueDev"></div>
+    <div id="echoppeCorps">
+      <div id="boutiqueEtageres"></div>
+      <div id="boutiqueComptoir">
+        <div id="siffletZone">
+          <div id="boutiqueMessage" class="bulle" aria-live="polite"></div>
+          <canvas id="sifflet" width="20" height="20"></canvas>
+        </div>
+        <div id="boutiqueFiche">
+          <div id="ficheTitre"><span id="ficheIcone"></span><b id="ficheNom"></b></div>
+          <div id="ficheNiveau"></div>
+          <p id="ficheDetail"></p>
+          <div id="ficheBoutons">
+            <button id="ficheAcheter"></button>
+            <button id="ficheBasculer"></button>
+          </div>
+        </div>
+        <div id="buffMenuAvertissement"></div>
+        <div id="buffMenuActions">
+          <button id="boutiqueRembourser">↺ Rembourser</button>
+          <button id="buffMenuTout">Tout activer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/*@@SCRIPT@@*/
+</script>
+
+</body>
+</html>
