@@ -1,0 +1,6 @@
+# fichiers construits ou de travail (le jeu publié est index.html à la racine)
+snake.html
+snake_stable.html
+site/
+captures/
+__pycache__/
