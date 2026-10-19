@@ -7793,7 +7793,8 @@ function coinVirage(prevPos, pos, nextPos) {
 // Ils s'achètent à l'échoppe de Sifflet (prix dans reglagesProgression.serpents) et se choisissent dans le
 // menu ☰ ou à la Boutique. Le choix est gardé dans snakeSkinSerpent. En coop, le J2 garde les couleurs du thème.
 //   corps : une couleur, ou une liste répétée segment après segment (defile : ms par décalage, liste qui coule)
-//   tete, lueur : couleur de la tête et du halo · motif : 'ecailles', 'lisse', 'rayures', 'etoiles', 'plaques'
+//   tete, lueur : couleur de la tête et du halo · motif : 'ecailles', 'lisse', 'rayures', 'etoiles',
+//   'plaques', 'dragon' (grandes écailles en pointe et crête), 'or' (plaques d'or en losange)
 //   decor : 'cornes', 'oreilles', 'antenne', 'couronne' · yeux : 'visiere' · trainee : 'flammes', 'etoiles',
 //   'arcenciel', 'paillettes'
 const skinsSerpent = {
@@ -7805,14 +7806,14 @@ const skinsSerpent = {
   robot: {nom: 'Robot', icone: '🤖', detail: 'Plaques de métal rivetées, visière rouge et antenne qui clignote',
     corps: '#78909c', tete: '#b0bec5', lueur: '#ff1744', motif: 'plaques', decor: 'antenne', yeux: 'visiere'},
   dragon: {nom: 'Dragon', icone: '🐉', detail: 'Écailles vertes, deux cornes et une traînée de flammes',
-    corps: '#2e7d32', tete: '#4caf50', lueur: '#ff9800', motif: 'ecailles', decor: 'cornes', trainee: 'flammes'},
+    corps: '#2e7d32', tete: '#4caf50', lueur: '#ff9800', motif: 'dragon', decor: 'cornes', trainee: 'flammes'},
   galaxie: {nom: 'Galaxie', icone: '🌌', detail: 'Un ciel de nuit plein d\'étoiles, qui en sème derrière lui',
     corps: '#311b92', tete: '#5e35b1', lueur: '#b388ff', motif: 'etoiles', trainee: 'etoiles'},
   arcenciel: {nom: 'Arc-en-ciel', icone: '🌈', detail: 'Toutes les couleurs, qui coulent de la tête à la queue',
     corps: ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#00b0ff', '#651fff', '#d500f9'], defile: 140,
     tete: '#ffffff', lueur: '#ffffff', motif: 'lisse', trainee: 'arcenciel'},
   roi: {nom: 'Roi d\'or', icone: '👑', detail: 'Écailles d\'or massif, couronne et paillettes. Le plus cher',
-    corps: '#ffb300', tete: '#ffe082', lueur: '#ffd740', motif: 'ecailles', decor: 'couronne', trainee: 'paillettes'}
+    corps: '#ffb300', tete: '#ffe082', lueur: '#ffd740', motif: 'or', decor: 'couronne', trainee: 'paillettes'}
 };
 
 const cleStockageSkinSerpent = 'snakeSkinSerpent';
@@ -7931,6 +7932,79 @@ const MOTIFS_SERPENT = {
     sctx.globalAlpha = 0.95;
     etoileBranches(sctx, size * 0.3, size * 0.62, size * 0.2, '#ffffff');
     sctx.globalAlpha = 1;
+  },
+  // dragon : deux rangées de grandes écailles en pointe vers la queue, crête orange le long du dos
+  dragon(sctx, size, base) {
+    const fonce = darkenColor(base, 0.3), bord = darkenColor(base, 0.65), reflet = lightenColor(base, 0.45);
+    [[size * 0.25, -size * 0.12], [size * 0.75, size * 0.2]].forEach(([y, decale]) => {
+      for (let k = -1; k < 2; k++) {
+        const x0 = k * size * 0.5 + decale, w = size * 0.6, h = size * 0.26;
+        sctx.beginPath();
+        sctx.moveTo(x0, y - h);
+        sctx.quadraticCurveTo(x0 + w * 0.75, y - h, x0 + w, y);
+        sctx.quadraticCurveTo(x0 + w * 0.75, y + h, x0, y + h);
+        sctx.quadraticCurveTo(x0 + w * 0.2, y, x0, y - h);
+        sctx.fillStyle = fonce;
+        sctx.fill();
+        sctx.strokeStyle = bord;
+        sctx.lineWidth = 1.1;
+        sctx.stroke();
+        // reflet sur le haut de chaque écaille
+        sctx.beginPath();
+        sctx.moveTo(x0 + w * 0.2, y - h * 0.55);
+        sctx.quadraticCurveTo(x0 + w * 0.6, y - h * 0.6, x0 + w * 0.8, y - h * 0.15);
+        sctx.strokeStyle = reflet;
+        sctx.globalAlpha = 0.6;
+        sctx.lineWidth = 0.9;
+        sctx.stroke();
+        sctx.globalAlpha = 1;
+      }
+    });
+    // crête : deux piquants par segment, pointés vers la queue
+    [0.08, 0.55].forEach(k => {
+      const x0 = size * k, y = size / 2;
+      sctx.beginPath();
+      sctx.moveTo(x0, y - size * 0.11);
+      sctx.lineTo(x0 + size * 0.38, y);
+      sctx.lineTo(x0, y + size * 0.11);
+      sctx.closePath();
+      sctx.fillStyle = '#ff8f00';
+      sctx.fill();
+      sctx.strokeStyle = '#7a2e00';
+      sctx.lineWidth = 0.9;
+      sctx.stroke();
+    });
+  },
+  // or : plaques en losange, chacune polie (clair en haut, sombre en bas) avec un éclat blanc
+  or(sctx, size, base) {
+    const d = size * 0.25;
+    const centres = [[0, 0.5], [0.5, 0.5], [1, 0.5], [0.25, 0], [0.75, 0], [0.25, 1], [0.75, 1]];
+    centres.forEach(([cx, cy], n) => {
+      const x = cx * size, y = cy * size;
+      const grad = sctx.createLinearGradient(x, y - d, x, y + d);
+      grad.addColorStop(0, lightenColor(base, 0.6));
+      grad.addColorStop(0.5, base);
+      grad.addColorStop(1, darkenColor(base, 0.35));
+      sctx.beginPath();
+      sctx.moveTo(x, y - d);
+      sctx.lineTo(x + d, y);
+      sctx.lineTo(x, y + d);
+      sctx.lineTo(x - d, y);
+      sctx.closePath();
+      sctx.fillStyle = grad;
+      sctx.fill();
+      sctx.strokeStyle = darkenColor(base, 0.55);
+      sctx.lineWidth = 0.9;
+      sctx.stroke();
+      if (n === 1 || n === 3) {
+        sctx.fillStyle = '#ffffff';
+        sctx.globalAlpha = 0.85;
+        sctx.beginPath();
+        sctx.arc(x - d * 0.3, y - d * 0.35, 0.9, 0, Math.PI * 2);
+        sctx.fill();
+        sctx.globalAlpha = 1;
+      }
+    });
   },
   // plaques de métal : bord en creux, joint au milieu et rivets
   plaques(sctx, size, base) {
