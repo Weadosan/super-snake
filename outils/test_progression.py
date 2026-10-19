@@ -53,9 +53,9 @@ with sync_playwright() as p:
 
     # --- calcul pur du gain ---
     g = page.evaluate("gainPartie({longueur: 100, ennemis: 50, boss: 1, pommesOr: 2, victoire: false, dureeSecondes: 60, difficulte: 'normal'})")
-    verifier(g['base'] == 20 + 10 + 20 + 6 and g['total'] == 70, 'gain Normal (base 56 x 1,25)', (g['base'], g['total']))
+    verifier(g['base'] == 20 + 10 + 20 + 6 and g['total'] == 98, 'gain Normal (base 56 x 1,75)', (g['base'], g['total']))
     g = page.evaluate("gainPartie({longueur: 400, ennemis: 150, boss: 3, pommesOr: 5, victoire: true, dureeSecondes: 900, difficulte: 'difficile'})")
-    verifier(g['total'] == 353, 'gain victoire Difficile (235 x 1,5, arrondi au-dessus)', g['total'])
+    verifier(g['total'] == 529, 'gain victoire Difficile (235 x 2,25, arrondi au-dessus)', g['total'])
     g = page.evaluate("gainPartie({longueur: 30, ennemis: 4, boss: 0, pommesOr: 0, victoire: false, dureeSecondes: 8, difficulte: 'facile'})")
     verifier(g['total'] == 0, 'partie de moins de 10 s : rien', g['total'])
     verifier(page.evaluate('bonusProgression("avarice")') == 0, 'aucune amélioration achetée')
@@ -68,7 +68,7 @@ with sync_playwright() as p:
       stats.goldenApplesEaten = 1; partieSucces.boss = 0; endGame()""")
     page.wait_for_timeout(1500)
     gain = page.evaluate('dernierGainPartie')
-    attendu = round((12 + 5 + 3) * 1.25)
+    attendu = round((12 + 5 + 3) * 1.75)
     verifier(gain and gain['total'] == attendu, 'gain de la partie', gain and gain['total'])
     apres = ecailles(page)
     verifier(apres - avant >= attendu, 'Écailles ajoutées au portefeuille', (avant, apres))

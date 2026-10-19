@@ -4645,7 +4645,9 @@ const reglagesProgression = {
       parSucces: {bon_eleve: 50, platine: 100, kamikaze: 10}
     }
   },
-  multiplicateurDifficulte: {facile: 1, normal: 1.25, difficile: 1.5},
+  // mesuré par parties automatiques (outils/parties_auto.py) : une partie en Difficile dure 3 fois moins qu'en Facile,
+  // donc ce bonus doit être fort pour que Difficile rapporte plus par minute de jeu
+  multiplicateurDifficulte: {facile: 1, normal: 1.75, difficile: 2.25},
   // ce qu'un nouveau joueur a dès le début
   depart: {
     themes: ['neon', 'espace', 'ocean'],
