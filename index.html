@@ -1453,6 +1453,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   }
   #succesFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
   #statsSucces h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  #statsEcailles h3 { margin: 10px 0 6px 0; color: #ffd700; }
+  .stats-ecailles-vide { font-size: 12px; color: var(--text-muted); margin: 0; }
   .stats-succes-liste { display: flex; flex-wrap: wrap; gap: 4px; }
   .stats-succes-puce {
     padding: 2px 6px;
@@ -1536,6 +1538,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   #optionsContenu { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
   #optionsContenu h3 { margin: 14px 0 8px 0; font-size: 15px; color: var(--accent); }
   #optionsContenu h3:first-child { margin-top: 0; }
+  #sauvegardeCode {
+    width: 100%; box-sizing: border-box; resize: vertical; font: 11px monospace; padding: 6px;
+    background: rgba(0, 0, 0, 0.35); color: var(--text-color); border: 1px solid var(--text-muted); border-radius: 6px;
+  }
   #optionsContenu h4 { margin: 10px 0 4px 0; font-size: 13px; color: var(--text-muted); font-weight: normal; }
   .options-ligne {
     display: flex;
@@ -2497,6 +2503,32 @@ kbbbbkkbbbbk
 ......xxxxx.
 .......xxx..
 ........x...`,
+  exporter: `
+.....kk.....
+....kbbk....
+...kbbbbk...
+..kbbbbbbk..
+..kkkbbkkk..
+....kbbk....
+kl..kbbk..lk
+kl..kkkk..lk
+kllllllllllk
+kggggggggggk
+kkkkkkkkkkkk
+............`,
+  disquette: `
+kkkkkkkkkkk.
+kbbklllkbbk.
+kbbklldkbbkk
+kbbklllkbbbk
+kbbkkkkkbbbk
+kbbbbbbbbbbk
+kbkkkkkkkkbk
+kbkwwwwwwkbk
+kbkwggggwkbk
+kbkwwwwwwkbk
+kbkwggggwkbk
+kkkkkkkkkkkk`,
   importer: `
 ....kkkk....
 ....kbbk....
@@ -3147,7 +3179,7 @@ const EMOJI_ICONE = {
   '👑': 'couronne', '⏱': 'chrono', '💀': 'crane', '☠': 'crane', '🎉': 'fete', '🎆': 'feu_artifice',
   '🎨': 'palette', '🦔': 'oursin', '🦇': 'chauve_souris', '👻': 'fantome', '🪼': 'meduse', '👁': 'oeil', '🤖': 'robot', '🕷': 'araignee', '🦀': 'crabe', '🎃': 'citrouille', '🍄': 'champignon', '⚙': 'engrenage',
   '🔊': 'son', '🔇': 'muet', '📖': 'livre', '↺': 'recommencer', '📋': 'presse_papier', '📊': 'graphique',
-  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer',
+  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer', '📤': 'exporter', '💾': 'disquette',
   '🐢': 'tortue', '↑': 'fleche', '⬆': 'fleche', '→': 'fleche_droite', '➡': 'fleche_droite',
   '↓': 'fleche_bas', '⬇': 'fleche_bas', '←': 'fleche_gauche', '⬅': 'fleche_gauche',
   '⌨': 'clavier', '📱': 'telephone', '✛': 'croix_pad', '🖱': 'souris', '💢': 'colere', '🧱': 'brique',
@@ -4154,6 +4186,267 @@ function tryRollback() {
 const popupLifetime = 800; // ms
 
 // ============================================================
+// --- Progression entre les parties : les Écailles 🪙 ---
+// ============================================================
+// Chaque partie rapporte des Écailles (même perdue), et chaque succès en rapporte à son premier déblocage.
+// Tout l'équilibrage est dans reglagesProgression : changer un gain ou un prix, c'est changer un nombre ici.
+// Le jeu ne lit ces valeurs que par gainPartie() et bonusProgression(cle).
+// Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
+// reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
+// Étape 1 : gains et sauvegarde. Boutique, Arsenal et déblocages arrivent aux étapes suivantes.
+
+const reglagesProgression = {
+  gains: {
+    parSegments: 5, // 1 Écaille pour 5 de longueur atteinte
+    parEnnemis: 5, // 1 Écaille pour 5 ennemis tués
+    boss: 20, // par boss vaincu
+    pommeOr: 3, // par pomme en or mangée
+    victoire: 50, // longueur 400 atteinte
+    dureeMinSecondes: 10, // une partie plus courte ne rapporte rien (pas de gain en relançant en boucle)
+    // succès, une seule fois chacun : valeur par catégorie, sinon parDefaut ; parSucces passe avant tout
+    succes: {
+      parDefaut: 25,
+      parCategorie: {debut: 10, difficulte: 50},
+      parSucces: {bon_eleve: 50, platine: 100, kamikaze: 10}
+    }
+  },
+  multiplicateurDifficulte: {facile: 1, normal: 1.25, difficile: 1.5},
+  // ce qu'un nouveau joueur a dès le début (utilisé à partir de l'étape 3)
+  depart: {
+    themes: ['neon', 'espace', 'ocean'],
+    skins: ['urchin', 'ghost', 'pixel'],
+    buffs: ['doublepoints']
+  },
+  // prix en Écailles (étapes 3 et 4)
+  buffs: {freeze: 100, invincible: 150, laser: 150, autoaim: 150, explode: 250},
+  themes: {lave: 300, aurore: 300, foret: 300, desert: 300, synthwave: 300, halloween: 300},
+  // skin d'ennemi -> succès qui le débloque (étape 4) ; jamais « Bestiaire » ni « Boss de chaque espèce »,
+  // qui demandent d'avoir affronté tous les skins
+  skinsParSucces: {
+    slime: 'ca_pousse', bat: 'tueur_geant', jelly: 'boa', crab: 'chasseur', pumpkin: 'increvable',
+    mushroom: 'gourmand', eye: 'trophees', drone: 'gros_bras', spider: 'hardcore'
+  },
+  // améliorations permanentes (étape 2) : effet par niveau, et un prix par niveau
+  ameliorations: {
+    coeur: {effet: 1, prix: [400]},
+    dureeBuffs: {effet: 0.10, prix: [100, 200, 300]},
+    bouclier: {effet: 0.10, prix: [80, 160, 240]},
+    pommeBleue: {effet: 0.01, prix: [150, 300]},
+    aimant: {effet: 30, prix: [120, 240]},
+    cadence: {effet: 0.10, prix: [150, 300]},
+    avarice: {effet: 0.10, prix: [100, 200, 300]}
+  }
+};
+
+// --- Sauvegarde ---
+const cleStockageProgression = 'snakeProgression';
+const cleStockageProgressionPrec = 'snakeProgression_prec';
+const versionProgression = 1;
+
+function progressionVide() {
+  return {
+    version: versionProgression,
+    ecailles: 0, // à dépenser
+    total: 0, // gagnées depuis le début
+    parties: 0, // parties qui ont rapporté
+    achats: {}, // amélioration ou contenu -> niveau acheté
+    inactifs: [], // achats coupés dans l'Arsenal
+    succesPayes: [] // succès dont les Écailles ont déjà été données
+  };
+}
+
+// lit une sauvegarde ; renvoie null si elle est absente ou illisible
+function lireProgression(cle) {
+  try {
+    const lu = JSON.parse(localStorage.getItem(cle));
+    if (!lu || typeof lu !== 'object' || typeof lu.ecailles !== 'number' || !isFinite(lu.ecailles)) return null;
+    const p = progressionVide();
+    ['ecailles', 'total', 'parties'].forEach(c => {
+      if (typeof lu[c] === 'number' && isFinite(lu[c])) p[c] = Math.max(0, Math.floor(lu[c]));
+    });
+    if (lu.achats && typeof lu.achats === 'object') {
+      Object.keys(lu.achats).forEach(c => {
+        if (typeof lu.achats[c] === 'number') p.achats[c] = lu.achats[c];
+      });
+    }
+    ['inactifs', 'succesPayes'].forEach(c => {
+      if (Array.isArray(lu[c])) p[c] = lu[c].filter(x => typeof x === 'string');
+    });
+    return p;
+  } catch (e) {
+    return null;
+  }
+}
+
+let progression = lireProgression(cleStockageProgression) || lireProgression(cleStockageProgressionPrec) || progressionVide();
+
+function sauverProgression() {
+  try {
+    // la version précédente, si elle est saine, devient la copie de secours
+    if (lireProgression(cleStockageProgression)) {
+      localStorage.setItem(cleStockageProgressionPrec, localStorage.getItem(cleStockageProgression));
+    }
+    localStorage.setItem(cleStockageProgression, JSON.stringify(progression));
+  } catch (e) {
+    // stockage indisponible : la progression vaut pour cette session seulement
+  }
+}
+
+// demande au navigateur de ne pas effacer les données du jeu quand il manque de place
+function demanderStockagePersistant() {
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) {
+    // pas grave : le navigateur décide seul
+  }
+}
+
+// --- Améliorations (lues par le jeu à partir de l'étape 2) ---
+function niveauAmelioration(cle) {
+  if (progression.inactifs.includes(cle)) return 0;
+  return progression.achats[cle] || 0;
+}
+
+// bonus total d'une amélioration : effet par niveau x niveau acheté (0 tant que rien n'est acheté)
+function bonusProgression(cle) {
+  const a = reglagesProgression.ameliorations[cle];
+  return a ? a.effet * niveauAmelioration(cle) : 0;
+}
+
+// --- Gains ---
+function ajouterEcailles(n) {
+  if (!(n > 0)) return;
+  progression.ecailles += n;
+  progression.total += n;
+}
+
+// Écailles d'un succès (une seule fois par succès)
+function ecaillesSucces(id) {
+  const g = reglagesProgression.gains.succes;
+  if (g.parSucces[id] !== undefined) return g.parSucces[id];
+  const s = succesParId[id];
+  if (s && g.parCategorie[s.cat] !== undefined) return g.parCategorie[s.cat];
+  return g.parDefaut;
+}
+
+// appelé au déblocage d'un succès ; renvoie les Écailles données
+function payerSucces(id) {
+  if (progression.succesPayes.includes(id)) return 0;
+  const n = ecaillesSucces(id);
+  progression.succesPayes.push(id);
+  ajouterEcailles(n);
+  sauverProgression();
+  partieProgression.succes += n;
+  if (dernierGainPartie) majRecapEcailles(); // succès gagné après la fin (podium...)
+  return n;
+}
+
+// au lancement : paie les succès obtenus avant l'arrivée des Écailles (ou dont le paiement a été perdu)
+function rattraperSuccesProgression() {
+  let n = 0;
+  Object.keys(succesSauves.obtenus).forEach(id => {
+    if (progression.succesPayes.includes(id)) return;
+    progression.succesPayes.push(id);
+    n += ecaillesSucces(id);
+  });
+  if (n > 0) {
+    ajouterEcailles(n);
+    sauverProgression();
+  }
+  return n;
+}
+
+// Écailles gagnées par les succès pendant la partie en cours (remis à zéro par init)
+let partieProgression = {succes: 0};
+let dernierGainPartie = null; // détail du gain de la dernière partie terminée (écran de fin)
+
+function progressionNouvellePartie() {
+  partieProgression = {succes: 0};
+  dernierGainPartie = null;
+}
+
+// calcul pur : ce que rapporte une partie, ligne par ligne
+// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte}
+function gainPartie(partie) {
+  const g = reglagesProgression.gains;
+  const lignes = [];
+  if (partie.dureeSecondes < g.dureeMinSecondes) return {lignes, base: 0, multiplicateur: 1, total: 0};
+  const ajouter = (libelle, n) => { if (n > 0) lignes.push([libelle, n]); };
+  ajouter('📏 Longueur ' + partie.longueur, Math.floor(partie.longueur / g.parSegments));
+  const pluriel = (n, mot) => n + ' ' + mot + (n > 1 ? 's' : '');
+  ajouter('👾 ' + pluriel(partie.ennemis, 'ennemi'), Math.floor(partie.ennemis / g.parEnnemis));
+  ajouter('👑 ' + partie.boss + ' boss', partie.boss * g.boss);
+  ajouter('🟡 ' + nomPomme('or') + ' × ' + partie.pommesOr, partie.pommesOr * g.pommeOr);
+  if (partie.victoire) ajouter('🎉 Victoire', g.victoire);
+  const base = lignes.reduce((s, l) => s + l[1], 0);
+  const multiplicateur = (reglagesProgression.multiplicateurDifficulte[partie.difficulte] || 1) *
+    (1 + bonusProgression('avarice'));
+  return {lignes, base, multiplicateur, total: Math.round(base * multiplicateur)};
+}
+
+// fin de partie (perdue ou gagnée) : calcule le gain, l'ajoute et le garde pour l'écran de fin
+function progressionFinPartie(victoire) {
+  if (!succesActifs() || !partieSucces.commencee) return;
+  const gain = gainPartie({
+    longueur: stats.maxSnakeLength,
+    ennemis: stats.enemiesKilled,
+    boss: partieSucces.boss,
+    pommesOr: stats.goldenApplesEaten,
+    victoire,
+    dureeSecondes: (performance.now() - stats.startTime) / 1000,
+    difficulte
+  });
+  ajouterEcailles(gain.total);
+  if (gain.total > 0) progression.parties++;
+  sauverProgression();
+  dernierGainPartie = gain;
+}
+
+// texte court pour l'écran de fin : « 🪙 +42 Écailles (total 310) »
+function texteGainPartie() {
+  if (!dernierGainPartie) return '';
+  const n = dernierGainPartie.total + partieProgression.succes;
+  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + '  (total ' + progression.ecailles + ')';
+}
+
+// détail du gain sous le jeu, dans les stats de fin de partie
+function majRecapEcailles() {
+  const zone = document.getElementById('statsEcailles');
+  if (!zone) return;
+  zone.textContent = '';
+  const g = dernierGainPartie;
+  if (!g) return;
+  const lignes = g.lignes.slice();
+  if (g.base > 0 && g.multiplicateur !== 1) {
+    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, '×' + String(Math.round(g.multiplicateur * 100) / 100).replace('.', ',')]);
+  }
+  if (partieProgression.succes > 0) lignes.push(['🏆 Succès', partieProgression.succes]);
+  const h = document.createElement('h3');
+  const n = g.total + partieProgression.succes;
+  h.textContent = '🪙 ' + n + ' Écaille' + (n > 1 ? 's' : '') + ' gagnée' + (n > 1 ? 's' : '') +
+    ' (total : ' + progression.ecailles + ')';
+  zone.appendChild(h);
+  if (!lignes.length) {
+    const p = document.createElement('p');
+    p.className = 'stats-ecailles-vide';
+    p.textContent = 'Partie trop courte : elle doit durer au moins ' + reglagesProgression.gains.dureeMinSecondes + ' secondes.';
+    zone.appendChild(p);
+    return;
+  }
+  const ul = document.createElement('ul');
+  lignes.forEach(([libelle, valeur]) => {
+    const li = document.createElement('li');
+    const a = document.createElement('span');
+    a.textContent = libelle;
+    const b = document.createElement('span');
+    b.className = 'stat-value';
+    b.textContent = typeof valeur === 'number' ? '+' + valeur : valeur;
+    li.append(a, b);
+    ul.appendChild(li);
+  });
+  zone.appendChild(ul);
+}
+// ============================================================
 // --- Joueurs : un ou deux serpents (mode solo ou coop) ---
 // ============================================================
 // Tout l'état propre à un serpent vit dans un objet joueur. Les anciens noms globaux
@@ -5135,6 +5428,7 @@ function init() {
   };
   statsPanelEl.style.display = 'none';
   succesNouvellePartie();
+  progressionNouvellePartie();
   killThreshold = randomKillThreshold();
   heartPickup = null;
   lootApples = [];
@@ -12262,6 +12556,7 @@ function triggerWin() {
   restartBtn.style.display = 'inline-block';
   playVictorySound();
   succesFinPartie(true);
+  progressionFinPartie(true);
   saveHighscore(score);
   showEndGameStats();
   launchFireworks();
@@ -12395,6 +12690,7 @@ function endGame() {
     infos.nouveauRecord = infos.score > 0 && (infos.meilleur === null || infos.score > infos.meilleur);
   }).catch(() => {}).finally(() => saveHighscore(infos.score));
   succesFinPartie(false);
+  progressionFinPartie(false);
   showEndGameStats();
 }
 
@@ -12518,11 +12814,19 @@ function dessinerEcranGameOver() {
     ctx.font = 'bold 16px ' + currentTheme.fontFamily;
     ctx.fillText(invite, w / 2, 340);
   }
+  // Écailles gagnées (js/03-progression.js)
+  const gainEcailles = texteGainPartie();
+  if (gainEcailles) {
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 13px ' + currentTheme.fontFamily;
+    ctx.fillText(gainEcailles, w / 2, 364);
+  }
   ctx.globalAlpha = contenu * 0.7;
   ctx.shadowBlur = 0;
   ctx.fillStyle = currentTheme.textMuted;
   ctx.font = '12px ' + currentTheme.fontFamily;
-  ctx.fillText('Détails de la partie sous le jeu', w / 2, 368);
+  ctx.fillText('Détails de la partie sous le jeu', w / 2, gainEcailles ? 384 : 368);
   ctx.restore();
 }
 
@@ -12557,8 +12861,9 @@ function showEndGameStats() {
     rows.map(([label, value]) =>
       '<li><span>' + label + '</span><span class="stat-value">' + value + '</span></li>'
     ).join('') +
-    '</ul><div id="statsSucces"></div>';
+    '</ul><div id="statsEcailles"></div><div id="statsSucces"></div>';
   statsPanelEl.style.display = 'block';
+  majRecapEcailles();
   majRecapSucces();
 }
 
@@ -14845,6 +15150,8 @@ document.getElementById('optionsJeuBtn').addEventListener('click', (e) => {
 window.addEventListener('keydown', (e) => {
   if (!optionsOuvertes) return;
   e.stopImmediatePropagation();
+  // code de sauvegarde en cours de saisie (js/18-sauvegarde.js) : seule Échap ferme
+  if (e.target instanceof HTMLTextAreaElement && e.key !== 'Escape') return;
   if (actionEnAttente) {
     e.preventDefault();
     if (e.code === 'Escape') {
@@ -14875,6 +15182,106 @@ function manetteDansOptions(vientDAppuyer) {
 
 majBoutonMuet();
 // premier réglage du plateau : à la fin du script (js/20-en-ligne.js), quand tout est chargé
+// ============================================================
+// --- Sauvegarde : exporter / importer toute la progression ---
+// ============================================================
+// Section « 💾 Sauvegarde » du menu ⚙️ Options. Exporter donne un code texte qui contient tout ce que le jeu
+// garde dans le navigateur (Écailles, succès, scores, réglages : les clés « snake... »). Importer remplace tout
+// par le contenu d'un code, après confirmation, et garde l'état d'avant dans snakeAvantImport.
+
+const prefixeCodeSauvegarde = 'SNAKE1:';
+const cleStockageAvantImport = 'snakeAvantImport';
+
+function donneesSauvegarde() {
+  const d = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const cle = localStorage.key(i);
+    if (cle && cle.startsWith('snake') && cle !== cleStockageAvantImport) d[cle] = localStorage.getItem(cle);
+  }
+  return d;
+}
+
+function exporterSauvegarde() {
+  const json = JSON.stringify({v: 1, date: Date.now(), d: donneesSauvegarde()});
+  return prefixeCodeSauvegarde + btoa(unescape(encodeURIComponent(json)));
+}
+
+// renvoie les clés à écrire, ou lève une erreur avec un message lisible
+function lireCodeSauvegarde(code) {
+  code = String(code || '').replace(/\s+/g, '');
+  if (!code.startsWith(prefixeCodeSauvegarde)) throw new Error('Ce n\'est pas un code de sauvegarde Super Snake.');
+  let donnees;
+  try {
+    donnees = JSON.parse(decodeURIComponent(escape(atob(code.slice(prefixeCodeSauvegarde.length)))));
+  } catch (e) {
+    throw new Error('Code incomplet ou abîmé : recopie-le en entier.');
+  }
+  if (!donnees || typeof donnees.d !== 'object' || !donnees.d) throw new Error('Code illisible.');
+  const cles = Object.keys(donnees.d);
+  if (!cles.length || cles.some(c => !c.startsWith('snake') || typeof donnees.d[c] !== 'string')) {
+    throw new Error('Code illisible.');
+  }
+  return donnees.d;
+}
+
+function importerSauvegarde(code) {
+  const d = lireCodeSauvegarde(code);
+  localStorage.setItem(cleStockageAvantImport, exporterSauvegarde());
+  Object.keys(donneesSauvegarde()).forEach(c => localStorage.removeItem(c));
+  Object.keys(d).forEach(c => localStorage.setItem(c, d[c]));
+}
+
+(function () {
+  const contenu = document.getElementById('optionsContenu');
+  const section = document.createElement('div');
+  section.id = 'optionsSauvegarde';
+  section.innerHTML = `
+    <h3>💾 Sauvegarde</h3>
+    <p class="options-note">Tes Écailles, succès, scores et réglages sont gardés dans ce navigateur.
+      Exporte-les pour les mettre à l'abri ou les reprendre sur un autre appareil.</p>
+    <div class="options-ligne">
+      <button id="sauvegardeExporter">📤 Exporter</button>
+      <button id="sauvegardeImporter">📥 Importer</button>
+    </div>
+    <textarea id="sauvegardeCode" rows="3" spellcheck="false" autocomplete="off"
+      placeholder="Le code apparaît ici. Pour importer, colle un code puis appuie sur Importer."></textarea>
+    <div id="sauvegardeMessage" class="options-note"></div>`;
+  contenu.appendChild(section);
+  const zone = document.getElementById('sauvegardeCode');
+  const message = document.getElementById('sauvegardeMessage');
+
+  document.getElementById('sauvegardeExporter').addEventListener('click', () => {
+    try {
+      zone.value = exporterSauvegarde();
+    } catch (e) {
+      message.textContent = '⚠️ Stockage du navigateur indisponible : rien à exporter.';
+      return;
+    }
+    zone.select();
+    const ok = () => { message.textContent = '✅ Code copié. Garde-le dans une note ou un message.'; };
+    const manuel = () => { message.textContent = 'Copie le code ci-dessus et garde-le dans une note ou un message.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(zone.value).then(ok, manuel);
+    else manuel();
+  });
+
+  document.getElementById('sauvegardeImporter').addEventListener('click', () => {
+    let d;
+    try {
+      d = lireCodeSauvegarde(zone.value);
+    } catch (e) {
+      message.textContent = '⚠️ ' + e.message;
+      return;
+    }
+    if (!confirm('Remplacer toute ta progression sur cet appareil par celle de ce code ?')) return;
+    try {
+      importerSauvegarde(zone.value);
+    } catch (e) {
+      message.textContent = '⚠️ Impossible d\'écrire la sauvegarde dans ce navigateur.';
+      return;
+    }
+    location.reload();
+  });
+})();
 // ============================================================
 // --- Succès : 58 défis débloqués en jouant, gardés sur l'appareil ---
 // ============================================================
@@ -15091,6 +15498,7 @@ function debloquerSucces(id, depuisHote) {
   if (!depuisHote && tutoActif() && id !== 'bon_eleve' && id !== 'curieux') return;
   succesSauves.obtenus[id] = Date.now();
   sauverSucces();
+  payerSucces(id); // Écailles du succès (js/03-progression.js)
   partieSucces.debloques.push(id);
   afficherBanniereSucces(s);
   playSuccesSound();
@@ -16290,6 +16698,8 @@ applyTheme('neon');
 majBoutonMode();
 init();
 initHighscores();
+rattraperSuccesProgression();
+demanderStockagePersistant();
 // ============================================================
 // --- Jeu à deux en ligne (code de salle) ---
 // ============================================================
