@@ -460,11 +460,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     touch-action: none; /* le doigt pilote le jeu, la page ne défile pas */
   }
 
-  /* --- Menu des buffs --- */
+  /* --- Boutique : l'échoppe de Sifflet (js/16-menu-buffs.js) --- */
+  #touchBouclier.capacite-off { display: none; }
   #buffMenu {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.7);
     display: none;
     align-items: center;
     justify-content: center;
@@ -472,203 +473,312 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     padding: 16px;
     box-sizing: border-box;
   }
-  #buffMenu.ouvert {
-    display: flex;
-  }
+  #buffMenu.ouvert { display: flex; }
   #buffMenuPanel {
-    background: var(--bg-canvas);
-    border: 2px solid var(--accent);
-    border-radius: 12px;
-    padding: 18px;
-    width: 100%;
-    max-width: 380px;
-    max-height: 100%;
-    overflow-y: auto;
-    box-sizing: border-box;
-  }
-  .buff-menu-sous-titre {
-    margin: 14px 0 8px 0;
-    font-size: 15px;
-    color: var(--text-color);
-  }
-  #touchBouclier.capacite-off { display: none; }
-  #buffMenuPanel h2 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
-    text-align: center;
-  }
-  #buffMenuPanel .buff-menu-aide {
-    margin: 0 0 12px 0;
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-  }
-  .buff-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 9px 10px;
-    margin-bottom: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    color: var(--text-color);
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-  }
-  .buff-option:focus-visible, .buff-option.focus-manette {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-  }
-  .buff-option .buff-option-icone {
-    font-size: 20px;
-    width: 26px;
-    text-align: center;
-  }
-  .buff-option .buff-option-texte {
-    flex: 1;
+    --bois: #6b4423;
+    --bois-clair: #a0693a;
+    --bois-fonce: #3b2414;
+    --or: #ffd740;
     display: flex;
     flex-direction: column;
-    font-size: 13px;
+    width: 100%;
+    max-width: 980px;
+    height: min(660px, 100%);
+    background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 4px, transparent 4px 72px),
+      linear-gradient(#2a1a10, var(--bois-fonce) 60%, #24150b);
+    border: 4px solid var(--bois-clair);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #f0f0f0;
   }
-  .buff-option .buff-option-texte small {
-    color: var(--text-muted);
-    font-size: 11px;
-  }
-  .buff-option .buff-interrupteur {
-    width: 38px;
-    height: 20px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    position: relative;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .buff-option .buff-interrupteur::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #fff;
-    transition: left 0.15s;
-  }
-  .buff-option.actif .buff-interrupteur {
-    background: var(--accent);
-  }
-  .buff-option.actif .buff-interrupteur::after {
-    left: 20px;
-  }
-  .buff-option:not(.actif) {
-    opacity: 0.55;
-  }
-  #buffMenuAvertissement {
-    min-height: 16px;
-    font-size: 12px;
-    color: #ff9100;
-    text-align: center;
-    margin: 4px 0 8px 0;
-  }
-  #buffMenuActions {
+  #echoppeHaut {
     display: flex;
-    gap: 8px;
+    align-items: center;
     justify-content: center;
+    gap: 14px;
+    padding: 10px 12px 6px;
+    position: relative;
   }
-  #buffMenuActions button {
-    padding: 8px 14px;
-    font-size: 13px;
-    background: transparent;
-    border: 1px solid var(--accent);
+  #buffMenuTitre { margin: 0; }
+  #buffMenuTitre .enseigne {
+    display: inline-block;
+    padding: 4px 22px;
+    background: #5d3a1a;
+    border: 3px solid var(--bois-clair);
     border-radius: 6px;
-    color: var(--text-color);
-    cursor: pointer;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--or);
+    box-shadow: 0 5px 0 #24150b;
   }
-  #buffMenuActions button.focus-manette {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+  #boutiqueSolde {
+    margin: 0;
+    padding: 3px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--or);
   }
   #buffMenuFermer {
-    background: var(--accent) !important;
-    color: #14141f !important;
-    font-weight: bold;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 16px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid var(--bois-clair);
+    border-radius: 8px;
+    cursor: pointer;
   }
-  /* --- Boutique (js/16-menu-buffs.js) --- */
-  #boutiqueOnglets { display: flex; gap: 4px; margin: 8px 0 10px 0; }
-  .boutique-onglet-btn {
+  #echoppeCorps {
     flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 310px;
+  }
+  /* étagères */
+  #boutiqueEtageres {
+    overflow-y: auto;
+    padding: 4px 14px 10px 18px;
+    scrollbar-color: var(--bois-clair) transparent;
+  }
+  .etagere { margin: 18px 0 6px; position: relative; }
+  .etagere .etiquette {
+    display: inline-block;
+    margin: 0 0 4px -6px;
+    padding: 1px 8px;
+    background: var(--or);
+    color: #14141f;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .etagere-objets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    padding: 4px 6px 0;
+    border-bottom: 14px solid var(--bois-clair);
+    box-shadow: 0 6px 0 #5d3a1a;
+    background-image: linear-gradient(transparent calc(100% - 1px), transparent);
+  }
+  .objet {
+    position: relative;
+    width: 76px;
+    padding: 16px 2px 4px;
+    margin-bottom: 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 6px 2px;
+    gap: 3px;
     font-family: inherit;
-    font-size: 18px;
-    color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f0f0f0;
+    background: transparent;
+    border: 2px solid transparent;
     border-radius: 8px;
     cursor: pointer;
+    transition: transform 0.1s;
   }
-  .boutique-onglet-btn span { font-size: 10px; }
-  .boutique-onglet-btn.actif { color: var(--text-color); border-color: var(--accent); background: rgba(255, 255, 255, 0.12); }
-  .boutique-onglet-btn.focus-manette { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .boutique-onglet { display: none; min-height: 300px; }
-  .boutique-onglet.actif { display: block; }
-  #buffMenuPanel { max-width: 460px; }
-  #boutiqueSolde {
-    margin: 0 0 4px 0;
-    text-align: center;
-    font-size: 17px;
+  .objet:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
+  .objet .objet-icone { font-size: 38px; line-height: 1; height: 40px; }
+  .objet.verrouille .objet-icone { filter: grayscale(1) brightness(0.6); }
+  .objet.coupe .objet-icone { opacity: 0.45; }
+  .objet.choisi { border-color: var(--or); background: rgba(255, 215, 64, 0.12); }
+  .objet:focus-visible, .objet.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  .objet .objet-niveau {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 6px;
+    font-size: 11px;
     font-weight: bold;
-    color: #ffd700;
+    white-space: nowrap;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 6px;
   }
-  .boutique-ligne {
+  .objet .objet-niveau:empty { display: none; }
+  .objet.verrouille .objet-niveau { background: #8b93a5; }
+  .objet.coupe .objet-niveau { background: #8b93a5; }
+  .objet .objet-niveau.max { background: var(--or); }
+  .objet-pips { display: flex; gap: 3px; min-height: 0; }
+  .objet-pips i { display: block; width: 12px; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+  .objet-pips i.plein { background: #4caf50; }
+  .objet.coupe .objet-pips i.plein { background: #8b93a5; }
+  .objet .objet-prix {
+    display: none;
+    padding: 0 6px;
+    font-size: 12px;
+    color: var(--or);
+    background: #14141f;
+    border: 1px solid var(--or);
+    border-radius: 4px;
+  }
+  .objet .objet-prix.visible { display: block; }
+  .objet .objet-prix::before { content: '◉ '; font-size: 9px; }
+  .objet.trop-cher .objet-prix { opacity: 0.55; }
+  .objet.actif::after {
+    content: '✔';
+    position: absolute;
+    right: 4px;
+    top: 16px;
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+    line-height: 16px;
+    color: #14141f;
+    background: #4caf50;
+    border-radius: 50%;
+  }
+  .objet.achete { animation: objetAchete 0.6s ease-out; }
+  @keyframes objetAchete {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35) rotate(-6deg); }
+    100% { transform: scale(1); }
+  }
+  /* comptoir : Sifflet, sa bulle, la fiche de l'objet */
+  #boutiqueComptoir {
     display: flex;
-    gap: 6px;
-    align-items: stretch;
-    margin-bottom: 6px;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 14px 12px 4px;
+    min-height: 0;
   }
-  .boutique-ligne .buff-option { margin-bottom: 0; flex: 1; min-width: 0; }
-  .boutique-achat {
-    flex-shrink: 0;
-    min-width: 76px;
+  #siffletZone { position: relative; flex: 1; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  #sifflet {
+    width: 150px;
+    height: 150px;
+    image-rendering: pixelated;
+    border: none;
+    background: none;
+    animation: siffletRespire 2.4s ease-in-out infinite;
+  }
+  @keyframes siffletRespire { 50% { transform: translateY(3px); } }
+  #siffletZone.saute #sifflet { animation: siffletSaute 0.5s ease-out 2; }
+  @keyframes siffletSaute { 40% { transform: translateY(-18px); } }
+  #siffletZone.secoue #sifflet { animation: siffletSecoue 0.4s ease-in-out; }
+  @keyframes siffletSecoue { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  #boutiqueMessage.bulle {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #14141f;
+    background: #f0f0f0;
+    border-radius: 10px;
+  }
+  #boutiqueMessage.bulle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    border: 7px solid transparent;
+    border-top-color: #f0f0f0;
+  }
+  #boutiqueFiche {
+    padding: 10px 12px;
+    background: #14141f;
+    border: 2px solid var(--or);
+    border-radius: 10px;
+    box-shadow: 0 -6px 0 var(--bois-clair), 0 -14px 0 var(--bois);
+  }
+  #ficheTitre { display: flex; align-items: center; gap: 8px; font-family: 'Exo 2', sans-serif; font-size: 17px; }
+  #ficheIcone { font-size: 24px; }
+  #ficheNiveau { margin-top: 6px; font-size: 13px; color: #c9cfdb; }
+  #ficheNiveau.niveaux { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #4caf50; }
+  #ficheNiveau .objet-pips i { width: 20px; height: 9px; }
+  #ficheDetail { margin: 6px 0 8px; font-size: 12px; color: #c9cfdb; display: flex; flex-direction: column; gap: 3px; }
+  #ficheDetail span + span { color: var(--or); }
+  #ficheBoutons { display: flex; gap: 8px; flex-wrap: wrap; }
+  #ficheBoutons button {
+    flex: 1;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  #ficheAcheter { color: #14141f; background: var(--or); border: none; }
+  #ficheAcheter.trop-cher { color: #f0f0f0; background: rgba(255, 215, 64, 0.22); }
+  #ficheAcheter.max { color: #8b93a5; background: transparent; border: 1px solid #4b5263; cursor: default; }
+  #ficheBasculer { color: #14141f; background: #4caf50; border: none; }
+  #ficheBasculer.couper { color: #f0f0f0; background: transparent; border: 1px solid #8b93a5; }
+  #ficheBoutons button:focus-visible, #ficheBoutons button.focus-manette,
+  #buffMenuFermer.focus-manette, #buffMenuActions button.focus-manette { outline: 3px solid #4caf50; outline-offset: 2px; }
+  #buffMenuAvertissement { font-size: 12px; color: #ff9100; text-align: center; }
+  #buffMenuAvertissement:empty { display: none; }
+  #buffMenuActions { display: flex; gap: 8px; }
+  #buffMenuActions button {
+    flex: 1;
     padding: 6px 8px;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: bold;
-    color: #14141f;
-    background: #ffd700;
-    border: none;
-    border-radius: 8px;
+    font-size: 12px;
+    color: #f0f0f0;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--bois-clair);
+    border-radius: 6px;
     cursor: pointer;
   }
-  .boutique-achat.trop-cher { background: rgba(255, 215, 0, 0.25); color: var(--text-color); }
-  .boutique-achat.max { background: transparent; color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.2); }
-  .boutique-achat:focus-visible, .boutique-achat.focus-manette { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .buff-option.verrouille { opacity: 0.45; border-style: dashed; }
-  .buff-option.verrouille .buff-interrupteur { visibility: hidden; }
-  #boutiqueThemes .buff-interrupteur, #boutiqueSkins .buff-interrupteur { border-radius: 50%; width: 20px; }
-  #boutiqueThemes .buff-option.actif .buff-interrupteur::after,
-  #boutiqueSkins .buff-option.actif .buff-interrupteur::after { left: 2px; }
-  #buffMenu.lecture-seule .buff-option, #buffMenu.lecture-seule .boutique-achat,
-  #buffMenu.lecture-seule #boutiqueRembourser, #buffMenu.lecture-seule #buffMenuTout { cursor: not-allowed; }
-  #boutiqueMessage { min-height: 18px; margin: 8px 0; font-size: 13px; text-align: center; color: #ffd700; }
+  #buffMenu.lecture-seule #ficheBoutons button, #buffMenu.lecture-seule #buffMenuActions button { opacity: 0.45; cursor: not-allowed; }
+  .piece-vol {
+    position: fixed;
+    z-index: 60;
+    font-size: 20px;
+    pointer-events: none;
+    animation: pieceVole 0.8s ease-in both;
+  }
+  @keyframes pieceVole {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    40% { transform: translate(calc(-50% + var(--dx) * 0.4), calc(-50% + var(--dy) * 0.4 - 50px)) scale(1.2); }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.6); opacity: 0.2; }
+  }
   #boutiqueDev { text-align: center; font-size: 12px; color: #ff9100; }
   #boutiqueDev:empty { display: none; }
   #boutiqueDev p { margin: 0 0 6px 0; }
   #boutiqueDev button {
-    margin: 0 4px 8px 4px;
-    padding: 5px 10px;
+    margin: 0 4px 6px 4px;
+    padding: 4px 10px;
     font-family: inherit;
-    color: var(--text-color);
+    color: #f0f0f0;
     background: transparent;
     border: 1px solid #ff9100;
     border-radius: 6px;
     cursor: pointer;
+  }
+  /* téléphone : étagères en haut, comptoir compact en bas */
+  @media (max-width: 720px) {
+    #buffMenu { padding: 6px; }
+    #buffMenuPanel { height: 100%; }
+    #buffMenuTitre .enseigne { font-size: 17px; padding: 3px 12px; }
+    #boutiqueSolde { font-size: 15px; }
+    #buffMenuFermer { top: 8px; right: 8px; width: 32px; height: 32px; }
+    #echoppeHaut { justify-content: flex-start; padding-left: 10px; }
+    #echoppeCorps { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    #boutiqueEtageres { padding: 0 8px 6px 12px; }
+    .etagere { margin-top: 12px; }
+    .etagere-objets { gap: 10px 4px; }
+    .objet { width: 66px; }
+    .objet .objet-icone { font-size: 32px; height: 34px; }
+    #boutiqueComptoir { padding: 6px 8px 8px; border-top: 4px solid var(--bois-clair); background: rgba(0, 0, 0, 0.25); }
+    #siffletZone { flex-direction: row-reverse; align-items: flex-end; min-height: 0; flex: none; gap: 6px; }
+    #sifflet { width: 64px; height: 64px; flex-shrink: 0; }
+    #boutiqueMessage.bulle { margin: 0 0 14px; font-size: 12px; min-height: 0; }
+    #boutiqueMessage.bulle::after { left: auto; right: -12px; bottom: 10px; border-top-color: transparent; border-left-color: #f0f0f0; }
+    #boutiqueFiche { box-shadow: none; padding: 8px 10px; }
+    #ficheDetail { margin: 4px 0 6px; }
   }
   #buffMenuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
   @keyframes boutiqueNouveau {
@@ -1863,43 +1973,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 <div id="buffMenu" role="dialog" aria-modal="true" aria-labelledby="buffMenuTitre">
   <div id="buffMenuPanel">
-    <h2 id="buffMenuTitre">🛒 Boutique</h2>
-    <p id="boutiqueSolde"></p>
-    <p class="buff-menu-aide" id="boutiqueAide"></p>
+    <div id="echoppeHaut">
+      <h2 id="buffMenuTitre"><span class="enseigne">Chez Sifflet</span></h2>
+      <p id="boutiqueSolde"></p>
+      <button id="buffMenuFermer" title="Fermer (Échap)">✖</button>
+    </div>
     <div id="boutiqueDev"></div>
-    <div id="boutiqueOnglets" role="tablist">
-      <button class="boutique-onglet-btn" data-onglet="ameliorations">⬆️<span>Améliorations</span></button>
-      <button class="boutique-onglet-btn" data-onglet="buffs">🔵<span>Buffs</span></button>
-      <button class="boutique-onglet-btn" data-onglet="capacites">🐍<span>Capacités</span></button>
-      <button class="boutique-onglet-btn" data-onglet="themes">🎨<span>Thèmes</span></button>
-      <button class="boutique-onglet-btn" data-onglet="skins">👾<span>Skins</span></button>
-    </div>
-    <div class="boutique-onglet" data-onglet="ameliorations">
-      <p class="buff-menu-aide">Bonus permanents, à plusieurs niveaux. Touche une ligne pour la couper ou la remettre.</p>
-      <div id="boutiqueAmeliorations"></div>
-    </div>
-    <div class="boutique-onglet" data-onglet="buffs">
-      <p class="buff-menu-aide">Ce que la pomme bleue peut te donner. Achète un buff, puis choisis s'il peut sortir.</p>
-      <div id="buffMenuListe"></div>
-      <div id="buffMenuAvertissement"></div>
-    </div>
-    <div class="boutique-onglet" data-onglet="capacites">
-      <p class="buff-menu-aide">Capacités du serpent, à couper pour corser la partie.</p>
-      <div id="capacitesMenuListe"></div>
-    </div>
-    <div class="boutique-onglet" data-onglet="themes">
-      <p class="buff-menu-aide">Achète un thème, puis touche-le pour jouer dedans.</p>
-      <div id="boutiqueThemes"></div>
-    </div>
-    <div class="boutique-onglet" data-onglet="skins">
-      <p class="buff-menu-aide">Chaque skin d'ennemi se débloque avec un succès.</p>
-      <div id="boutiqueSkins"></div>
-    </div>
-    <div id="boutiqueMessage"></div>
-    <div id="buffMenuActions">
-      <button id="boutiqueRembourser">↺ Rembourser</button>
-      <button id="buffMenuTout">Tout activer</button>
-      <button id="buffMenuFermer">Fermer</button>
+    <div id="echoppeCorps">
+      <div id="boutiqueEtageres"></div>
+      <div id="boutiqueComptoir">
+        <div id="siffletZone">
+          <div id="boutiqueMessage" class="bulle" aria-live="polite"></div>
+          <canvas id="sifflet" width="20" height="20"></canvas>
+        </div>
+        <div id="boutiqueFiche">
+          <div id="ficheTitre"><span id="ficheIcone"></span><b id="ficheNom"></b></div>
+          <div id="ficheNiveau"></div>
+          <p id="ficheDetail"></p>
+          <div id="ficheBoutons">
+            <button id="ficheAcheter"></button>
+            <button id="ficheBasculer"></button>
+          </div>
+        </div>
+        <div id="buffMenuAvertissement"></div>
+        <div id="buffMenuActions">
+          <button id="boutiqueRembourser">↺ Rembourser</button>
+          <button id="buffMenuTout">Tout activer</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -3895,7 +3996,7 @@ function applyTheme(name) {
 document.querySelectorAll('.theme-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     // thème pas encore acheté : la Boutique s'ouvre pour le montrer (js/16-menu-buffs.js)
-    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs('themes');
+    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs('theme:' + btn.dataset.theme);
     applyTheme(btn.dataset.theme);
   });
 });
@@ -5153,14 +5254,9 @@ function majBoutonMode() {
   boutonVisee.textContent = '🎯 Visée auto : ' + (optionViseeAuto ? 'oui' : 'non');
   boutonVisee.classList.toggle('active', optionViseeAuto);
   boutonVisee.title = 'La tourelle vise seule l\'ennemi le plus proche, tu tires toi-même';
-  // durées des buffs (plus longues en Facile) dans la légende et le menu des buffs
+  // durées des buffs (plus longues en Facile) dans la légende (la Boutique les recalcule à l'affichage)
   document.querySelectorAll('#legendList li[data-buff]').forEach(li => {
     li.textContent = texteAvecDureeBuff(li.textContent, li.dataset.buff);
-  });
-  document.querySelectorAll('#buffMenuListe .buff-option').forEach(btn => {
-    const type = btn.dataset.cle.slice('buff:'.length);
-    const petit = btn.querySelector('small');
-    if (petit) petit.textContent = texteAvecDureeBuff(buffDescriptions[type].detail, type);
   });
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
@@ -7209,7 +7305,7 @@ pauseBtn.addEventListener('click', togglePause);
 
 document.querySelectorAll('.skin-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs('skins'); // skin gagné par un succès
+    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs('skin:' + btn.dataset.skin); // skin gagné par un succès
     enemySkin = btn.dataset.skin;
     document.querySelectorAll('.skin-btn').forEach(b => b.classList.toggle('active', b === btn));
   });
@@ -13534,13 +13630,13 @@ document.addEventListener('keydown', (e) => {
   if (modeEntree !== 'clavier') modeEntree = 'clavier';
 
   if (menuBuffsOuvert) {
-    // le menu garde la main : Échap ou B le ferme, Tab/Entrée/Espace naviguent dans ses boutons
+    // le menu garde la main : Échap ou B le ferme, flèches / Tab / Entrée / Espace naviguent dans ses boutons
     if (key === 'Escape' || e.code === touches.buffs) {
       e.preventDefault();
       fermerMenuBuffs();
-    } else if (key === 'ArrowLeft' || key === 'ArrowRight') {
+    } else if (key.startsWith('Arrow')) {
       e.preventDefault();
-      changerOngletBoutique(key === 'ArrowLeft' ? -1 : 1);
+      naviguerBoutique(key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0, key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0);
     }
     return;
   }
@@ -13653,28 +13749,150 @@ function toucheCoop(e) {
 }
 
 // ============================================================
-// --- Boutique (ancien menu des buffs) ---
+// --- Boutique : l'échoppe de Sifflet (ancien menu des buffs) ---
 // ============================================================
-// Bouton « 🛒 Boutique », touche B, Y / Select à la manette. Entre deux parties, on y dépense ses Écailles
-// (améliorations, buffs, thèmes : prix dans reglagesProgression, js/03-progression.js) et on choisit ce qu'on
-// emporte : chaque amélioration et chaque buff débloqué a son interrupteur. Pendant une partie, elle s'ouvre
-// en lecture seule (sauf en ?dev). La collision entre joueurs est dans les options (js/18-options.js).
+// Bouton 🛒 (à côté du plateau et dans le menu), touche B, Y / Select à la manette. Entre deux parties, on y
+// dépense ses Écailles (prix dans reglagesProgression, js/03-progression.js) et on choisit ce qu'on emporte.
+// Une étagère par catégorie ; toucher un objet le pose sur le comptoir (sa fiche : niveau, effet, Acheter,
+// Activer / Couper). Sifflet, le marchand, commente (répliques dans REPLIQUES_SIFFLET, faciles à changer).
+// Pendant une partie, la boutique s'ouvre en lecture seule (sauf en ?dev).
 const buffMenuEl = document.getElementById('buffMenu');
-const buffMenuListeEl = document.getElementById('buffMenuListe');
 const buffMenuAvertissementEl = document.getElementById('buffMenuAvertissement');
 const buffMenuBtn = document.getElementById('buffMenuBtn');
-const boutiqueMessageEl = document.getElementById('boutiqueMessage');
+const boutiqueMessageEl = document.getElementById('boutiqueMessage'); // la bulle de Sifflet
+const boutiqueJeuBtn = document.getElementById('boutiqueJeuBtn'); // 🛒 à côté du plateau
+const etageresEl = document.getElementById('boutiqueEtageres');
+const ficheAcheterEl = document.getElementById('ficheAcheter');
+const ficheBasculerEl = document.getElementById('ficheBasculer');
 let menuBuffsOuvert = false;
 let menuAMisEnPause = false; // le menu a mis la partie en pause : il la relance en se fermant
 let focusMenuManette = 0; // index du bouton sélectionné à la manette
 let boutiqueAChange = false; // un achat ou un réglage à appliquer à la partie qui attend de démarrer
-const boutiqueJeuBtn = document.getElementById('boutiqueJeuBtn'); // 🛒 à côté du plateau
-const ONGLETS_BOUTIQUE = ['ameliorations', 'buffs', 'capacites', 'themes', 'skins'];
-let ongletBoutique = 'ameliorations';
-try { if (ONGLETS_BOUTIQUE.includes(localStorage.getItem('snakeOngletBoutique'))) ongletBoutique = localStorage.getItem('snakeOngletBoutique'); } catch (e) {}
+let boutiqueConstruite = false;
+let objetChoisi = 'amelioration:coeur'; // clé de l'objet posé sur le comptoir
+const objetsBoutique = {}; // clé -> {categorie, icone, nom, etat()}
 
-// nom affiché des thèmes et skins (texte de leur bouton dans le menu ☰)
-document.querySelectorAll('.skin-btn, .theme-btn').forEach(b => { b.dataset.nom = b.textContent.trim(); });
+// --- Répliques de Sifflet : {nom}, {prix}, {manque}, {niveau}, {succes} sont remplacés ---
+const REPLIQUES_SIFFLET = {
+  accueil: ['Sss… bienvenue chez Sifflet !', 'Des Écailles fraîches ? J\'ai ce qu\'il te faut.',
+    'Entre, entre. Tout est fait main… enfin, fait queue.', 'Ah, mon client préféré !'],
+  amelioration: ['« {nom} » niveau {niveau} ? Excellent choix.', '{nom}, niveau {niveau}. Ça va te changer la vie.'],
+  ameliorationMax: ['Tu as le niveau maximum. Je n\'ai rien de plus fort.'],
+  contenu: ['« {nom} », pour {prix} Écailles. Une affaire !', '« {nom} » ? Il t\'attend depuis longtemps.'],
+  possede: ['« {nom} » est à toi. Touche le bouton pour l\'emporter ou le laisser.', 'Déjà payé. Tu choisis s\'il part avec toi.'],
+  theme: ['Un nouveau décor, ça change tout.', 'Le thème « {nom} » te va très bien.'],
+  skinVerrouille: ['Celui-là ne se vend pas. Réussis « {succes} » et il est à toi.'],
+  skin: ['Ces ennemis-là ? Ils sont tout à fait effrayants.', 'Bon choix d\'ennemis, sss.'],
+  capacite: ['Coupe-la si tu veux corser la partie. Moi je dis ça…'],
+  achat: ['Merci ! Bonne partie, l\'ami.', 'Kaching ! Ça fait plaisir.', 'Vendu ! Reviens vite.'],
+  tropCher: ['Reviens avec {manque} Écailles de plus, l\'ami.', 'Il te manque {manque} Écailles. Une partie ou deux ?'],
+  rembourse: ['Je te rends {prix} Écailles. Choisis mieux cette fois, sss.'],
+  rienARembourser: ['Rien à te rendre : tu n\'as encore rien acheté.'],
+  lectureSeule: ['Chut, une partie est en cours. On fait les comptes après.']
+};
+
+function repliqueSifflet(type, valeurs) {
+  const liste = REPLIQUES_SIFFLET[type];
+  let texte = liste[Math.floor(Math.random() * liste.length)];
+  Object.keys(valeurs || {}).forEach(k => { texte = texte.split('{' + k + '}').join(valeurs[k]); });
+  return texte;
+}
+
+// --- Sifflet : petit dessin 20 x 20 (couleurs de PALETTE_ICONES, js/00-icones.js) ---
+const SIFFLET_HAUT = [
+  '......kkkkkkk.......', '......kvvvvvk.......', '......kvvvvvk.......', '......kvvvvvk.......',
+  '......kyyyyyk.......', '....kkkkkkkkkkk.....', '.....kGGGGGGGk......', '....kGGGGGGGGGk.....'];
+const SIFFLET_BAS = [
+  '......kGGGGGk.......', '.....kGGLLLGGk......', '....kGGLLLLLGGk.....', '...kGGGGGGGGGGGk....', '..kGGGGGGGGGGGGGk...'];
+const SIFFLET_VISAGES = {
+  repos: ['....kGwkGGGwkGk.....', '....kGwwGGGwwGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkkkGGk......', '......kGGrGGk.......', '.......kGrGk........'],
+  langue: ['....kGwkGGGwkGk.....', '....kGwwGGGwwGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkrkGGk......', '......kGGrGGk.......', '......krGGGrk.......'],
+  cligne: ['....kGGGGGGGGGk.....', '....kGkkGGGkkGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGkkkGGk......', '......kGGGGGk.......', '.......kGGGk........'],
+  content: ['....kGGkGGGkGGk.....', '....kGkGkGkGkGk.....', '....kGGGGGGGGGk.....', '....kLpGGGGGpLk.....',
+    '.....kGkGGGkGk......', '......kGkkkGk.......', '.......kGrGk........'],
+  decu: ['....kGkkGGGkkGk.....', '....kGwkGGGwkGk.....', '....kGGGGGGGGGk.....', '....kLGGGGGGGLk.....',
+    '.....kGGGGGGGk......', '......kGkkkGk.......', '.......kGGGk........']
+};
+const siffletCtx = document.getElementById('sifflet').getContext('2d');
+let humeurSifflet = 'repos', finHumeurSifflet = 0, finClignement = 0;
+
+function dessinerSifflet(visage) {
+  siffletCtx.clearRect(0, 0, 20, 20);
+  SIFFLET_HAUT.concat(SIFFLET_VISAGES[visage], SIFFLET_BAS).forEach((ligne, y) => {
+    for (let x = 0; x < ligne.length; x++) {
+      if (ligne[x] === '.') continue;
+      siffletCtx.fillStyle = PALETTE_ICONES[ligne[x]];
+      siffletCtx.fillRect(x, y, 1, 1);
+    }
+  });
+}
+
+// humeur passagère (content après un achat, déçu quand c'est trop cher), clignements et langue au repos
+function humeur(visage, duree) {
+  humeurSifflet = visage;
+  finHumeurSifflet = performance.now() + (duree || 1800);
+  dessinerSifflet(visage);
+  const sifflet = document.getElementById('siffletZone');
+  sifflet.classList.remove('saute', 'secoue');
+  void sifflet.offsetWidth; // relance l'animation
+  if (visage === 'content') sifflet.classList.add('saute');
+  if (visage === 'decu') sifflet.classList.add('secoue');
+}
+
+setInterval(() => {
+  if (!menuBuffsOuvert) return;
+  const now = performance.now();
+  if (humeurSifflet !== 'repos' && now < finHumeurSifflet) return;
+  humeurSifflet = 'repos';
+  if (now > finClignement && Math.random() < 0.08) {
+    finClignement = now + 160;
+    dessinerSifflet(Math.random() < 0.4 ? 'langue' : 'cligne');
+  } else if (now > finClignement) {
+    dessinerSifflet('repos');
+  }
+}, 120);
+
+// --- Sons de caisse ---
+function sonBoutique(notes, type) {
+  if (isMuted) return;
+  const ctx = getAudioCtx();
+  notes.forEach(([freq, decalage, duree]) => {
+    const debut = ctx.currentTime + decalage;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, debut);
+    gain.gain.setValueAtTime(0.001, debut);
+    gain.gain.linearRampToValueAtTime(0.1, debut + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, debut + duree);
+    osc.connect(gain);
+    gain.connect(sortieAudio);
+    osc.start(debut);
+    osc.stop(debut + duree);
+  });
+}
+const sonCaisse = () => sonBoutique([[1975.5, 0, 0.08], [2637, 0.07, 0.35]], 'square');
+const sonRefus = () => sonBoutique([[220, 0, 0.12], [174.6, 0.1, 0.22]], 'sawtooth');
+
+// --- Contenu des étagères ---
+const CATEGORIES_BOUTIQUE = [
+  {cle: 'ameliorations', nom: 'Améliorations'},
+  {cle: 'buffs', nom: 'Buffs de la pomme bleue'},
+  {cle: 'capacites', nom: 'Capacités'},
+  {cle: 'themes', nom: 'Thèmes'},
+  {cle: 'skins', nom: 'Skins d\'ennemis'}
+];
+const ICONES_THEMES = {neon: '💡', espace: '🔭', lave: '🌋', ocean: '🐢', aurore: '❄️', foret: '🌱', desert: '🧭', synthwave: '📼', halloween: '🎃'};
+const ICONES_SKINS = {urchin: '🦔', ghost: '👻', pixel: '🕹️', slime: '🟢', bat: '🦇', jelly: '🪼', eye: '👁️', drone: '🤖',
+  spider: '🕷️', crab: '🦀', pumpkin: '🎃', mushroom: '🍄'};
+
+// nom affiché des thèmes et skins : texte de leur bouton dans le menu ☰, sans l'emoji
+document.querySelectorAll('.skin-btn, .theme-btn').forEach(b => {
+  b.dataset.nom = b.textContent.replace(/^[^\p{L}]+/u, '').trim();
+});
 
 // achats et réglages seulement entre deux parties (avant le départ ou après la fin)
 function boutiqueModifiable() {
@@ -13687,111 +13905,114 @@ function texteEcailles(n) {
 
 function messageBoutique(texte) {
   boutiqueMessageEl.textContent = texte;
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(boutiqueMessageEl);
 }
 
-// une ligne : le bouton principal (interrupteur ou choix) et, si besoin, un bouton d'achat à droite
-function ligneBoutique(parent, {icone, nom, detail, cle, clic, achat}) {
-  const ligne = document.createElement('div');
-  ligne.className = 'boutique-ligne';
-  const btn = document.createElement('button');
-  btn.className = 'buff-option';
-  btn.dataset.cle = cle;
-  btn.innerHTML = '<span class="buff-option-icone"></span><span class="buff-option-texte"><span></span><small></small></span>' +
-    '<span class="buff-interrupteur"></span>';
-  btn.querySelector('.buff-option-icone').textContent = icone;
-  btn.querySelector('.buff-option-texte > span').textContent = nom;
-  btn.querySelector('small').textContent = detail;
-  btn.addEventListener('click', () => {
-    if (!boutiqueModifiable()) return messageBoutique('Les réglages se changent entre deux parties.');
-    clic();
-    rafraichirMenuBuffs();
+// valeur de l'effet d'une amélioration au niveau n (arrondie pour l'affichage)
+function effetAmelioration(cle, n) {
+  return Math.round(reglagesProgression.ameliorations[cle].effet * n * 100) / 100;
+}
+
+// L'état d'un objet, recalculé à chaque affichage :
+// niveau / max (améliorations), verrouille, actif, prix (null si rien à acheter), detail (lignes de la fiche),
+// basculer (fonction ou null), texteBasculer, replique (ce que dit Sifflet quand on le choisit)
+function definirObjets() {
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const t = textesAmeliorations[cle];
+    objetsBoutique['amelioration:' + cle] = {categorie: 'ameliorations', icone: t.icone, nom: t.nom, etat: () => {
+      const max = reglagesProgression.ameliorations[cle].prix.length;
+      const n = niveauAchete(cle);
+      const prix = prixProchainNiveau(cle);
+      const actif = n > 0 && !progression.inactifs.includes(cle);
+      const detail = [n > 0 ? 'Actuel : ' + t.detail(effetAmelioration(cle, n)) : 'Pas encore acheté'];
+      if (prix !== null) detail.push('Niveau ' + (n + 1) + ' : ' + t.detail(effetAmelioration(cle, n + 1)));
+      return {niveau: n, max, verrouille: n === 0, actif, prix, detail,
+        acheter: () => acheterAmelioration(cle), quoi: t.nom + ' niveau ' + (n + 1),
+        basculer: n > 0 ? () => { basculerAmelioration(cle); boutiqueAChange = true; } : null,
+        texteBasculer: actif ? 'Couper' : 'Activer',
+        replique: prix === null ? repliqueSifflet('ameliorationMax') : repliqueSifflet('amelioration', {nom: t.nom, niveau: n + 1})};
+    }};
   });
-  ligne.appendChild(btn);
-  if (achat) {
-    const b = document.createElement('button');
-    b.className = 'boutique-achat';
-    b.dataset.cle = cle;
-    b.addEventListener('click', () => {
-      if (!boutiqueModifiable()) return messageBoutique('Les achats se font entre deux parties.');
-      achat();
-      rafraichirMenuBuffs();
-    });
-    ligne.appendChild(b);
-  }
-  parent.appendChild(ligne);
-}
 
-// achat commun : vérifie le solde et explique ce qui manque
-function payer(prix, faire, quoi) {
-  if (prix === null) return;
-  if (progression.ecailles < prix) {
-    messageBoutique('Il te manque ' + texteEcailles(prix - progression.ecailles) + ' pour ' + quoi + '.');
-    return;
-  }
-  if (faire()) {
-    boutiqueAChange = true;
-    playSuccesSound();
-    messageBoutique('✅ Acheté : ' + quoi + ' !');
-  }
+  buffTypes.forEach(type => {
+    const d = buffDescriptions[type];
+    objetsBoutique['buff:' + type] = {categorie: 'buffs', icone: d.icon, nom: d.nom, etat: () => {
+      const debloque = contenuDebloque('buff', type);
+      const prix = debloque ? null : prixContenu('buff', type);
+      const actif = debloque && buffsActifs.includes(type);
+      return {verrouille: !debloque, actif, prix, detail: [texteAvecDureeBuff(d.detail, type)],
+        acheter: () => acheterContenu('buff', type), quoi: d.nom,
+        basculer: debloque ? () => basculerBuff(type) : null,
+        texteBasculer: actif ? 'Laisser à la maison' : 'Emporter',
+        replique: debloque ? repliqueSifflet('possede', {nom: d.nom}) : repliqueSifflet('contenu', {nom: d.nom, prix})};
+    }};
+  });
+
+  ['bouclier', 'sprint'].forEach(cle => {
+    const d = capaciteDescriptions[cle];
+    objetsBoutique['capacite:' + cle] = {categorie: 'capacites', icone: d.icon, nom: d.nom, etat: () => ({
+      actif: !!capacitesActives[cle], prix: null, detail: [d.detail],
+      basculer: () => basculerCapacite(cle), texteBasculer: capacitesActives[cle] ? 'Couper' : 'Activer',
+      replique: repliqueSifflet('capacite')
+    })};
+  });
+
+  document.querySelectorAll('.theme-btn').forEach(tb => {
+    const theme = tb.dataset.theme;
+    const nom = tb.dataset.nom;
+    objetsBoutique['theme:' + theme] = {categorie: 'themes', icone: ICONES_THEMES[theme] || '🎨', nom, etat: () => {
+      const debloque = contenuDebloque('theme', theme);
+      const prix = debloque ? null : prixContenu('theme', theme);
+      const actuel = theme === currentThemeName;
+      return {verrouille: !debloque, actif: actuel, prix,
+        detail: [!debloque ? 'Un décor de jeu à acheter' : actuel ? 'C\'est le thème de ta partie' : 'Un décor de jeu à toi'],
+        acheter: () => acheterContenu('theme', theme), quoi: 'thème ' + nom,
+        basculer: debloque && !actuel ? () => applyTheme(theme) : null, texteBasculer: 'Jouer avec',
+        replique: debloque ? repliqueSifflet('theme', {nom}) : repliqueSifflet('contenu', {nom, prix})};
+    }};
+  });
+
+  document.querySelectorAll('.skin-btn').forEach(sb => {
+    const skin = sb.dataset.skin;
+    const nom = sb.dataset.nom;
+    objetsBoutique['skin:' + skin] = {categorie: 'skins', icone: ICONES_SKINS[skin] || '👾', nom, etat: () => {
+      const debloque = contenuDebloque('skin', skin);
+      const succes = succesParId[reglagesProgression.skinsParSucces[skin]];
+      const actuel = skin === enemySkin;
+      return {verrouille: !debloque, actif: actuel, prix: null,
+        detail: [!debloque && succes ? '🔒 Succès « ' + succes.nom + ' » : ' + succes.detail
+          : actuel ? 'Ce sont les ennemis de ta partie' : 'Des ennemis à ce look'],
+        basculer: debloque && !actuel ? () => sb.click() : null, texteBasculer: 'Jouer contre',
+        replique: !debloque && succes ? repliqueSifflet('skinVerrouille', {succes: succes.nom}) : repliqueSifflet('skin')};
+    }};
+  });
 }
 
 function construireMenuBuffs() {
-  // améliorations
-  const ameliorationsEl = document.getElementById('boutiqueAmeliorations');
-  ameliorationsEl.innerHTML = '';
-  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
-    const t = textesAmeliorations[cle];
-    ligneBoutique(ameliorationsEl, {
-      icone: t.icone, nom: t.nom, detail: '', cle: 'amelioration:' + cle,
-      clic: () => { basculerAmelioration(cle); boutiqueAChange = true; },
-      achat: () => payer(prixProchainNiveau(cle), () => acheterAmelioration(cle), t.nom + ' niveau ' + (niveauAchete(cle) + 1))
+  definirObjets();
+  etageresEl.innerHTML = '';
+  CATEGORIES_BOUTIQUE.forEach(cat => {
+    const etagere = document.createElement('section');
+    etagere.className = 'etagere';
+    etagere.dataset.categorie = cat.cle;
+    etagere.innerHTML = '<h3 class="etiquette"></h3><div class="etagere-objets"></div>';
+    etagere.querySelector('.etiquette').textContent = cat.nom;
+    const rangee = etagere.querySelector('.etagere-objets');
+    Object.keys(objetsBoutique).filter(cle => objetsBoutique[cle].categorie === cat.cle).forEach(cle => {
+      const o = objetsBoutique[cle];
+      const btn = document.createElement('button');
+      btn.className = 'objet';
+      btn.dataset.cle = cle;
+      btn.title = o.nom;
+      btn.innerHTML = '<span class="objet-niveau"></span><span class="objet-icone"></span><span class="objet-pips"></span>' +
+        '<span class="objet-prix"></span>';
+      btn.querySelector('.objet-icone').textContent = o.icone;
+      btn.addEventListener('click', () => choisirObjet(cle, true));
+      rangee.appendChild(btn);
     });
+    etageresEl.appendChild(etagere);
   });
-
-  // buffs de la pomme bleue
-  buffMenuListeEl.innerHTML = '';
-  buffTypes.forEach(type => {
-    const d = buffDescriptions[type];
-    ligneBoutique(buffMenuListeEl, {
-      icone: d.icon, nom: d.nom, detail: texteAvecDureeBuff(d.detail, type), cle: 'buff:' + type,
-      clic: () => { if (contenuDebloque('buff', type)) basculerBuff(type); },
-      achat: () => payer(prixContenu('buff', type), () => acheterContenu('buff', type), d.nom)
-    });
-  });
-
-  // capacités (bouclier, sprint) ; la collision entre joueurs est dans les options
-  const capacitesListeEl = document.getElementById('capacitesMenuListe');
-  capacitesListeEl.innerHTML = '';
-  ['bouclier', 'sprint'].forEach(cle => {
-    const d = capaciteDescriptions[cle];
-    ligneBoutique(capacitesListeEl, {
-      icone: d.icon, nom: d.nom, detail: d.detail, cle: 'capacite:' + cle,
-      clic: () => basculerCapacite(cle)
-    });
-  });
-
-  // thèmes : choisir celui de la partie, ou l'acheter
-  const themesEl = document.getElementById('boutiqueThemes');
-  themesEl.innerHTML = '';
-  document.querySelectorAll('.theme-btn').forEach(tb => {
-    const theme = tb.dataset.theme;
-    ligneBoutique(themesEl, {
-      icone: '🎨', nom: tb.dataset.nom, detail: '', cle: 'theme:' + theme,
-      clic: () => { if (contenuDebloque('theme', theme)) applyTheme(theme); },
-      achat: () => payer(prixContenu('theme', theme), () => acheterContenu('theme', theme), 'thème ' + tb.dataset.nom)
-    });
-  });
-
-  // skins d'ennemis : gagnés par les succès
-  const skinsEl = document.getElementById('boutiqueSkins');
-  skinsEl.innerHTML = '';
-  document.querySelectorAll('.skin-btn').forEach(sb => {
-    const skin = sb.dataset.skin;
-    ligneBoutique(skinsEl, {
-      icone: '👾', nom: sb.dataset.nom, detail: '', cle: 'skin:' + skin,
-      clic: () => { if (contenuDebloque('skin', skin)) sb.click(); }
-    });
-  });
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(etageresEl);
 
   // ?dev : de quoi tester un réglage en quelques secondes
   const devEl = document.getElementById('boutiqueDev');
@@ -13813,35 +14034,76 @@ function construireMenuBuffs() {
     });
   }
   boutiqueConstruite = true;
+  dessinerSifflet('repos');
   rafraichirMenuBuffs();
 }
 
-// onglets par catégorie ; le dernier ouvert est retenu
-function choisirOngletBoutique(onglet) {
-  if (!ONGLETS_BOUTIQUE.includes(onglet)) return;
-  ongletBoutique = onglet;
-  try { localStorage.setItem('snakeOngletBoutique', onglet); } catch (e) {}
-  buffMenuEl.querySelectorAll('.boutique-onglet-btn').forEach(b => {
-    const actif = b.dataset.onglet === onglet;
-    b.classList.toggle('actif', actif);
-    b.setAttribute('aria-selected', actif ? 'true' : 'false');
-  });
-  buffMenuEl.querySelectorAll('.boutique-onglet').forEach(o => o.classList.toggle('actif', o.dataset.onglet === onglet));
+// pose un objet sur le comptoir ; parler = Sifflet le commente
+function choisirObjet(cle, parler) {
+  if (!objetsBoutique[cle]) return;
+  objetChoisi = cle;
+  rafraichirMenuBuffs();
+  if (parler) {
+    messageBoutique(boutiqueModifiable() ? objetsBoutique[cle].etat().replique : repliqueSifflet('lectureSeule'));
+    humeur('repos');
+  }
 }
 
-// onglet voisin (←/→ au clavier, LB/RB à la manette)
-function changerOngletBoutique(sens) {
-  const i = ONGLETS_BOUTIQUE.indexOf(ongletBoutique);
-  choisirOngletBoutique(ONGLETS_BOUTIQUE[(i + sens + ONGLETS_BOUTIQUE.length) % ONGLETS_BOUTIQUE.length]);
-  focusMenuManette = 0;
-  majFocusManette();
+// pièces qui volent du solde vers le comptoir
+function piecesQuiVolent() {
+  const depart = document.getElementById('boutiqueSolde').getBoundingClientRect();
+  const arrivee = document.getElementById('boutiqueFiche').getBoundingClientRect();
+  for (let i = 0; i < 6; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'piece-vol';
+    piece.innerHTML = htmlIcone('🪙');
+    piece.style.left = (depart.left + depart.width / 2) + 'px';
+    piece.style.top = (depart.top + depart.height / 2) + 'px';
+    piece.style.setProperty('--dx', (arrivee.left + arrivee.width / 2 - depart.left - depart.width / 2 + (Math.random() - 0.5) * 80) + 'px');
+    piece.style.setProperty('--dy', (arrivee.top + 20 - depart.top - depart.height / 2) + 'px');
+    piece.style.animationDelay = (i * 50) + 'ms';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 900 + i * 50);
+  }
 }
 
-buffMenuEl.querySelectorAll('.boutique-onglet-btn').forEach(b => {
-  b.setAttribute('role', 'tab');
-  b.addEventListener('click', () => choisirOngletBoutique(b.dataset.onglet));
+// achat commun : vérifie le solde, Sifflet réagit
+function payer(prix, faire, quoi) {
+  if (prix === null) return;
+  if (progression.ecailles < prix) {
+    messageBoutique(repliqueSifflet('tropCher', {manque: (prix - progression.ecailles).toLocaleString('fr-FR')}) +
+      ' (' + quoi + ')');
+    humeur('decu');
+    sonRefus();
+    return;
+  }
+  if (faire()) {
+    boutiqueAChange = true;
+    sonCaisse();
+    piecesQuiVolent();
+    humeur('content', 2200);
+    messageBoutique('✅ ' + quoi + ' ! ' + repliqueSifflet('achat'));
+    const objet = etageresEl.querySelector('.objet[data-cle="' + objetChoisi + '"]');
+    if (objet) {
+      objet.classList.remove('achete');
+      void objet.offsetWidth;
+      objet.classList.add('achete');
+    }
+  }
+}
+
+ficheAcheterEl.addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
+  const e = objetsBoutique[objetChoisi].etat();
+  if (typeof e.prix === 'number') payer(e.prix, e.acheter, e.quoi);
+  rafraichirMenuBuffs();
 });
-choisirOngletBoutique(ongletBoutique);
+ficheBasculerEl.addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
+  const e = objetsBoutique[objetChoisi].etat();
+  if (e.basculer) e.basculer();
+  rafraichirMenuBuffs();
+});
 
 function basculerCapacite(cle) {
   capacitesActives[cle] = !capacitesActives[cle];
@@ -13866,81 +14128,80 @@ function basculerBuff(type) {
   });
 }
 
-// met à jour une ligne : état (actif, verrouillé), texte et bouton d'achat (prix, ou null pour le cacher)
-function majLigne(cle, {actif, verrouille, detail, prix, achat}) {
-  const btn = buffMenuEl.querySelector('.buff-option[data-cle="' + cle + '"]');
-  if (!btn) return;
-  btn.classList.toggle('actif', !!actif);
-  btn.classList.toggle('verrouille', !!verrouille);
-  btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
-  if (detail !== undefined) btn.querySelector('small').textContent = detail;
-  const b = btn.parentNode.querySelector('.boutique-achat');
-  if (!b) return;
-  b.style.display = achat === null ? 'none' : '';
-  if (achat !== null) {
-    b.textContent = achat;
-    b.classList.toggle('trop-cher', typeof prix === 'number' && progression.ecailles < prix);
-    b.classList.toggle('max', achat === 'Max');
+// pastilles de niveau (pleines jusqu'au niveau acheté)
+function pipsNiveau(el, n, max) {
+  el.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const p = document.createElement('i');
+    if (i < n) p.className = 'plein';
+    el.appendChild(p);
   }
 }
 
-let boutiqueConstruite = false;
 function rafraichirMenuBuffs() {
   if (!boutiqueConstruite) return;
-  document.getElementById('boutiqueSolde').textContent = texteEcailles(progression.ecailles) + ' Écailles';
-  document.getElementById('boutiqueAide').textContent = boutiqueModifiable()
-    ? 'Chaque partie rapporte des Écailles, même perdue. Touche une ligne pour l\'activer ou la couper.'
-    : '🔒 Partie en cours : les achats et réglages se font avant le départ ou après la fin.';
-  buffMenuEl.classList.toggle('lecture-seule', !boutiqueModifiable());
+  const modifiable = boutiqueModifiable();
+  document.getElementById('boutiqueSolde').innerHTML = htmlIcone('🪙') + ' ' + progression.ecailles.toLocaleString('fr-FR');
+  buffMenuEl.classList.toggle('lecture-seule', !modifiable);
 
-  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
-    const a = reglagesProgression.ameliorations[cle];
-    const n = niveauAchete(cle);
-    const prix = prixProchainNiveau(cle);
-    majLigne('amelioration:' + cle, {
-      actif: n > 0 && !progression.inactifs.includes(cle),
-      verrouille: n === 0,
-      detail: 'Niv. ' + n + '/' + a.prix.length + ' : ' + textesAmeliorations[cle].detail(Math.round(a.effet * Math.max(1, n) * 100) / 100),
-      prix,
-      achat: prix === null ? 'Max' : texteEcailles(prix)
-    });
+  // étagères
+  etageresEl.querySelectorAll('.objet').forEach(btn => {
+    const o = objetsBoutique[btn.dataset.cle];
+    const e = o.etat();
+    const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+    btn.classList.toggle('verrouille', !!e.verrouille);
+    btn.classList.toggle('actif', !e.verrouille && !!e.actif);
+    btn.classList.toggle('coupe', !e.verrouille && !e.actif && !aChoisir);
+    btn.classList.toggle('choisi', btn.dataset.cle === objetChoisi);
+    btn.classList.toggle('trop-cher', typeof e.prix === 'number' && progression.ecailles < e.prix);
+    const niveau = btn.querySelector('.objet-niveau');
+    const pips = btn.querySelector('.objet-pips');
+    const prix = btn.querySelector('.objet-prix');
+    if (e.max) {
+      niveau.textContent = e.niveau >= e.max ? 'MAX' : 'Niv. ' + e.niveau;
+      niveau.classList.toggle('max', e.niveau >= e.max);
+      pipsNiveau(pips, e.niveau, e.max);
+    } else {
+      niveau.textContent = '';
+      pips.innerHTML = '';
+    }
+    prix.classList.toggle('visible', typeof e.prix === 'number');
+    if (typeof e.prix === 'number') prix.textContent = e.prix.toLocaleString('fr-FR');
+    btn.setAttribute('aria-pressed', e.actif ? 'true' : 'false');
+    btn.setAttribute('aria-label', o.nom + (e.max ? ', niveau ' + e.niveau + ' sur ' + e.max : '') +
+      (typeof e.prix === 'number' ? ', ' + e.prix + ' Écailles' : ''));
   });
 
-  buffTypes.forEach(type => {
-    const debloque = contenuDebloque('buff', type);
-    const prix = prixContenu('buff', type);
-    majLigne('buff:' + type, {
-      actif: debloque && buffsActifs.includes(type),
-      verrouille: !debloque,
-      prix,
-      achat: debloque ? null : texteEcailles(prix)
-    });
-  });
-  ['bouclier', 'sprint'].forEach(cle => majLigne('capacite:' + cle, {actif: !!capacitesActives[cle]}));
-
-  document.querySelectorAll('.theme-btn').forEach(tb => {
-    const theme = tb.dataset.theme;
-    const debloque = contenuDebloque('theme', theme);
-    const prix = prixContenu('theme', theme);
-    majLigne('theme:' + theme, {
-      actif: theme === currentThemeName,
-      verrouille: !debloque,
-      detail: !debloque ? 'À acheter' : theme === currentThemeName ? 'Thème actuel' : 'Toucher pour le choisir',
-      prix,
-      achat: debloque ? null : texteEcailles(prix)
-    });
-  });
-  document.querySelectorAll('.skin-btn').forEach(sb => {
-    const skin = sb.dataset.skin;
-    const debloque = contenuDebloque('skin', skin);
-    const succes = succesParId[reglagesProgression.skinsParSucces[skin]];
-    majLigne('skin:' + skin, {
-      actif: skin === enemySkin,
-      verrouille: !debloque,
-      detail: !debloque && succes ? '🔒 Succès « ' + succes.nom + ' » : ' + succes.detail
-        : skin === enemySkin ? 'Skin actuel' : 'Toucher pour le choisir'
-    });
-  });
+  // comptoir : la fiche de l'objet choisi
+  const o = objetsBoutique[objetChoisi];
+  const e = o.etat();
+  const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+  document.getElementById('ficheIcone').innerHTML = htmlIcone(o.icone);
+  document.getElementById('ficheNom').textContent = o.nom;
+  const niveauEl = document.getElementById('ficheNiveau');
+  niveauEl.classList.toggle('niveaux', !!e.max);
+  if (e.max) {
+    niveauEl.innerHTML = '<span class="fiche-niv"></span><span class="objet-pips"></span>';
+    niveauEl.querySelector('.fiche-niv').textContent = e.niveau >= e.max ? 'Niveau ' + e.niveau + ' / ' + e.max + ' · MAX'
+      : 'Niveau ' + e.niveau + ' / ' + e.max;
+    pipsNiveau(niveauEl.querySelector('.objet-pips'), e.niveau, e.max);
+  } else {
+    niveauEl.textContent = e.verrouille ? '🔒 Pas encore à toi' : aChoisir ? (e.actif ? '✔️ Dans ta partie' : 'À toi')
+      : e.actif ? '✔️ Emporté dans tes parties' : 'Laissé à la maison';
+  }
+  const detailEl = document.getElementById('ficheDetail');
+  detailEl.innerHTML = '';
+  e.detail.forEach(l => { const d = document.createElement('span'); d.textContent = l; detailEl.appendChild(d); });
+  const peutAcheter = typeof e.prix === 'number';
+  const auMax = !!e.max && e.niveau >= e.max;
+  ficheAcheterEl.style.display = peutAcheter || auMax ? '' : 'none';
+  ficheAcheterEl.textContent = peutAcheter ? 'Acheter ' + texteEcailles(e.prix) : 'Niveau max';
+  ficheAcheterEl.classList.toggle('max', !peutAcheter);
+  ficheAcheterEl.classList.toggle('trop-cher', peutAcheter && progression.ecailles < e.prix);
+  ficheBasculerEl.style.display = e.basculer ? '' : 'none';
+  ficheBasculerEl.textContent = e.texteBasculer || '';
+  ficheBasculerEl.classList.toggle('couper', !!e.actif && !aChoisir);
+  if (typeof remplacerEmojis === 'function') remplacerEmojis(document.getElementById('boutiqueFiche'));
 
   // boutons tactiles : bouclier masqué, Boost ne sert plus qu'à démarrer
   document.getElementById('touchBouclier').classList.toggle('capacite-off', !capacitesActives.bouclier);
@@ -13949,9 +14210,7 @@ function rafraichirMenuBuffs() {
   document.querySelectorAll('.legend-buffs li[data-buff]').forEach(li => {
     li.classList.toggle('buff-desactive', !dispo.includes(li.dataset.buff));
   });
-  buffMenuAvertissementEl.textContent = dispo.length
-    ? dispo.length + ' / ' + buffTypes.length + ' buffs possibles'
-    : '⚠️ Aucun buff actif : la pomme bleue n\'apparaîtra plus';
+  buffMenuAvertissementEl.textContent = dispo.length ? '' : '⚠️ Aucun buff emporté : la pomme bleue n\'apparaîtra plus';
   buffMenuBtn.textContent = '🛒 Boutique ' + texteEcailles(progression.ecailles);
   buffMenuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
   document.getElementById('boutiqueJeuSolde').textContent = progression.ecailles.toLocaleString('fr-FR');
@@ -13974,23 +14233,66 @@ function majVerrous() {
   });
 }
 
+// --- Navigation au clavier et à la manette : vers le bouton le plus proche dans la direction ---
 function boutonsMenuBuffs() {
-  return Array.from(buffMenuEl.querySelectorAll('.boutique-onglet-btn, .buff-option, .boutique-achat, #boutiqueDev button, #buffMenuActions button'))
-    .filter(b => b.style.display !== 'none' && (!b.closest('.boutique-onglet') || b.closest('.boutique-onglet').classList.contains('actif')));
+  return Array.from(buffMenuEl.querySelectorAll('#buffMenuFermer, #boutiqueDev button, .objet, #boutiqueFiche button, #buffMenuActions button'))
+    .filter(b => b.style.display !== 'none' && b.offsetParent !== null);
 }
 
 function majFocusManette() {
   const boutons = boutonsMenuBuffs();
+  if (!boutons.length) return;
   focusMenuManette = (focusMenuManette + boutons.length) % boutons.length;
   boutons.forEach((b, i) => b.classList.toggle('focus-manette', modeEntree === 'manette' && i === focusMenuManette));
   const b = boutons[focusMenuManette];
-  if (b && modeEntree === 'manette' && b.scrollIntoView) b.scrollIntoView({block: 'nearest'});
+  if (b && b.scrollIntoView) b.scrollIntoView({block: 'nearest'});
+  // passer sur un objet le pose sur le comptoir
+  if (b && b.classList.contains('objet') && b.dataset.cle !== objetChoisi) choisirObjet(b.dataset.cle, true);
 }
 
-// onglet : catégorie à montrer (sinon la dernière ouverte)
-function ouvrirMenuBuffs(onglet) {
+function naviguerBoutique(dx, dy) {
+  const boutons = boutonsMenuBuffs();
+  const courant = document.activeElement && boutons.includes(document.activeElement) && modeEntree !== 'manette'
+    ? boutons.indexOf(document.activeElement) : focusMenuManette;
+  const actuel = boutons[courant] || boutons[0];
+  if (!actuel) return;
+  const a = actuel.getBoundingClientRect();
+  const ax = a.left + a.width / 2, ay = a.top + a.height / 2;
+  let meilleur = boutons.indexOf(actuel), score = Infinity;
+  boutons.forEach((b, i) => {
+    if (b === actuel) return;
+    const r = b.getBoundingClientRect();
+    const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+    const avance = dx ? (bx - ax) * dx : (by - ay) * dy;
+    const ecart = dx ? Math.abs(by - ay) : Math.abs(bx - ax);
+    if (avance <= 4) return;
+    const s = dy ? avance * 3 + ecart : avance + ecart * 3; // en vertical : la rangée la plus proche d'abord
+    if (s < score) { score = s; meilleur = i; }
+  });
+  focusMenuManette = meilleur;
+  majFocusManette();
+  const b = boutonsMenuBuffs()[focusMenuManette];
+  if (b && modeEntree !== 'manette') b.focus();
+}
+
+// A à la manette : sur un objet, va sur le premier bouton utile de la fiche ; ailleurs, appuie sur le bouton
+function validerBoutonBoutique() {
+  const b = boutonsMenuBuffs()[focusMenuManette];
+  if (!b) return;
+  if (b.classList.contains('objet')) {
+    choisirObjet(b.dataset.cle, true);
+    const cible = [ficheAcheterEl, ficheBasculerEl].find(x => x.style.display !== 'none' && !x.classList.contains('max'));
+    if (cible) focusMenuManette = boutonsMenuBuffs().indexOf(cible);
+    majFocusManette();
+    return;
+  }
+  b.click();
+  majFocusManette();
+}
+
+// cle : objet à montrer en ouvrant (ex. 'theme:lave'), sinon le dernier choisi
+function ouvrirMenuBuffs(cle) {
   if (menuBuffsOuvert) return;
-  if (typeof onglet === 'string') choisirOngletBoutique(onglet);
   menuBuffsOuvert = true;
   menuAMisEnPause = false;
   boutiqueAChange = false;
@@ -14003,10 +14305,15 @@ function ouvrirMenuBuffs(onglet) {
     progression.boutiqueVue = true;
     sauverProgression();
   }
-  messageBoutique('');
-  rafraichirMenuBuffs();
+  const montre = typeof cle === 'string' && objetsBoutique[cle];
+  if (montre) objetChoisi = cle;
   buffMenuEl.classList.add('ouvert');
-  focusMenuManette = 0;
+  rafraichirMenuBuffs();
+  messageBoutique(!boutiqueModifiable() ? repliqueSifflet('lectureSeule')
+    : montre ? objetsBoutique[cle].etat().replique : repliqueSifflet('accueil'));
+  humeur('repos');
+  const objet = etageresEl.querySelector('.objet[data-cle="' + objetChoisi + '"]');
+  focusMenuManette = Math.max(0, boutonsMenuBuffs().indexOf(objet));
   majFocusManette();
 }
 
@@ -14032,7 +14339,7 @@ setInterval(() => {
 }, 250);
 document.getElementById('buffMenuFermer').addEventListener('click', fermerMenuBuffs);
 document.getElementById('buffMenuTout').addEventListener('click', () => {
-  if (!boutiqueModifiable()) return messageBoutique('Les réglages se changent entre deux parties.');
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
   buffsActifs = buffTypes.slice();
   sauverBuffsActifs();
   progression.inactifs = [];
@@ -14043,10 +14350,11 @@ document.getElementById('buffMenuTout').addEventListener('click', () => {
   rafraichirMenuBuffs();
 });
 document.getElementById('boutiqueRembourser').addEventListener('click', () => {
-  if (!boutiqueModifiable()) return messageBoutique('Les achats se font entre deux parties.');
+  if (!boutiqueModifiable()) return messageBoutique(repliqueSifflet('lectureSeule'));
   const rendu = rembourserAmeliorations();
   boutiqueAChange = true;
-  messageBoutique(rendu ? '↺ ' + texteEcailles(rendu) + ' rendues : répartis-les comme tu veux.' : 'Aucune amélioration à rembourser.');
+  messageBoutique(rendu ? '↺ ' + repliqueSifflet('rembourse', {prix: rendu.toLocaleString('fr-FR')})
+    : repliqueSifflet('rienARembourser'));
   rafraichirMenuBuffs();
 });
 // clic sur le fond sombre = fermer
@@ -14166,22 +14474,16 @@ function lireUneManette(pad, numero, now) {
   }
 
   if (menuBuffsOuvert) {
-    // navigation dans le menu : haut/bas avec répétition si maintenu, LB/RB pour changer d'onglet, A pour basculer, B/Y/Select pour fermer
-    if (dy !== 0) {
-      if (dy !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
-        focusMenuManette += dy;
-        majFocusManette();
-        repetitionMenuManette = now + (dy !== directionMenuManettePrecedente ? 400 : 150);
+    // navigation dans la boutique : croix ou stick (répétition si maintenu), A pour choisir / appuyer, B/Y/Select pour fermer
+    const direction = dx * 10 + dy;
+    if (direction !== 0) {
+      if (direction !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
+        naviguerBoutique(dx, dy);
+        repetitionMenuManette = now + (direction !== directionMenuManettePrecedente ? 400 : 150);
       }
     }
-    directionMenuManettePrecedente = dy;
-    if (vientDAppuyer(MANETTE.LB)) changerOngletBoutique(-1);
-    if (vientDAppuyer(MANETTE.RB)) changerOngletBoutique(1);
-    if (vientDAppuyer(MANETTE.A)) {
-      const bouton = boutonsMenuBuffs()[focusMenuManette];
-      if (bouton) bouton.click();
-      majFocusManette();
-    }
+    directionMenuManettePrecedente = direction;
+    if (vientDAppuyer(MANETTE.A)) validerBoutonBoutique();
     if (vientDAppuyer(MANETTE.B) || vientDAppuyer(MANETTE.Y) || vientDAppuyer(MANETTE.SELECT) || vientDAppuyer(MANETTE.START)) {
       fermerMenuBuffs();
     }
