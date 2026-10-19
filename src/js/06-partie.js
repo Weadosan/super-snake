@@ -58,6 +58,7 @@ function init() {
   bossWarningUntil = 0;
   bossSpawnPending = false;
   bossSpawnPosition = null;
+  reinitialiserAttaquesBoss(); // js/13-attaques-boss.js
   hasWon = false;
   fireworks = [];
   previousFrameTime = 0;
@@ -881,7 +882,8 @@ function updateCombat(deltaMs) {
   enemies.forEach(e => {
     if (performance.now() < (e.frozenUntil || 0)) return; // gelé : ne bouge pas
 
-    if (e.isBoss) {
+    // pendant une charge (chauve-souris, crabe), le boss fonce tout droit au lieu de poursuivre
+    if (e.isBoss && !bossEnCharge(e)) {
       const cible = teteLaPlusProche(e.x, e.y);
       if (cible) {
         const toHeadX = cible.x - e.x;
@@ -912,6 +914,9 @@ function updateCombat(deltaMs) {
       }
     }
   });
+
+  // attaque propre au skin du boss, et ce qu'il a déjà lancé (js/13-attaques-boss.js)
+  majAttaquesBoss(deltaMs);
 
   // déplacement des pommes en or et bleues (rebond sur les murs + changements de direction)
   const deplacerPommeMobile = (pomme, vitesse) => {

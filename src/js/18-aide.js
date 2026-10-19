@@ -150,7 +150,8 @@ const pagesAide = [
       }
       zone.appendChild(ligneAide('🧊', 'Ennemi gelé', 'Inoffensif : fonce dedans avec la tête pour le briser.'));
       zone.appendChild(ligneAide('👑', 'Boss : tous les ' + bossKillThreshold + ' ennemis tués',
-        'Annoncé avant d\'arriver, il te poursuit sans relâche. Il faut ' + d.pvBoss + ' tirs. Butin : ' +
+        'Annoncé avant d\'arriver, il te poursuit sans relâche. Il faut ' + d.pvBoss + ' tirs. Chaque boss a son attaque ' +
+        '(piquants, toile, rayon…) : son nom s\'affiche et un signal montre où elle frappe, juste avant. Butin : ' +
         nomPomme('or') + ', ' + nomPomme('bleue') + ' (points x2), 5 pommes et un cœur.'));
       zone.appendChild(ligneAide('🔴', 'Zone de contact', 'Seul le corps plein d\'un ennemi fait mal : pattes, tentacules ' +
         'et pinces translucides ne comptent pas. Sous le boss, le cercle rouge en pointillés montre exactement où il te touche.'));
