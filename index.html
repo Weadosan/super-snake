@@ -597,6 +597,27 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     font-weight: bold;
   }
   /* --- Boutique (js/16-menu-buffs.js) --- */
+  #boutiqueOnglets { display: flex; gap: 4px; margin: 8px 0 10px 0; }
+  .boutique-onglet-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 2px;
+    font-family: inherit;
+    font-size: 18px;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .boutique-onglet-btn span { font-size: 10px; }
+  .boutique-onglet-btn.actif { color: var(--text-color); border-color: var(--accent); background: rgba(255, 255, 255, 0.12); }
+  .boutique-onglet-btn.focus-manette { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .boutique-onglet { display: none; min-height: 300px; }
+  .boutique-onglet.actif { display: block; }
   #buffMenuPanel { max-width: 460px; }
   #boutiqueSolde {
     margin: 0 0 4px 0;
@@ -891,6 +912,43 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     #optionsJeuBtn { top: 6px; right: 98px; }
   }
   body.mode-tactile #optionsJeuBtn { display: none; }
+  /* bouton Boutique (js/16-menu-buffs.js), sous le bouton Options ; sur écran tactile, entre deux parties seulement */
+  #boutiqueJeuBtn {
+    position: absolute;
+    top: 144px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #boutiqueJeuBtn:hover { background: #ffd700; }
+  #boutiqueJeuSolde {
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    transform: translateX(-50%);
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #14141f;
+    background: #ffd700;
+    border-radius: 6px;
+  }
+  #boutiqueJeuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @media (max-width: 600px) {
+    #boutiqueJeuBtn { top: 6px; right: 144px; }
+  }
+  body.mode-tactile #boutiqueJeuBtn { position: fixed; top: 12px; right: 72px; display: none; z-index: 16; }
+  body.mode-tactile.entre-parties #boutiqueJeuBtn { display: block; }
   /* ordinateur, page épurée comme sur téléphone : les réglages sont dans le menu ☰ */
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
@@ -1536,6 +1594,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.plateau-adapte #optionsBtn,
   body.plateau-adapte #aideBtn,
   body.plateau-adapte #optionsJeuBtn,
+  body.plateau-adapte #boutiqueJeuBtn,
   body.plateau-adapte #aidePanel,
   body.plateau-adapte #succesPanel,
   body.plateau-adapte #optionsPanel,
@@ -1724,6 +1783,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button id="optionsBtn" title="Options">☰</button>
       <button id="aideBtn" title="Aide et tutoriel (H)">❓</button>
       <button id="optionsJeuBtn" title="Options : volume, plein écran, touches (O)">⚙️</button>
+      <button id="boutiqueJeuBtn" title="Boutique (B)">🛒<span id="boutiqueJeuSolde"></span></button>
     </div>
     <div id="touchControls">
       <button class="touch-btn" id="touchBoost">🚀 Boost</button>
@@ -1807,18 +1867,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <p id="boutiqueSolde"></p>
     <p class="buff-menu-aide" id="boutiqueAide"></p>
     <div id="boutiqueDev"></div>
-    <h3 class="buff-menu-sous-titre">⬆️ Améliorations</h3>
-    <div id="boutiqueAmeliorations"></div>
-    <h3 class="buff-menu-sous-titre">🔵 Buffs de la pomme bleue</h3>
-    <div id="buffMenuListe"></div>
-    <div id="buffMenuAvertissement"></div>
-    <h3 class="buff-menu-sous-titre">🐍 Capacités du serpent</h3>
-    <div id="capacitesMenuListe"></div>
-    <h3 class="buff-menu-sous-titre">🎨 Thèmes</h3>
-    <div id="boutiqueThemes"></div>
-    <h3 class="buff-menu-sous-titre">👾 Skins d'ennemis</h3>
-    <p class="buff-menu-aide">Chaque skin se débloque avec un succès.</p>
-    <div id="boutiqueSkins"></div>
+    <div id="boutiqueOnglets" role="tablist">
+      <button class="boutique-onglet-btn" data-onglet="ameliorations">⬆️<span>Améliorations</span></button>
+      <button class="boutique-onglet-btn" data-onglet="buffs">🔵<span>Buffs</span></button>
+      <button class="boutique-onglet-btn" data-onglet="capacites">🐍<span>Capacités</span></button>
+      <button class="boutique-onglet-btn" data-onglet="themes">🎨<span>Thèmes</span></button>
+      <button class="boutique-onglet-btn" data-onglet="skins">👾<span>Skins</span></button>
+    </div>
+    <div class="boutique-onglet" data-onglet="ameliorations">
+      <p class="buff-menu-aide">Bonus permanents, à plusieurs niveaux. Touche une ligne pour la couper ou la remettre.</p>
+      <div id="boutiqueAmeliorations"></div>
+    </div>
+    <div class="boutique-onglet" data-onglet="buffs">
+      <p class="buff-menu-aide">Ce que la pomme bleue peut te donner. Achète un buff, puis choisis s'il peut sortir.</p>
+      <div id="buffMenuListe"></div>
+      <div id="buffMenuAvertissement"></div>
+    </div>
+    <div class="boutique-onglet" data-onglet="capacites">
+      <p class="buff-menu-aide">Capacités du serpent, à couper pour corser la partie.</p>
+      <div id="capacitesMenuListe"></div>
+    </div>
+    <div class="boutique-onglet" data-onglet="themes">
+      <p class="buff-menu-aide">Achète un thème, puis touche-le pour jouer dedans.</p>
+      <div id="boutiqueThemes"></div>
+    </div>
+    <div class="boutique-onglet" data-onglet="skins">
+      <p class="buff-menu-aide">Chaque skin d'ennemi se débloque avec un succès.</p>
+      <div id="boutiqueSkins"></div>
+    </div>
     <div id="boutiqueMessage"></div>
     <div id="buffMenuActions">
       <button id="boutiqueRembourser">↺ Rembourser</button>
@@ -3819,7 +3895,7 @@ function applyTheme(name) {
 document.querySelectorAll('.theme-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     // thème pas encore acheté : la Boutique s'ouvre pour le montrer (js/16-menu-buffs.js)
-    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs();
+    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs('themes');
     applyTheme(btn.dataset.theme);
   });
 });
@@ -7133,7 +7209,7 @@ pauseBtn.addEventListener('click', togglePause);
 
 document.querySelectorAll('.skin-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs(); // skin gagné par un succès
+    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs('skins'); // skin gagné par un succès
     enemySkin = btn.dataset.skin;
     document.querySelectorAll('.skin-btn').forEach(b => b.classList.toggle('active', b === btn));
   });
@@ -13462,6 +13538,9 @@ document.addEventListener('keydown', (e) => {
     if (key === 'Escape' || e.code === touches.buffs) {
       e.preventDefault();
       fermerMenuBuffs();
+    } else if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      e.preventDefault();
+      changerOngletBoutique(key === 'ArrowLeft' ? -1 : 1);
     }
     return;
   }
@@ -13589,6 +13668,10 @@ let menuBuffsOuvert = false;
 let menuAMisEnPause = false; // le menu a mis la partie en pause : il la relance en se fermant
 let focusMenuManette = 0; // index du bouton sélectionné à la manette
 let boutiqueAChange = false; // un achat ou un réglage à appliquer à la partie qui attend de démarrer
+const boutiqueJeuBtn = document.getElementById('boutiqueJeuBtn'); // 🛒 à côté du plateau
+const ONGLETS_BOUTIQUE = ['ameliorations', 'buffs', 'capacites', 'themes', 'skins'];
+let ongletBoutique = 'ameliorations';
+try { if (ONGLETS_BOUTIQUE.includes(localStorage.getItem('snakeOngletBoutique'))) ongletBoutique = localStorage.getItem('snakeOngletBoutique'); } catch (e) {}
 
 // nom affiché des thèmes et skins (texte de leur bouton dans le menu ☰)
 document.querySelectorAll('.skin-btn, .theme-btn').forEach(b => { b.dataset.nom = b.textContent.trim(); });
@@ -13733,6 +13816,33 @@ function construireMenuBuffs() {
   rafraichirMenuBuffs();
 }
 
+// onglets par catégorie ; le dernier ouvert est retenu
+function choisirOngletBoutique(onglet) {
+  if (!ONGLETS_BOUTIQUE.includes(onglet)) return;
+  ongletBoutique = onglet;
+  try { localStorage.setItem('snakeOngletBoutique', onglet); } catch (e) {}
+  buffMenuEl.querySelectorAll('.boutique-onglet-btn').forEach(b => {
+    const actif = b.dataset.onglet === onglet;
+    b.classList.toggle('actif', actif);
+    b.setAttribute('aria-selected', actif ? 'true' : 'false');
+  });
+  buffMenuEl.querySelectorAll('.boutique-onglet').forEach(o => o.classList.toggle('actif', o.dataset.onglet === onglet));
+}
+
+// onglet voisin (←/→ au clavier, LB/RB à la manette)
+function changerOngletBoutique(sens) {
+  const i = ONGLETS_BOUTIQUE.indexOf(ongletBoutique);
+  choisirOngletBoutique(ONGLETS_BOUTIQUE[(i + sens + ONGLETS_BOUTIQUE.length) % ONGLETS_BOUTIQUE.length]);
+  focusMenuManette = 0;
+  majFocusManette();
+}
+
+buffMenuEl.querySelectorAll('.boutique-onglet-btn').forEach(b => {
+  b.setAttribute('role', 'tab');
+  b.addEventListener('click', () => choisirOngletBoutique(b.dataset.onglet));
+});
+choisirOngletBoutique(ongletBoutique);
+
 function basculerCapacite(cle) {
   capacitesActives[cle] = !capacitesActives[cle];
   sauverCapacites();
@@ -13844,6 +13954,8 @@ function rafraichirMenuBuffs() {
     : '⚠️ Aucun buff actif : la pomme bleue n\'apparaîtra plus';
   buffMenuBtn.textContent = '🛒 Boutique ' + texteEcailles(progression.ecailles);
   buffMenuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
+  document.getElementById('boutiqueJeuSolde').textContent = progression.ecailles.toLocaleString('fr-FR');
+  boutiqueJeuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
   majVerrous();
 }
 
@@ -13863,8 +13975,8 @@ function majVerrous() {
 }
 
 function boutonsMenuBuffs() {
-  return Array.from(buffMenuEl.querySelectorAll('.buff-option, .boutique-achat, #boutiqueDev button, #buffMenuActions button'))
-    .filter(b => b.style.display !== 'none');
+  return Array.from(buffMenuEl.querySelectorAll('.boutique-onglet-btn, .buff-option, .boutique-achat, #boutiqueDev button, #buffMenuActions button'))
+    .filter(b => b.style.display !== 'none' && (!b.closest('.boutique-onglet') || b.closest('.boutique-onglet').classList.contains('actif')));
 }
 
 function majFocusManette() {
@@ -13875,8 +13987,10 @@ function majFocusManette() {
   if (b && modeEntree === 'manette' && b.scrollIntoView) b.scrollIntoView({block: 'nearest'});
 }
 
-function ouvrirMenuBuffs() {
+// onglet : catégorie à montrer (sinon la dernière ouverte)
+function ouvrirMenuBuffs(onglet) {
   if (menuBuffsOuvert) return;
+  if (typeof onglet === 'string') choisirOngletBoutique(onglet);
   menuBuffsOuvert = true;
   menuAMisEnPause = false;
   boutiqueAChange = false;
@@ -13908,10 +14022,14 @@ function fermerMenuBuffs() {
   boutiqueAChange = false;
 }
 
-buffMenuBtn.addEventListener('click', () => {
-  buffMenuBtn.blur();
+[buffMenuBtn, boutiqueJeuBtn].forEach(b => b.addEventListener('click', () => {
+  b.blur();
   ouvrirMenuBuffs();
-});
+}));
+// le 🛒 du plateau se montre aussi sur mobile, mais seulement entre deux parties
+setInterval(() => {
+  document.body.classList.toggle('entre-parties', !!((waitingToStart || gameOver) && !countdownActive));
+}, 250);
 document.getElementById('buffMenuFermer').addEventListener('click', fermerMenuBuffs);
 document.getElementById('buffMenuTout').addEventListener('click', () => {
   if (!boutiqueModifiable()) return messageBoutique('Les réglages se changent entre deux parties.');
@@ -14048,7 +14166,7 @@ function lireUneManette(pad, numero, now) {
   }
 
   if (menuBuffsOuvert) {
-    // navigation dans le menu : haut/bas avec répétition si maintenu, A pour basculer, B/Y/Select pour fermer
+    // navigation dans le menu : haut/bas avec répétition si maintenu, LB/RB pour changer d'onglet, A pour basculer, B/Y/Select pour fermer
     if (dy !== 0) {
       if (dy !== directionMenuManettePrecedente || now >= repetitionMenuManette) {
         focusMenuManette += dy;
@@ -14057,6 +14175,8 @@ function lireUneManette(pad, numero, now) {
       }
     }
     directionMenuManettePrecedente = dy;
+    if (vientDAppuyer(MANETTE.LB)) changerOngletBoutique(-1);
+    if (vientDAppuyer(MANETTE.RB)) changerOngletBoutique(1);
     if (vientDAppuyer(MANETTE.A)) {
       const bouton = boutonsMenuBuffs()[focusMenuManette];
       if (bouton) bouton.click();
