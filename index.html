@@ -316,7 +316,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     color: #14141f;
     font-weight: bold;
   }
-  #enemySkinSelector {
+  #enemySkinSelector, #snakeSkinSelector {
     display: flex;
     gap: 6px;
     margin-bottom: 14px;
@@ -324,7 +324,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     justify-content: center;
     max-width: 420px;
   }
-  .skin-btn {
+  .skin-btn, .serpent-btn {
     padding: 6px 12px;
     font-size: 12px;
     background: transparent;
@@ -334,10 +334,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     cursor: pointer;
     transition: background 0.15s;
   }
-  .skin-btn:hover {
+  .skin-btn:hover, .serpent-btn:hover {
     background: rgba(255, 255, 255, 0.1);
   }
-  .skin-btn.active {
+  .skin-btn.active, .serpent-btn.active {
     background: var(--accent);
     color: #14141f;
     font-weight: bold;
@@ -797,7 +797,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
     50% { box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8); }
   }
-  .theme-btn.verrouille, .skin-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
+  .theme-btn.verrouille, .skin-btn.verrouille, .serpent-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
   .legend-buffs li.buff-desactive {
     text-decoration: line-through;
     opacity: 0.5;
@@ -853,6 +853,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.mode-tactile:not(.menu-tactile-ouvert) #controlBar,
   body.mode-tactile:not(.menu-tactile-ouvert) #gamepadStatus,
   body.mode-tactile:not(.menu-tactile-ouvert) #enemySkinSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #snakeSkinSelector,
   body.mode-tactile:not(.menu-tactile-ouvert) #restart,
   body.mode-tactile:not(.menu-tactile-ouvert) #message,
   body.mode-tactile:not(.menu-tactile-ouvert) #statsPanel,
@@ -1075,6 +1076,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #themeSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #enemySkinSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #snakeSkinSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #highscoreSidebar {
     display: none;
   }
@@ -1228,8 +1230,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   @media (max-width: 600px) {
     body { padding: 8px; align-items: flex-start; }
     h1 { margin: 4px 0; font-size: 24px; }
-    #themeSelector, #controlBar, #enemySkinSelector { margin-bottom: 6px; }
-    .theme-btn, .skin-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
+    #themeSelector, #controlBar, #enemySkinSelector, #snakeSkinSelector { margin-bottom: 6px; }
+    .theme-btn, .skin-btn, .serpent-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
     #score { font-size: 15px; margin-bottom: 2px; }
     #hearts { font-size: 16px; margin-bottom: 2px; }
     #segmentCounter, #killProgress, #difficulteHud { display: inline; margin: 0 4px; }
@@ -1866,6 +1868,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <button class="skin-btn" data-skin="pumpkin">🎃 Citrouille</button>
       <button class="skin-btn" data-skin="mushroom">🍄 Champignon</button>
     </div>
+
+    <h3 class="titre-categorie">🐍 Skin du serpent</h3>
+    <!-- boutons créés par js/08-skins-serpent.js -->
+    <div id="snakeSkinSelector"></div>
 
     <!-- aperçu animé du thème (map) et des ennemis choisis, visible dans le menu ☰ -->
     <div id="apercuMenu">
@@ -3010,6 +3016,19 @@ kLLLLkGGGGk.
 .kNNNNNNNk..
 .kNNNNNNNk..
 ..kkkkkkk...`,
+  arcenciel: `
+............
+...rrrrrr...
+..roooooor..
+.royyyyyyor.
+royGGGGGGyor
+royGbbbbGyor
+royGb..bGyor
+royGb..bGyor
+royGb..bGyor
+............
+............
+............`,
   dragon: `
 ...k..k.....
 ..kGk.kGk...
@@ -3452,6 +3471,9 @@ const CHIFFRES_ICONES = {
 
 // icônes tirées d'une autre : couleurs échangées ou dessin tourné d'un quart de tour (sens horaire)
 const VARIANTES_ICONES = {
+  serpent_corail: {de: 'serpent', couleurs: {G: 'r', r: 'y'}},
+  serpent_tigre: {de: 'serpent', couleurs: {G: 'o'}},
+  serpent_galaxie: {de: 'serpent', couleurs: {G: 'v', r: 'C'}},
   coeur_vide: {de: 'coeur', couleurs: {k: 'g', r: 'd', p: 'd', R: 'd'}},
   pastille_jaune: {de: 'pastille', couleurs: {G: 'y', L: 'w', D: 'Y'}},
   pastille_rouge: {de: 'pastille', couleurs: {G: 'r', L: 'p', D: 'R'}},
@@ -3486,7 +3508,8 @@ const EMOJI_ICONE = {
   '🏃': 'coureur', '💎': 'diamant', '🧵': 'bobine', '🏹': 'arc', '🔭': 'telescope', '🕊': 'colombe',
   '🏅': 'medaille', '🥇': 'medaille', '🗿': 'moai', '😋': 'miam', '🪙': 'piece', '🤾': 'rattrape',
   '🎁': 'cadeau', '🌀': 'spirale', '📼': 'cassette', '🧗': 'sommet', '🧳': 'valise', '🧭': 'boussole',
-  '🌋': 'volcan', '🤝': 'poignee', '🚧': 'travaux', '📡': 'antenne', '💠': 'losange', '💣': 'bombe', '🖥': 'ecran', '💻': 'ecran'
+  '🌋': 'volcan', '🤝': 'poignee', '🚧': 'travaux', '📡': 'antenne', '💠': 'losange', '💣': 'bombe', '🖥': 'ecran', '💻': 'ecran',
+  '🪸': 'serpent_corail', '🐯': 'serpent_tigre', '🌌': 'serpent_galaxie', '🌈': 'arcenciel'
 };
 for (let i = 0; i <= 9; i++) EMOJI_ICONE[i + '⃣'] = 'touche_' + i;
 
@@ -4496,7 +4519,7 @@ const popupLifetime = 800; // ms
 // Tout l'équilibrage est dans reglagesProgression : changer un gain ou un prix, c'est changer un nombre ici.
 // Le jeu ne lit ces valeurs que par gainPartie(), bonusProgression(cle) et contenuDebloque(type, cle).
 // Les Écailles se dépensent dans la Boutique (js/16-menu-buffs.js), entre deux parties : améliorations,
-// buffs de la pomme bleue, thèmes. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
+// buffs de la pomme bleue, thèmes, skins du serpent. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
 // Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
 // reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
 // Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
@@ -4522,17 +4545,21 @@ const reglagesProgression = {
   depart: {
     themes: ['neon', 'espace', 'ocean'],
     skins: ['urchin', 'ghost', 'pixel'],
+    serpents: ['classique'],
     buffs: ['doublepoints']
   },
   // ce que gardent les joueurs qui avaient une sauvegarde avant la Boutique (tout ce qui existait alors)
   ancienJoueur: {
     themes: ['lave'],
     skins: ['slime', 'bat'],
+    serpents: [],
     buffs: ['freeze', 'invincible', 'laser', 'autoaim', 'explode']
   },
   // prix en Écailles
   buffs: {freeze: 100, invincible: 150, laser: 150, autoaim: 150, explode: 250},
   themes: {lave: 300, aurore: 300, foret: 300, desert: 300, synthwave: 300, halloween: 300},
+  // skins du serpent du joueur (js/08-skins-serpent.js)
+  serpents: {corail: 200, tigre: 250, robot: 300, dragon: 400, galaxie: 400, arcenciel: 500, roi: 800},
   // skin d'ennemi -> succès qui le débloque ; jamais « Bestiaire » ni « Boss de chaque espèce »,
   // qui demandent d'avoir affronté tous les skins
   skinsParSucces: {
@@ -4701,9 +4728,9 @@ function rembourserAmeliorations() {
   return rendu;
 }
 
-// --- Contenu : buffs, thèmes, skins d'ennemis ---
-// type : 'buff', 'theme' ou 'skin'
-const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins'};
+// --- Contenu : buffs, thèmes, skins d'ennemis, skins du serpent ---
+// type : 'buff', 'theme', 'skin' (ennemis) ou 'serpent'
+const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins', serpent: 'serpents'};
 
 function contenuDebloque(type, cle) {
   if (modeDev) return true;
@@ -4715,12 +4742,14 @@ function contenuDebloque(type, cle) {
   }
   if (type === 'buff') return reglagesProgression.buffs[cle] === undefined;
   if (type === 'theme') return reglagesProgression.themes[cle] === undefined;
+  if (type === 'serpent') return reglagesProgression.serpents[cle] === undefined;
   return true;
 }
 
-// prix d'un buff ou d'un thème (les skins ne s'achètent pas)
+// prix d'un buff, d'un thème ou d'un skin du serpent (les skins d'ennemis ne s'achètent pas)
 function prixContenu(type, cle) {
-  const table = type === 'buff' ? reglagesProgression.buffs : type === 'theme' ? reglagesProgression.themes : {};
+  const table = type === 'buff' ? reglagesProgression.buffs : type === 'theme' ? reglagesProgression.themes
+    : type === 'serpent' ? reglagesProgression.serpents : {};
   return table[cle] !== undefined ? table[cle] : null;
 }
 
@@ -4811,6 +4840,7 @@ function migrerAncienJoueur() {
     a.themes.forEach(c => { progression.achats['theme:' + c] = 1; });
     a.skins.forEach(c => { progression.achats['skin:' + c] = 1; });
     a.buffs.forEach(c => { progression.achats['buff:' + c] = 1; });
+    a.serpents.forEach(c => { progression.achats['serpent:' + c] = 1; });
   }
   sauverProgression();
 }
@@ -5050,7 +5080,7 @@ function creerJoueurs() {
 const palettesJ2 = {};
 function paletteJoueur(j) {
   const theme = themes[currentThemeName];
-  if (j.numero === 0) return theme;
+  if (j.numero === 0) return paletteSkin(theme, currentThemeName, cleSkinJoueur(j)); // skin du serpent (js/08-skins-serpent.js)
   if (!palettesJ2[currentThemeName]) {
     palettesJ2[currentThemeName] = Object.assign({}, theme, {
       snakeBody: theme.snakeBody2,
@@ -5062,7 +5092,8 @@ function paletteJoueur(j) {
 }
 
 function couleurJoueur(j) {
-  return j.numero === 0 ? themes[currentThemeName].snakeBody : themes[currentThemeName].snakeBody2;
+  const skin = skinsSerpent[cleSkinJoueur(j)];
+  return skin.corps ? couleurPrincipaleSkin(skin) : paletteJoueur(j).snakeBody;
 }
 
 // exécute fn avec j comme joueur actif (et ses couleurs), puis revient au joueur précédent
@@ -7620,10 +7651,12 @@ function drawSnakeConnections(positions) {
 // cache des sprites de segment déjà générés (dégradé + écailles), par couleur + thème
 let bodySpriteCache = {};
 
-function getBodySprite(baseColor, withScales) {
+// motif : 'ecailles' (true pour l'ancien appel), ou un motif de skin (MOTIFS_SERPENT, js/08-skins-serpent.js)
+function getBodySprite(baseColor, motif) {
+  if (motif === true) motif = 'ecailles';
   const size = gridSize - 2;
   const echelle = echelleCaches();
-  const cacheKey = currentThemeName + '|' + baseColor + '|' + withScales + '|' + echelle;
+  const cacheKey = currentThemeName + '|' + baseColor + '|' + motif + '|' + echelle;
   if (bodySpriteCache[cacheKey]) return bodySpriteCache[cacheKey];
 
   const spriteCanvas = document.createElement('canvas');
@@ -7641,12 +7674,15 @@ function getBodySprite(baseColor, withScales) {
     size * 0.3, size * 0.3, size * 0.1,
     size / 2, size / 2, size * 0.9
   );
-  grad.addColorStop(0, lightenColor(baseColor, 0.45));
+  // reflet moins fort pour les motifs des skins, qui gardent ainsi des couleurs franches
+  grad.addColorStop(0, lightenColor(baseColor, motif === 'ecailles' ? 0.45 : 0.25));
   grad.addColorStop(1, baseColor);
   sctx.fillStyle = grad;
   sctx.fillRect(0, 0, size, size);
 
-  if (withScales) {
+  if (motif && motif !== 'ecailles' && MOTIFS_SERPENT[motif]) {
+    MOTIFS_SERPENT[motif](sctx, size, baseColor);
+  } else if (motif) {
     const scaleColor = darkenColor(baseColor, 0.4);
     const highlightColor = lightenColor(baseColor, 0.3);
     const cols = 3;
@@ -7689,8 +7725,8 @@ function getBodySprite(baseColor, withScales) {
 // dessine un segment en réutilisant le sprite pré-calculé (translate + rotate + drawImage,
 // bien moins coûteux que recréer dégradé/écailles à chaque frame pour chaque segment)
 // coin : {x, y} (-1 ou 1) = coin extérieur du virage à arrondir, ou null pour un segment droit
-function drawSnakeSegment(x, y, size, baseColor, withScales, angle, coin) {
-  const sprite = getBodySprite(baseColor, withScales);
+function drawSnakeSegment(x, y, size, baseColor, motif, angle, coin) {
+  const sprite = getBodySprite(baseColor, motif);
   const cx = x + size / 2;
   const cy = y + size / 2;
 
@@ -7749,6 +7785,439 @@ function coinVirage(prevPos, pos, nextPos) {
   return null;
 }
 
+// ============================================================
+// --- Skins du serpent du joueur (J1) ---
+// ============================================================
+// « Classique » garde les couleurs du thème. Les autres changent les couleurs du corps et de la tête, le motif
+// des segments (getBodySprite, js/08-dessin-serpent.js), un éventuel décor sur la tête et la traînée.
+// Ils s'achètent à l'échoppe de Sifflet (prix dans reglagesProgression.serpents) et se choisissent dans le
+// menu ☰ ou à la Boutique. Le choix est gardé dans snakeSkinSerpent. En coop, le J2 garde les couleurs du thème.
+//   corps : une couleur, ou une liste répétée segment après segment (defile : ms par décalage, liste qui coule)
+//   tete, lueur : couleur de la tête et du halo · motif : 'ecailles', 'lisse', 'rayures', 'etoiles', 'plaques'
+//   decor : 'cornes', 'oreilles', 'antenne', 'couronne' · yeux : 'visiere' · trainee : 'flammes', 'etoiles',
+//   'arcenciel', 'paillettes'
+const skinsSerpent = {
+  classique: {nom: 'Classique', icone: '🐍', detail: 'Les couleurs du thème, toujours assorties au décor'},
+  corail: {nom: 'Corail', icone: '🪸', detail: 'Anneaux rouges, jaunes et noirs, comme le vrai serpent corail',
+    corps: ['#e53935', '#fdd835', '#212121', '#fdd835'], tete: '#ef5350', lueur: '#ff5252', motif: 'lisse'},
+  tigre: {nom: 'Tigre', icone: '🐯', detail: 'Pelage orange rayé de noir, avec ses petites oreilles',
+    corps: '#ff9800', tete: '#ffb74d', motif: 'rayures', decor: 'oreilles'},
+  robot: {nom: 'Robot', icone: '🤖', detail: 'Plaques de métal rivetées, visière rouge et antenne qui clignote',
+    corps: '#78909c', tete: '#b0bec5', lueur: '#ff1744', motif: 'plaques', decor: 'antenne', yeux: 'visiere'},
+  dragon: {nom: 'Dragon', icone: '🐉', detail: 'Écailles vertes, deux cornes et une traînée de flammes',
+    corps: '#2e7d32', tete: '#4caf50', lueur: '#ff9800', motif: 'ecailles', decor: 'cornes', trainee: 'flammes'},
+  galaxie: {nom: 'Galaxie', icone: '🌌', detail: 'Un ciel de nuit plein d\'étoiles, qui en sème derrière lui',
+    corps: '#311b92', tete: '#5e35b1', lueur: '#b388ff', motif: 'etoiles', trainee: 'etoiles'},
+  arcenciel: {nom: 'Arc-en-ciel', icone: '🌈', detail: 'Toutes les couleurs, qui coulent de la tête à la queue',
+    corps: ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#00b0ff', '#651fff', '#d500f9'], defile: 140,
+    tete: '#ffffff', lueur: '#ffffff', motif: 'lisse', trainee: 'arcenciel'},
+  roi: {nom: 'Roi d\'or', icone: '👑', detail: 'Écailles d\'or massif, couronne et paillettes. Le plus cher',
+    corps: '#ffb300', tete: '#ffe082', lueur: '#ffd740', motif: 'ecailles', decor: 'couronne', trainee: 'paillettes'}
+};
+
+const cleStockageSkinSerpent = 'snakeSkinSerpent';
+let skinSerpent = (() => {
+  try {
+    const lu = localStorage.getItem(cleStockageSkinSerpent);
+    return skinsSerpent[lu] ? lu : 'classique';
+  } catch (e) {
+    return 'classique';
+  }
+})();
+
+let skinModele = null; // skin imposé au serpent de démonstration, même pas encore acheté (dessinerSerpentModele)
+
+// skin porté par un joueur : J1 seulement, et seulement s'il est débloqué (sauvegarde importée, ?dev...)
+function cleSkinJoueur(j) {
+  if (!j || j.numero !== 0) return 'classique';
+  if (skinModele) return skinModele;
+  return contenuDebloque('serpent', skinSerpent) ? skinSerpent : 'classique';
+}
+
+function skinActif() {
+  return skinsSerpent[cleSkinJoueur(joueurActif)];
+}
+
+function couleurPrincipaleSkin(s) {
+  return Array.isArray(s.corps) ? s.corps[0] : s.corps;
+}
+
+// couleurs du thème pour J1, avec celles de son skin (cache par thème et skin)
+const palettesSkins = {};
+function paletteSkin(theme, nomTheme, cle) {
+  const s = skinsSerpent[cle];
+  if (!s || !s.corps) return theme;
+  const k = nomTheme + '|' + cle;
+  if (!palettesSkins[k]) {
+    palettesSkins[k] = Object.assign({}, theme, {
+      snakeBody: s.lueur || couleurPrincipaleSkin(s),
+      snakeHead: s.tete
+    });
+  }
+  return palettesSkins[k];
+}
+
+// couleur du segment i (sur n) : se fonce par paliers vers la queue (5 au maximum, pour le cache des sprites)
+function couleurSegmentSerpent(i, n) {
+  const palier = Math.min(4, Math.floor((i / Math.max(1, n - 1)) * 5));
+  const s = skinActif();
+  if (!s.corps) return assombrirHex(currentTheme.snakeBody, 0.1 * palier);
+  if (!Array.isArray(s.corps)) return assombrirHex(s.corps, 0.08 * palier);
+  const decalage = s.defile ? Math.floor(performance.now() / s.defile) : 0;
+  const L = s.corps.length;
+  return assombrirHex(s.corps[(((i - decalage) % L) + L) % L], 0.05 * palier);
+}
+
+function motifSerpent() {
+  return skinActif().motif || 'ecailles';
+}
+
+// --- Motifs des segments (dessinés une fois par couleur dans le sprite du segment) ---
+// le sprite est tourné dans le sens du corps : x le long du serpent, y en travers
+// petit générateur pseudo-aléatoire, pour que le même sprite ait toujours les mêmes étoiles
+function aleaGraine(graine) {
+  let s = graine;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
+}
+
+const MOTIFS_SERPENT = {
+  // reflet le long du dos, et ombre sur les flancs (effet de tube)
+  lisse(sctx, size, base) {
+    const grad = sctx.createLinearGradient(0, 0, 0, size);
+    grad.addColorStop(0, 'rgba(0, 0, 0, 0.18)');
+    grad.addColorStop(0.35, 'rgba(255, 255, 255, 0.22)');
+    grad.addColorStop(0.55, 'rgba(255, 255, 255, 0)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+    sctx.fillStyle = grad;
+    sctx.fillRect(0, 0, size, size);
+  },
+  // deux rayures en pointe, l'une qui descend du dos, l'autre qui monte du ventre
+  rayures(sctx, size, base) {
+    sctx.fillStyle = darkenColor(base, 0.82);
+    sctx.beginPath();
+    sctx.moveTo(size * 0.12, 0);
+    sctx.quadraticCurveTo(size * 0.3, size * 0.35, size * 0.22, size * 0.72);
+    sctx.quadraticCurveTo(size * 0.4, size * 0.35, size * 0.42, 0);
+    sctx.closePath();
+    sctx.fill();
+    sctx.beginPath();
+    sctx.moveTo(size * 0.58, size);
+    sctx.quadraticCurveTo(size * 0.72, size * 0.62, size * 0.68, size * 0.28);
+    sctx.quadraticCurveTo(size * 0.86, size * 0.62, size * 0.9, size);
+    sctx.closePath();
+    sctx.fill();
+    MOTIFS_SERPENT.lisse(sctx, size, base);
+  },
+  // nébuleuse rose et petites étoiles blanches
+  etoiles(sctx, size, base) {
+    const alea = aleaGraine(parseInt(String(base).replace(/\D/g, '').slice(0, 6) || '7', 10) + 11);
+    const neb = sctx.createRadialGradient(size * 0.65, size * 0.4, 0, size * 0.65, size * 0.4, size * 0.6);
+    neb.addColorStop(0, 'rgba(236, 64, 122, 0.45)');
+    neb.addColorStop(1, 'rgba(236, 64, 122, 0)');
+    sctx.fillStyle = neb;
+    sctx.fillRect(0, 0, size, size);
+    for (let k = 0; k < 5; k++) {
+      const x = 2 + alea() * (size - 4), y = 2 + alea() * (size - 4);
+      sctx.globalAlpha = 0.6 + alea() * 0.4;
+      sctx.fillStyle = k % 2 ? '#ffffff' : '#b3e5fc';
+      sctx.beginPath();
+      sctx.arc(x, y, 0.5 + alea() * 0.8, 0, Math.PI * 2);
+      sctx.fill();
+    }
+    // une étoile à quatre branches
+    sctx.globalAlpha = 0.95;
+    etoileBranches(sctx, size * 0.3, size * 0.62, size * 0.2, '#ffffff');
+    sctx.globalAlpha = 1;
+  },
+  // plaques de métal : bord en creux, joint au milieu et rivets
+  plaques(sctx, size, base) {
+    MOTIFS_SERPENT.lisse(sctx, size, base);
+    sctx.strokeStyle = darkenColor(base, 0.45);
+    sctx.lineWidth = 1.2;
+    sctx.strokeRect(1.5, 1.5, size - 3, size - 3);
+    sctx.beginPath();
+    sctx.moveTo(size / 2, 2);
+    sctx.lineTo(size / 2, size - 2);
+    sctx.stroke();
+    sctx.fillStyle = lightenColor(base, 0.6);
+    [[4, 4], [size - 4, 4], [4, size - 4], [size - 4, size - 4]].forEach(([x, y]) => {
+      sctx.beginPath();
+      sctx.arc(x, y, 1.2, 0, Math.PI * 2);
+      sctx.fill();
+    });
+  }
+};
+
+// étoile à quatre branches fines (motif Galaxie, traînées)
+function etoileBranches(c, x, y, r, couleur) {
+  c.fillStyle = couleur;
+  c.beginPath();
+  c.moveTo(x, y - r);
+  c.quadraticCurveTo(x, y, x + r, y);
+  c.quadraticCurveTo(x, y, x, y + r);
+  c.quadraticCurveTo(x, y, x - r, y);
+  c.quadraticCurveTo(x, y, x, y - r);
+  c.fill();
+}
+
+// --- Tête : décor et visière ---
+// sens du regard (vers le haut avant le départ) et sa perpendiculaire
+function sensTete() {
+  let dx = direction.x, dy = direction.y;
+  if (dx === 0 && dy === 0) { dx = 0; dy = -1; }
+  return {dx, dy, px: -dy, py: dx};
+}
+
+function dessinerDecorTete(headPos) {
+  const s = skinActif();
+  if (!s.decor) return;
+  const cx = headPos.x * gridSize + gridSize / 2;
+  const cy = headPos.y * gridSize + gridSize / 2;
+  const {dx, dy, px, py} = sensTete();
+  const r = gridSize / 2;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  if (s.decor === 'cornes') {
+    // deux cornes courbes à l'arrière de la tête, pointées vers l'arrière et l'extérieur
+    [1, -1].forEach(c => {
+      const bx = cx - dx * r * 0.35 + px * c * r * 0.6, by = cy - dy * r * 0.35 + py * c * r * 0.6;
+      const tx = cx - dx * r * 1.25 + px * c * r * 1.15, ty = cy - dy * r * 1.25 + py * c * r * 1.15;
+      ctx.beginPath();
+      ctx.moveTo(bx + dx * 2.2, by + dy * 2.2);
+      ctx.quadraticCurveTo(bx + px * c * 4 - dx, by + py * c * 4 - dy, tx, ty);
+      ctx.quadraticCurveTo(bx - dx * 2, by - dy * 2, bx - px * c * 1.5 - dx * 1.5, by - py * c * 1.5 - dy * 1.5);
+      ctx.closePath();
+      ctx.fillStyle = '#f5e6c8';
+      ctx.fill();
+      ctx.strokeStyle = '#6d4c41';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  } else if (s.decor === 'oreilles') {
+    // petites oreilles rondes de tigre, sur les côtés à l'arrière
+    [1, -1].forEach(c => {
+      const ox = cx - dx * r * 0.3 + px * c * r * 0.85, oy = cy - dy * r * 0.3 + py * c * r * 0.85;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 3.6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff9800';
+      ctx.fill();
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(ox, oy, 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffe0b2';
+      ctx.fill();
+    });
+    // rayures sur le front
+    ctx.strokeStyle = 'rgba(26, 26, 26, 0.85)';
+    ctx.lineWidth = 1.4;
+    [-0.35, 0, 0.35].forEach(k => {
+      const fx = cx - dx * r * 0.55 + px * k * r, fy = cy - dy * r * 0.55 + py * k * r;
+      ctx.beginPath();
+      ctx.moveTo(fx - dx * 2.5, fy - dy * 2.5);
+      ctx.lineTo(fx + dx * 1.5, fy + dy * 1.5);
+      ctx.stroke();
+    });
+  } else if (s.decor === 'antenne') {
+    // antenne droite sur l'arrière de la tête, ampoule qui clignote
+    const bx = cx - dx * r * 0.5, by = cy - dy * r * 0.5;
+    const tx = bx - dx * 7 + px * 3, ty = by - dy * 7 + py * 3;
+    ctx.strokeStyle = '#455a64';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    const allume = Math.floor(performance.now() / 400) % 2 === 0;
+    ctx.beginPath();
+    ctx.arc(tx, ty, 2.4, 0, Math.PI * 2);
+    ctx.fillStyle = allume ? '#ff1744' : '#7f0000';
+    if (allume) {
+      ctx.shadowColor = '#ff1744';
+      ctx.shadowBlur = 8;
+    }
+    ctx.fill();
+  } else if (s.decor === 'couronne') {
+    // couronne toujours droite (vue de face), posée sur la tête
+    const l = r * 1.5, h = r * 0.9;
+    const x0 = cx - l / 2, y0 = cy - r * 0.45;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0, y0 - h * 0.55);
+    ctx.lineTo(x0 + l * 0.25, y0 - h * 0.25);
+    ctx.lineTo(x0 + l * 0.5, y0 - h);
+    ctx.lineTo(x0 + l * 0.75, y0 - h * 0.25);
+    ctx.lineTo(x0 + l, y0 - h * 0.55);
+    ctx.lineTo(x0 + l, y0);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, y0 - h, 0, y0);
+    grad.addColorStop(0, '#fff59d');
+    grad.addColorStop(1, '#ffa000');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = '#8d5a00';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // trois pierres
+    [[0.5, '#e53935'], [0.2, '#2979ff'], [0.8, '#2979ff']].forEach(([k, coul]) => {
+      ctx.beginPath();
+      ctx.arc(x0 + l * k, y0 - h * 0.2, 1.3, 0, Math.PI * 2);
+      ctx.fillStyle = coul;
+      ctx.fill();
+    });
+  }
+  ctx.restore();
+}
+
+// visière rouge du robot (à la place des yeux) ; un point lumineux la balaie
+function dessinerVisiere(headPos) {
+  const cx = headPos.x * gridSize + gridSize / 2;
+  const cy = headPos.y * gridSize + gridSize / 2;
+  const {dx, dy, px, py} = sensTete();
+  const now = performance.now();
+  const blesse = now < invulnerableUntil;
+  const avant = gridSize / 4;
+  const demi = gridSize * 0.36;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#1c2429';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(cx + dx * avant + px * demi, cy + dy * avant + py * demi);
+  ctx.lineTo(cx + dx * avant - px * demi, cy + dy * avant - py * demi);
+  ctx.stroke();
+  if (!blesse || Math.floor(now / 80) % 2 === 0) {
+    ctx.strokeStyle = '#ff1744';
+    ctx.shadowColor = '#ff1744';
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    const k = Math.sin(now / 260) * demi * 0.8;
+    ctx.beginPath();
+    ctx.arc(cx + dx * avant + px * k, cy + dy * avant + py * k, 1.6, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// --- Traînée : renvoie vrai si le skin dessine lui-même ce point (sinon, rond de la couleur du serpent) ---
+function dessinerPointTrainee(p, i, size) {
+  const s = skinActif();
+  if (!s.trainee || size <= 0.5) return false;
+  const now = performance.now();
+  if (s.trainee === 'flammes') {
+    const flamme = ['#ffeb3b', '#ff9800', '#ff5722'][(i + Math.floor(now / 90)) % 3];
+    const monte = (1 - p.alpha * 2) * 6; // la flamme s'élève en s'éteignant
+    ctx.globalAlpha = Math.max(0, p.alpha) * 1.2;
+    ctx.fillStyle = flamme;
+    ctx.beginPath();
+    ctx.arc(p.x + Math.sin(now / 70 + i) * 1.5, p.y - monte, size / 2 * (0.8 + 0.3 * Math.sin(now / 50 + i * 2)), 0, Math.PI * 2);
+    ctx.fill();
+  } else if (s.trainee === 'etoiles') {
+    if (i % 2) return true;
+    ctx.globalAlpha = Math.max(0, p.alpha) * 1.6;
+    etoileBranches(ctx, p.x, p.y, 2 + size * 0.35 * (0.7 + 0.3 * Math.sin(now / 120 + i)), i % 4 ? '#ffffff' : '#b388ff');
+  } else if (s.trainee === 'arcenciel') {
+    ctx.globalAlpha = Math.max(0, p.alpha) * 1.1;
+    ctx.fillStyle = 'hsl(' + Math.round((i * 28 + now / 8) % 360) + ', 100%, 60%)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (s.trainee === 'paillettes') {
+    ctx.globalAlpha = Math.max(0, p.alpha) * 0.9;
+    ctx.fillStyle = '#ffd740';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, size / 3, 0, Math.PI * 2);
+    ctx.fill();
+    if (i % 3 === 0) {
+      ctx.globalAlpha = Math.max(0, p.alpha) * 1.8;
+      etoileBranches(ctx, p.x + Math.sin(i) * 4, p.y + Math.cos(i) * 4, 3.5, '#fffde7');
+    }
+  } else {
+    return false;
+  }
+  return true;
+}
+
+// --- Choix du skin ---
+function choisirSkinSerpent(cle) {
+  if (!skinsSerpent[cle] || !contenuDebloque('serpent', cle)) return false;
+  skinSerpent = cle;
+  try {
+    localStorage.setItem(cleStockageSkinSerpent, cle);
+  } catch (e) {
+    // stockage indisponible : le choix vaut pour cette session
+  }
+  majBoutonsSkinSerpent();
+  if (typeof majLegendeApercu === 'function') majLegendeApercu();
+  return true;
+}
+
+// boutons du menu ☰ (créés ici à partir de skinsSerpent)
+const selecteurSkinSerpent = document.getElementById('snakeSkinSelector');
+Object.keys(skinsSerpent).forEach(cle => {
+  const s = skinsSerpent[cle];
+  const b = document.createElement('button');
+  b.className = 'serpent-btn';
+  b.dataset.serpent = cle;
+  b.dataset.nom = s.nom;
+  b.textContent = s.icone + ' ' + s.nom;
+  b.addEventListener('click', () => {
+    // skin pas encore acheté : la Boutique s'ouvre pour le montrer (js/16-menu-buffs.js)
+    if (!contenuDebloque('serpent', cle)) return ouvrirMenuBuffs('serpent:' + cle);
+    choisirSkinSerpent(cle);
+  });
+  selecteurSkinSerpent.appendChild(b);
+});
+
+function majBoutonsSkinSerpent() {
+  const actuel = cleSkinJoueur(joueurs[0] || {numero: 0});
+  document.querySelectorAll('.serpent-btn').forEach(b => {
+    const cle = b.dataset.serpent;
+    const ok = contenuDebloque('serpent', cle);
+    b.classList.toggle('active', cle === actuel);
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok ? '' : 'À acheter dans la Boutique (' + prixContenu('serpent', cle) + ' Écailles)';
+  });
+}
+
+// --- Serpent de démonstration (aperçu du menu ☰, icônes de la Boutique, captures) ---
+// un faux joueur J1 aux cases données, dessiné par le vrai code du jeu avec le skin cle
+function joueurModele(cases, dir) {
+  const j = nouveauJoueur(0);
+  j.snake = cases.map(c => ({...c}));
+  j.prevSnake = cases.map(c => ({...c}));
+  j.direction = {...dir};
+  j.nextDirection = {...dir};
+  j.prochainClignement = Infinity; // pas de clignement
+  return j;
+}
+
+function dessinerSerpentModele(j, t, cle, themeEnPlus) {
+  const avantJoueur = joueurActif, avantTheme = currentTheme, avantPomme = food;
+  joueurActif = j;
+  skinModele = cle;
+  // le serpent regarde devant lui (et la pomme n'existe pas encore au chargement de la page)
+  food = {x: j.snake[0].x + j.direction.x * 4, y: j.snake[0].y + j.direction.y * 4};
+  currentTheme = Object.assign({}, paletteJoueur(j), themeEnPlus || {});
+  try {
+    dessinerSerpent(t);
+  } finally {
+    joueurActif = avantJoueur;
+    currentTheme = avantTheme;
+    food = avantPomme;
+    skinModele = null;
+  }
+}
 // t : avancement entre deux déplacements (0 à 1), un nombre commun à tous les serpents
 // ou une fonction (joueur) => nombre, chaque serpent ayant son propre rythme
 function draw(t) {
@@ -7927,12 +8396,9 @@ function dessinerSerpent(t) {
   const flashVisible = !isInvulnerable || Math.floor(performance.now() / 100) % 2 === 0;
   ctx.globalAlpha = flashVisible ? 1 : 0.3;
 
-  // corps en dégradé : la couleur fonce par paliers vers la queue (5 sprites en cache au maximum)
-  const nbPaliers = 5;
-  const couleurPalier = i => assombrirHex(
-    currentTheme.snakeBody,
-    0.1 * Math.min(nbPaliers - 1, Math.floor((i / Math.max(1, positions.length - 1)) * nbPaliers))
-  );
+  // corps en dégradé : la couleur fonce par paliers vers la queue, ou suit le skin (js/08-skins-serpent.js)
+  const couleurPalier = i => couleurSegmentSerpent(i, positions.length);
+  const motif = motifSerpent();
 
   positions.forEach((pos, i) => {
     if (i === 0) return;
@@ -7959,7 +8425,7 @@ function dessinerSerpent(t) {
         pos.y * gridSize + 1,
         gridSize - 2,
         couleurPalier(i),
-        true,
+        motif,
         coin && coin !== 'rond' ? 0 : localAngle,
         coin
       );
@@ -7975,7 +8441,9 @@ function dessinerSerpent(t) {
   drawSnakeHead(headPos, gridSize, currentTheme.snakeHead);
   ctx.shadowBlur = 0;
 
-  drawEyes(headPos);
+  if (skinActif().yeux === 'visiere') dessinerVisiere(headPos);
+  else drawEyes(headPos);
+  dessinerDecorTete(headPos); // cornes, oreilles, antenne ou couronne du skin (js/08-skins-serpent.js)
   drawTongue(headPos);
   ctx.globalAlpha = 1;
   dessinerBlessures(positions); // bien visibles même quand le serpent clignote
@@ -10642,6 +11110,7 @@ function drawTrail() {
   trailPoints.forEach((p, i) => {
     const size = (gridSize - 4) * (i / trailPoints.length) * 0.8;
     ctx.globalAlpha = p.alpha * 0.5;
+    if (dessinerPointTrainee(p, i, size)) return; // traînée propre au skin (js/08-skins-serpent.js)
     ctx.fillStyle = currentTheme.snakeBody;
     ctx.beginPath();
     ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
@@ -14042,7 +14511,12 @@ function pixelsSkinIB(skin) {
     isPaused = pauseJeu;
     currentTheme = themeJeu;
   }
-  // réduction : chaque case de 4 x 4 prend la couleur moyenne de ses pixels opaques (s'il y en a au moins 4)
+  return reduireIB(grand);
+}
+
+// réduction d'un dessin 96 x 96 : chaque case de 4 x 4 prend la couleur moyenne de ses pixels opaques
+// (s'il y en a au moins 4), puis détourage comme les autres icônes
+function reduireIB(grand) {
   const N = TAILLE_IB;
   const d = grand.getContext('2d').getImageData(0, 0, 96, 96).data;
   const formes = [];
@@ -14057,6 +14531,25 @@ function pixelsSkinIB(skin) {
     formes.push(ibX(x, y, ['#'], hex, {plat: 1}));
   }
   return rasteriserIB(formes);
+}
+
+// --- Skins du serpent : un petit serpent en U dessiné par le jeu (tête en haut à droite), réduit en 24 x 24 ---
+function pixelsSerpentIB(cle) {
+  const grand = document.createElement('canvas');
+  grand.width = grand.height = 96;
+  const cases = [{x: 2, y: 1}, {x: 2, y: 2}, {x: 1, y: 2}, {x: 0, y: 2}, {x: 0, y: 1}, {x: 0, y: 0}];
+  const ctxJeu = ctx;
+  ctx = grand.getContext('2d');
+  try {
+    ctx.translate(5, 5);
+    ctx.scale(1.45, 1.45); // 3 cases de côté sur 96 pixels
+    dessinerSerpentModele(joueurModele(cases, {x: 0, y: -1}), 1, cle, {glow: false});
+  } catch (err) {
+    return null;
+  } finally {
+    ctx = ctxJeu;
+  }
+  return reduireIB(grand);
 }
 
 const cacheIconesBoutique = {};
@@ -14074,6 +14567,8 @@ function urlIconeBoutique(cle) {
       .concat(t.formes.map(f => Object.assign({plat: 1, sc: 1}, f, {dansCadre: true}))), k);
   } else if (categorie === 'skin') {
     pixels = pixelsSkinIB(nom);
+  } else if (categorie === 'serpent') {
+    pixels = pixelsSerpentIB(nom);
   }
   cacheIconesBoutique[cle] = pixels ? canvasDepuisIB(pixels).toDataURL() : null;
   return cacheIconesBoutique[cle];
@@ -14136,6 +14631,9 @@ const REPLIQUES_SIFFLET = {
     'Change de décor, ça repose les yeux.'],
   skinVerrouille: ['Celui-là ne se vend pas. Réussis « {succes} » et il est à toi.',
     'Pas à vendre ! Il faut le mériter : « {succes} ».', 'Même pour mille Écailles, non. Seul « {succes} » le débloque.'],
+  serpent: ['« {nom} » ? Il te va comme une seconde peau. Sss.', 'Très chic. Je portais le même dans ma jeunesse.',
+    'Avec « {nom} », tous les serpents vont te regarder.', 'Une mue de luxe, garantie sans démangeaisons.',
+    'Ah, « {nom} » ! Tu as l\'œil, l\'ami.'],
   skin: ['Ces ennemis-là ? Ils sont tout à fait effrayants.', 'Bon choix d\'ennemis, sss.',
     'Ceux-là piquent un peu. Enfin, beaucoup.', 'Des ennemis bien élevés. Ils mordent quand même.'],
   capacite: ['Coupe-la si tu veux corser la partie. Moi je dis ça…', 'C\'est gratuit, mais tu peux la laisser au vestiaire.',
@@ -14161,6 +14659,7 @@ const REPLIQUES_SIFFLET = {
     'Avarice te fait gagner plus à chaque partie. Je dis ça…', 'Ce chapeau ? Un cadeau d\'un ancien client. Il est parti en Difficile.',
     'Plus ton serpent est long, plus tu gagnes. Logique, non ?', 'J\'ai connu un serpent qui n\'achetait rien. Il a perdu.',
     'Psst… les succès débloquent des skins que je ne vends pas.', 'Il fait bon dans ma boutique, hein ?',
+    'Un serpent bien habillé mord deux fois mieux. Regarde mes skins.',
     'Prends ton temps. Je compte mes Écailles en attendant.', 'Le Cœur de réserve, c\'est la sécurité. Ma mère en avait trois.',
     'Sss… sss… pardon, c\'est mon accent.', 'Tu hésites ? Moi aussi, j\'hésite toujours entre tout et tout.']
 };
@@ -14182,6 +14681,14 @@ const REPLIQUES_OBJETS = {
   'buff:doublepoints': ['Points doublés : le buff des gourmands.'],
   'capacite:sprint': ['Le sprint ! Pour fuir… ou pour foncer.'],
   'capacite:bouclier': ['Le bouclier, ton meilleur ami. Après moi.'],
+  'serpent:corail': ['Le corail : rouge, jaune, noir. Les ennemis savent ce que ça veut dire.'],
+  'serpent:tigre': ['Un serpent tigre. Grrr… enfin, sss.'],
+  'serpent:robot': ['Bip bip. Celui-là ne mue jamais, il change ses boulons.'],
+  'serpent:dragon': ['Un vrai dragon ! Ne crache pas tes flammes dans ma boutique.'],
+  'serpent:galaxie': ['Il a avalé le ciel de nuit. Les étoiles, c\'est cadeau.'],
+  'serpent:arcenciel': ['Toutes les couleurs à la fois. Tu ne passeras pas inaperçu.'],
+  'serpent:roi': ['L\'or le plus fin du plateau. Même ma couronne est jalouse.'],
+  'serpent:classique': ['Le look de toujours. Les classiques ne se démodent pas.'],
   'theme:lave': ['La Lave… il fait chaud là-bas. Prends de l\'eau.'],
   'theme:ocean': ['L\'Océan. Je n\'y vais jamais, je nage mal.'],
   'theme:espace': ['L\'Espace ! Là-haut, personne ne t\'entend siffler.'],
@@ -14325,6 +14832,7 @@ const CATEGORIES_BOUTIQUE = [
   {cle: 'buffs', nom: 'Buffs de la pomme bleue'},
   {cle: 'capacites', nom: 'Capacités'},
   {cle: 'themes', nom: 'Thèmes'},
+  {cle: 'serpents', nom: 'Skins du serpent'},
   {cle: 'skins', nom: 'Skins d\'ennemis'}
 ];
 const ICONES_THEMES = {neon: '💡', espace: '🔭', lave: '🌋', ocean: '🐢', aurore: '❄️', foret: '🌱', desert: '🧭', synthwave: '📼', halloween: '🎃'};
@@ -14411,6 +14919,22 @@ function definirObjets() {
         acheter: () => acheterContenu('theme', theme), quoi: 'thème ' + nom,
         basculer: debloque && !actuel ? () => applyTheme(theme) : null, texteBasculer: 'Jouer avec',
         replique: debloque ? repliqueSifflet('theme', {nom}) : repliqueSifflet('contenu', {nom, prix})};
+    }};
+  });
+
+  Object.keys(skinsSerpent).forEach(cle => {
+    const s = skinsSerpent[cle];
+    objetsBoutique['serpent:' + cle] = {categorie: 'serpents', icone: s.icone, nom: s.nom, etat: () => {
+      const debloque = contenuDebloque('serpent', cle);
+      const prix = debloque ? null : prixContenu('serpent', cle);
+      const actuel = cle === cleSkinJoueur({numero: 0});
+      return {verrouille: !debloque, actif: actuel, prix,
+        detail: [s.detail, !debloque ? 'Un look pour ton serpent, à acheter' : actuel ? 'C\'est le look de ton serpent'
+          : 'Un look à toi'],
+        // acheté : le serpent le porte tout de suite
+        acheter: () => acheterContenu('serpent', cle) && (choisirSkinSerpent(cle) || true), quoi: 'skin ' + s.nom,
+        basculer: debloque && !actuel ? () => choisirSkinSerpent(cle) : null, texteBasculer: 'Jouer avec',
+        replique: debloque ? repliqueSifflet('serpent', {nom: s.nom}) : repliqueSifflet('contenu', {nom: s.nom, prix})};
     }};
   });
 
@@ -14547,7 +15071,7 @@ ficheBasculerEl.addEventListener('click', () => {
   if (e.basculer) e.basculer();
   rafraichirMenuBuffs();
   // buffs, améliorations, capacités : Sifflet commente ce qui part ou reste
-  if (e.basculer && o.categorie !== 'themes' && o.categorie !== 'skins') {
+  if (e.basculer && o.categorie !== 'themes' && o.categorie !== 'skins' && o.categorie !== 'serpents') {
     messageBoutique(repliqueSifflet(o.etat().actif ? 'emporter' : 'laisser', {nom: o.nom}));
   }
 });
@@ -14595,7 +15119,7 @@ function rafraichirMenuBuffs() {
   etageresEl.querySelectorAll('.objet').forEach(btn => {
     const o = objetsBoutique[btn.dataset.cle];
     const e = o.etat();
-    const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+    const aChoisir = ['themes', 'serpents', 'skins'].includes(o.categorie);
     btn.classList.toggle('verrouille', !!e.verrouille);
     btn.classList.toggle('cadenas', !!e.verrouille && !e.max); // pas encore à toi (une amélioration au niveau 0 n'a pas de cadenas)
     btn.classList.toggle('actif', !e.verrouille && !!e.actif);
@@ -14623,7 +15147,7 @@ function rafraichirMenuBuffs() {
   // comptoir : la fiche de l'objet choisi
   const o = objetsBoutique[objetChoisi];
   const e = o.etat();
-  const aChoisir = o.categorie === 'themes' || o.categorie === 'skins';
+  const aChoisir = ['themes', 'serpents', 'skins'].includes(o.categorie);
   document.getElementById('ficheIcone').innerHTML = htmlIconeBoutique(objetChoisi, o.icone);
   document.getElementById('ficheNom').textContent = o.nom;
   const niveauEl = document.getElementById('ficheNiveau');
@@ -14668,6 +15192,7 @@ function rafraichirMenuBuffs() {
 
 // menu ☰ : thèmes et skins verrouillés grisés, avec ce qu'il faut faire en bulle d'aide
 function majVerrous() {
+  majBoutonsSkinSerpent();
   document.querySelectorAll('.theme-btn').forEach(b => {
     const ok = contenuDebloque('theme', b.dataset.theme);
     b.classList.toggle('verrouille', !ok);
@@ -15398,8 +15923,8 @@ function manetteDansAide(dx, dy, vientDAppuyer) {
 // ============================================================
 // --- Aperçu du thème (map) et des ennemis dans le menu ☰ ---
 // ============================================================
-// Petit canvas animé : le décor du thème choisi, ses pommes et quelques ennemis du skin choisi
-// (dont un boss). Il réutilise les fonctions de dessin du jeu en leur prêtant un instant son contexte.
+// Petit canvas animé : le décor du thème choisi, ses pommes, le serpent avec son skin et quelques ennemis
+// du skin choisi (dont un boss). Il réutilise les fonctions de dessin du jeu en leur prêtant un instant son contexte.
 const apercuCanvas = document.getElementById('apercuCarte');
 const apercuCtx = apercuCanvas.getContext('2d');
 const zoomApercu = 1.5; // on regarde le centre de la carte, un peu grossi
@@ -15424,11 +15949,45 @@ const ennemisApercu = [
   phase: i * 1.7
 }));
 
+// serpent de démonstration : il fait le tour des pommes, une case toutes les pasSerpentApercu ms
+const boucleSerpentApercu = [];
+for (let x = 7; x <= 12; x++) boucleSerpentApercu.push({x, y: 8});
+for (let y = 9; y <= 12; y++) boucleSerpentApercu.push({x: 12, y});
+for (let x = 11; x >= 7; x--) boucleSerpentApercu.push({x, y: 12});
+for (let y = 11; y >= 9; y--) boucleSerpentApercu.push({x: 7, y});
+const longueurSerpentApercu = 7;
+const pasSerpentApercu = 170;
+let serpentApercu = null;
+
+function dessinerSerpentApercu(now) {
+  const n = boucleSerpentApercu.length;
+  const pas = Math.floor(now / pasSerpentApercu);
+  const casesAuPas = k => Array.from({length: longueurSerpentApercu}, (_, i) => boucleSerpentApercu[(((k - i) % n) + n) % n]);
+  const cases = casesAuPas(pas);
+  const dir = {x: cases[0].x - cases[1].x, y: cases[0].y - cases[1].y};
+  if (!serpentApercu) serpentApercu = joueurModele(cases, dir);
+  serpentApercu.snake = cases;
+  serpentApercu.prevSnake = casesAuPas(pas - 1);
+  serpentApercu.direction = dir;
+  // la traînée ne se dessine que pendant une partie : on fait comme si
+  const attente = waitingToStart, decompte = countdownActive, fini = gameOver;
+  waitingToStart = countdownActive = gameOver = false;
+  try {
+    dessinerSerpentModele(serpentApercu, (now % pasSerpentApercu) / pasSerpentApercu, cleSkinJoueur({numero: 0}));
+  } finally {
+    waitingToStart = attente;
+    countdownActive = decompte;
+    gameOver = fini;
+  }
+}
+
 function majLegendeApercu() {
   const theme = document.querySelector('.theme-btn.active');
   const skin = document.querySelector('.skin-btn.active');
+  const serpent = skinsSerpent[cleSkinJoueur({numero: 0})];
   document.getElementById('apercuLegende').textContent =
-    'Aperçu : ' + (theme ? theme.textContent.trim() : '') + ' · ' + (skin ? skin.textContent.trim() : '');
+    'Aperçu : ' + (theme ? theme.textContent.trim() : '') + ' · ' + (skin ? skin.textContent.trim() : '') +
+    ' · ' + serpent.icone + ' ' + serpent.nom;
 }
 
 function dessinerApercu() {
@@ -15467,6 +16026,7 @@ function dessinerApercu() {
         fillRadialCircle(x, 200, 8, type === 'or' ? '#ffd700' : type === 'bleue' ? '#2979ff' : currentTheme.food, false);
       }
     });
+    dessinerSerpentApercu(now);
     drawEnemies();
     ctx.restore();
   } finally {
