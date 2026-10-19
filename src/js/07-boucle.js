@@ -279,7 +279,7 @@ function renderLoop(now) {
       if (j.elimine) return;
       avecJoueur(j, () => {
         let elapsed = now - lastTickTime;
-        const effectiveTickInterval = tickInterval / timeScale;
+        const effectiveTickInterval = tickInterval * facteurEnglue(j) / timeScale; // toile de l'Araignée : plus lent
 
         // on rattrape autant de ticks logiques que nécessaire, puis on recalcule
         // l'écart restant à chaque fois pour que l'interpolation reparte bien de 0
@@ -295,7 +295,7 @@ function renderLoop(now) {
   // t va de 0 à 1 entre deux ticks logiques, pour interpoler le dessin (propre à chaque serpent)
   const currentTimeScale = now < slowMotionUntil ? slowMotionFactor : 1;
   const fige = gameOver || countdownActive || waitingToStart;
-  draw(j => fige ? 1 : (now - j.lastTickTime) / (j.tickInterval / currentTimeScale));
+  draw(j => fige ? 1 : (now - j.lastTickTime) / (j.tickInterval * facteurEnglue(j) / currentTimeScale));
 
   drawSlowMotionOverlay();
   drawEndgameTransitionMessage();

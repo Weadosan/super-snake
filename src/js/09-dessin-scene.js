@@ -33,6 +33,7 @@ function draw(t) {
   drawSpawnWarning();
   drawBossSpawnWarning();
   drawBossWarning();
+  dessinerSolAttaquesBoss();
   drawEnemies();
   dessinerMarquesImpact();
   drawHeartPickup();
@@ -42,6 +43,7 @@ function draw(t) {
   drawShockwaves();
   drawLaserBeams();
   drawProjectiles();
+  dessinerAttaquesBoss();
   // la tourelle n'existe que s'il reste un 2e segment pour la porter
   joueursEnJeu().forEach(j => {
     if (!j.turretPixelPos || turretOpacity <= 0.01) return;
