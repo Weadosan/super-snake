@@ -287,7 +287,7 @@ function dessinerSerpent(t) {
 
   // petit anneau de recharge du bouclier autour de la tête (masqué pendant le bouclier actif,
   // déjà signalé par son propre halo bleu pulsant)
-  if (performance.now() >= shieldActiveUntil && capacitesActives.bouclier) {
+  if (performance.now() >= shieldActiveUntil && bouclierDisponible()) {
     drawShieldCooldownRing(headPos);
   }
 
@@ -602,9 +602,11 @@ function drawCountdown() {
   if (waitingToStart) {
     // titre en haut, puis le tutoriel un peu réduit dessous
     const hauteurTitre = drawTitreJeu();
-    const echelle = (hauteurPlateau - hauteurTitre) / hauteurPlateau;
+    const hauteurBandeau = dessinerBandeauMalediction(hauteurTitre); // js/18-malediction.js
+    const haut = hauteurTitre + hauteurBandeau;
+    const echelle = (hauteurPlateau - haut) / hauteurPlateau;
     ctx.save();
-    ctx.translate(largeurPlateau * (1 - echelle) / 2, hauteurTitre);
+    ctx.translate(largeurPlateau * (1 - echelle) / 2, haut);
     ctx.scale(echelle, echelle);
     drawControlsTutorial();
     ctx.restore();
@@ -731,7 +733,7 @@ function drawControlsTutorial() {
   // --- Espace : démarrer / accélérer ---
   const spaceY = padY + keySize * 2 + 4 + 30;
   drawKeyIcon(iconX - keySize - 4, spaceY, keySize * 3 + 8, 26, nomTouche(touches.boost).toUpperCase());
-  if (capacitesActives.sprint) {
+  if (sprintDisponible()) {
     ctx.fillText('Démarrer, puis', labelX, spaceY + 12);
     ctx.fillText('accélère (maintenir)', labelX, spaceY + 32);
   } else {
@@ -742,7 +744,7 @@ function drawControlsTutorial() {
   // --- Shift : bouclier ---
   const shiftY = spaceY + 26 + 26;
   drawKeyIcon(iconX - keySize - 4, shiftY, keySize * 3 + 8, 26, touches.bouclier === 'ShiftLeft' ? 'SHIFT' : nomTouche(touches.bouclier).toUpperCase());
-  if (capacitesActives.bouclier) {
+  if (bouclierDisponible()) {
     ctx.fillText('Bouclier 2s', labelX, shiftY + 12);
     ctx.fillText('(recharge 15s)', labelX, shiftY + 32);
   } else {
@@ -777,15 +779,15 @@ function drawTutorielCoop() {
   const lignes = partage
     ? [
         ['🕹️ Bouger', nomTouchesDirection(false), nomTouchesDirection(true)],
-        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), nomTouche(touches.boostJ2)],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', nomTouche(touches.bouclier), nomTouche(touches.bouclierJ2)] : null,
+        [sprintDisponible() ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), nomTouche(touches.boostJ2)],
+        bouclierDisponible() ? ['🛡️ Bouclier', nomTouche(touches.bouclier), nomTouche(touches.bouclierJ2)] : null,
         ['🔫 Tirer', 'Clic gauche', nomTouche(touches.tirJ2) + ' (auto)'],
         ['⏪ Rollback', 'Clic droit', nomTouche(touches.rollbackJ2)]
       ]
     : [
         ['🕹️ Bouger', nomTouchesDirection(true), 'Stick g.'],
-        [capacitesActives.sprint ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), 'A / Croix'],
-        capacitesActives.bouclier ? ['🛡️ Bouclier', nomToucheBouclierSolo(), 'B / LB'] : null,
+        [sprintDisponible() ? '🚀 Démarrer, boost' : '🚀 Démarrer', nomTouche(touches.boost), 'A / Croix'],
+        bouclierDisponible() ? ['🛡️ Bouclier', nomToucheBouclierSolo(), 'B / LB'] : null,
         ['🎯 Viser', 'Souris', 'Stick droit'],
         ['🔫 Tirer', 'Clic gauche', 'RT / RB / X']
       ];
@@ -851,6 +853,7 @@ function drawControlsTutorialListe(mode) {
         ['🚀', 'A / Croix', 'démarrer, puis accélère (maintenir)'],
         ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'],
         ['🛒', 'Y / Triangle ou Select', 'boutique'],
+        ['💀', 'X entre deux parties', 'malédiction'],
         ['⏸️', 'Start', 'pause']
       ]
     : [
@@ -863,10 +866,10 @@ function drawControlsTutorialListe(mode) {
       ];
   // capacités désactivées dans le menu : on adapte les lignes
   lignes.forEach(l => {
-    if (l[0] === '🚀' && !capacitesActives.sprint) l[2] = 'démarrer (sprint désactivé)';
+    if (l[0] === '🚀' && !sprintDisponible()) l[2] = 'démarrer (sprint désactivé)';
   });
   for (let i = lignes.length - 1; i >= 0; i--) {
-    if (lignes[i][0] === '🛡️' && !capacitesActives.bouclier) lignes.splice(i, 1);
+    if (lignes[i][0] === '🛡️' && !bouclierDisponible()) lignes.splice(i, 1);
   }
 
   ctx.save();

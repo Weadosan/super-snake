@@ -8,6 +8,8 @@
 // buffs de la pomme bleue, thèmes, skins du serpent et de la tourelle. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
 // Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
 // reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
+// Mode Malédiction : des malus choisis avant la partie (reglagesProgression.maledictions, écran js/18-malediction.js),
+// chacun ajoute un bonus en % aux Écailles de la partie. Le jeu ne les lit que par maledictionActive(cle).
 // Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
 // boutons pour se donner des Écailles ou tout débloquer, pas de succès.
 
@@ -66,7 +68,19 @@ const reglagesProgression = {
     balles: {effet: 0.15, prix: [150, 300]}, // vitesse des tirs (+15 %)
     avarice: {effet: 0.10, prix: [100, 200, 300]} // Écailles gagnées (+10 %)
   },
-  vitesseAimant: 0.12 // px par ms : vitesse à laquelle l'aimant attire une pomme
+  vitesseAimant: 0.12, // px par ms : vitesse à laquelle l'aimant attire une pomme
+  // Mode Malédiction : malus cumulables choisis avant la partie ; bonus = % d'Écailles en plus sur le gain de la partie
+  // (les bonus s'additionnent : trois malus à +20 % donnent ×1,6, en plus du bonus de difficulté)
+  maledictions: {
+    rapides: {bonus: 0.25, vitesse: 1.35}, // ennemis et boss 35 % plus rapides
+    horde: {bonus: 0.25, intervalle: 0.6}, // un ennemi toutes les 2,2 s x 0,6
+    coriaces: {bonus: 0.20, pvBoss: 1.5}, // tous les ennemis à 2 coups, boss avec 50 % de PV en plus
+    serpentRapide: {bonus: 0.20, vitesse: 1.2}, // le serpent avance 20 % plus vite
+    sansBouclier: {bonus: 0.15},
+    sansSprint: {bonus: 0.10},
+    sansBuffs: {bonus: 0.15}, // plus aucune pomme bleue
+    unCoeur: {bonus: 0.40} // un seul cœur au départ (Cœur de réserve compris), et plus de cœur bonus
+  }
 };
 
 // textes de la Boutique ; {n} = l'effet total au niveau affiché
@@ -78,6 +92,18 @@ const textesAmeliorations = {
   aimant: {icone: '🧲', nom: 'Aimant', detail: n => 'Pommes en or et bleues attirées à ' + n + ' px de la tête'},
   balles: {icone: '🔫', nom: 'Balles rapides', detail: n => '+' + Math.round(n * 100) + ' % de vitesse des tirs'},
   avarice: {icone: '🪙', nom: 'Avarice', detail: n => '+' + Math.round(n * 100) + ' % d\'Écailles gagnées'}
+};
+
+// textes du mode Malédiction, dans l'ordre de l'écran de choix
+const textesMaledictions = {
+  rapides: {icone: '⚡', nom: 'Ennemis rapides', detail: m => 'Ennemis et boss ' + Math.round((m.vitesse - 1) * 100) + ' % plus rapides'},
+  horde: {icone: '👾', nom: 'Horde', detail: m => 'Les ennemis apparaissent ' + Math.round((1 / m.intervalle - 1) * 100) + ' % plus souvent'},
+  coriaces: {icone: '🧱', nom: 'Ennemis coriaces', detail: m => 'Tous les ennemis à 2 coups, boss ' + Math.round((m.pvBoss - 1) * 100) + ' % plus solides'},
+  serpentRapide: {icone: '🏃', nom: 'Serpent pressé', detail: m => 'Ton serpent avance ' + Math.round((m.vitesse - 1) * 100) + ' % plus vite'},
+  sansBouclier: {icone: '🛡️', nom: 'Sans bouclier', detail: () => 'Le bouclier ne marche pas'},
+  sansSprint: {icone: '🐢', nom: 'Sans sprint', detail: () => 'Pas d\'accélération'},
+  sansBuffs: {icone: '🔵', nom: 'Sans buffs', detail: () => 'Plus aucune pomme bleue'},
+  unCoeur: {icone: '🖤', nom: 'Un seul cœur', detail: () => '1 cœur au départ, plus de cœur bonus, donc pas de rollback'}
 };
 
 const modeDev = /[?&]dev(=|&|$)/.test(location.search);
@@ -96,6 +122,7 @@ function progressionVide() {
     achats: {}, // amélioration ou contenu -> niveau acheté
     inactifs: [], // améliorations coupées dans la Boutique
     succesPayes: [], // succès dont les Écailles ont déjà été données
+    maledictions: [], // malus choisis pour les prochaines parties (mode Malédiction)
     migre: false, // anciens joueurs déjà traités (ancienJoueur)
     boutiqueVue: false // la Boutique a déjà été ouverte (sinon on la signale)
   };
@@ -118,6 +145,7 @@ function lireProgression(cle) {
     ['inactifs', 'succesPayes'].forEach(c => {
       if (Array.isArray(lu[c])) p[c] = lu[c].filter(x => typeof x === 'string');
     });
+    if (Array.isArray(lu.maledictions)) p.maledictions = lu.maledictions.filter(c => reglagesProgression.maledictions[c]);
     ['migre', 'boutiqueVue'].forEach(c => { p[c] = lu[c] === true; });
     return p;
   } catch (e) {
@@ -256,6 +284,57 @@ function buffsDisponibles() {
   return buffsActifs.filter(t => contenuDebloque('buff', t));
 }
 
+// buffs que la pomme bleue peut donner dans cette partie (aucun sous la malédiction « Sans buffs »)
+function buffsEnJeu() {
+  return maledictionActive('sansBuffs') ? [] : buffsDisponibles();
+}
+
+// --- Mode Malédiction ---
+// malus de la partie en cours : copiés au lancement (init), pour qu'un changement n'agisse qu'à la partie suivante
+let maledictionsPartie = [];
+
+function maledictionActive(cle) {
+  return !enTuto() && maledictionsPartie.includes(cle);
+}
+
+function basculerMalediction(cle) {
+  if (!reglagesProgression.maledictions[cle]) return;
+  const liste = progression.maledictions;
+  progression.maledictions = liste.includes(cle) ? liste.filter(c => c !== cle) : liste.concat(cle);
+  sauverProgression();
+}
+
+// bonus d'Écailles d'une liste de malus (0,75 = +75 %)
+function bonusMaledictions(liste) {
+  const m = reglagesProgression.maledictions;
+  return Math.round(liste.reduce((s, c) => s + (m[c] ? m[c].bonus : 0), 0) * 100) / 100;
+}
+
+// réglage d'un malus actif (ex. reglageMalediction('rapides', 'vitesse', 1) : 1,35 sous la malédiction, sinon 1)
+function reglageMalediction(cle, champ, sinon) {
+  return maledictionActive(cle) ? reglagesProgression.maledictions[cle][champ] : sinon;
+}
+
+// points de vie d'un boss (+50 % sous la malédiction « Ennemis coriaces »)
+function pvBossPartie() {
+  return Math.round(reglagesDifficulte().pvBoss * reglageMalediction('coriaces', 'pvBoss', 1));
+}
+
+// bouclier et sprint : coupés dans la Boutique ou par une malédiction
+function bouclierDisponible() {
+  return capacitesActives.bouclier && !maledictionActive('sansBouclier');
+}
+
+function sprintDisponible() {
+  return capacitesActives.sprint && !maledictionActive('sansSprint');
+}
+
+// « +75 % » ; vide sans malus
+function texteBonusMaledictions(liste) {
+  const b = bonusMaledictions(liste);
+  return b > 0 ? '+' + Math.round(b * 100) + ' %' : '';
+}
+
 // --- Effets des améliorations dans la partie ---
 function dureeRechargeBouclier() {
   return shieldCooldownDuration * (1 - bonusProgression('bouclier'));
@@ -360,10 +439,11 @@ let dernierGainPartie = null; // détail du gain de la dernière partie terminé
 function progressionNouvellePartie() {
   partieProgression = {succes: 0};
   dernierGainPartie = null;
+  maledictionsPartie = enEcranInvite() ? [] : progression.maledictions.slice();
 }
 
 // calcul pur : ce que rapporte une partie, ligne par ligne
-// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte}
+// partie : {longueur, ennemis, boss, pommesOr, victoire, dureeSecondes, difficulte, maledictions (liste, facultative)}
 function gainPartie(partie) {
   const g = reglagesProgression.gains;
   const lignes = [];
@@ -376,9 +456,10 @@ function gainPartie(partie) {
   ajouter('🟡 ' + nomPomme('or') + ' × ' + partie.pommesOr, partie.pommesOr * g.pommeOr);
   if (partie.victoire) ajouter('🎉 Victoire', g.victoire);
   const base = lignes.reduce((s, l) => s + l[1], 0);
+  const bonusMalus = bonusMaledictions(partie.maledictions || []);
   const multiplicateur = (reglagesProgression.multiplicateurDifficulte[partie.difficulte] || 1) *
-    (1 + bonusProgression('avarice'));
-  return {lignes, base, multiplicateur, total: Math.round(base * multiplicateur)};
+    (1 + bonusProgression('avarice')) * (1 + bonusMalus);
+  return {lignes, base, multiplicateur, bonusMaledictions: bonusMalus, total: Math.round(base * multiplicateur)};
 }
 
 // fin de partie (perdue ou gagnée) : calcule le gain, l'ajoute et le garde pour l'écran de fin
@@ -391,7 +472,8 @@ function progressionFinPartie(victoire) {
     pommesOr: stats.goldenApplesEaten,
     victoire,
     dureeSecondes: (performance.now() - stats.startTime) / 1000,
-    difficulte
+    difficulte,
+    maledictions: maledictionsPartie
   });
   ajouterEcailles(gain.total);
   if (gain.total > 0) progression.parties++;
@@ -416,7 +498,8 @@ function recevoirEcaillesHote(n) {
 function texteGainPartie() {
   if (!dernierGainPartie) return '';
   const n = dernierGainPartie.total + partieProgression.succes;
-  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + '  (total ' + progression.ecailles + ')';
+  const malus = dernierGainPartie.bonusMaledictions > 0 ? '  💀 ' + texteBonusMaledictions(maledictionsPartie) : '';
+  return '🪙 +' + n + ' Écaille' + (n > 1 ? 's' : '') + malus + '  (total ' + progression.ecailles + ')';
 }
 
 // détail du gain sous le jeu, dans les stats de fin de partie
@@ -427,8 +510,14 @@ function majRecapEcailles() {
   const g = dernierGainPartie;
   if (!g) return;
   const lignes = g.lignes.slice();
-  if (g.base > 0 && g.multiplicateur !== 1) {
-    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, '×' + String(Math.round(g.multiplicateur * 100) / 100).replace('.', ',')]);
+  const nombre = x => '×' + String(Math.round(x * 100) / 100).replace('.', ',');
+  const multiplicateurSansMalus = g.multiplicateur / (1 + (g.bonusMaledictions || 0));
+  if (g.base > 0 && Math.abs(multiplicateurSansMalus - 1) > 0.001) {
+    lignes.push(['⭐ Bonus ' + reglagesDifficulte().nom, nombre(multiplicateurSansMalus)]);
+  }
+  if (g.base > 0 && g.bonusMaledictions > 0) {
+    const icones = maledictionsPartie.map(c => textesMaledictions[c].icone).join('');
+    lignes.push(['💀 Malédiction ' + icones, nombre(1 + g.bonusMaledictions)]);
   }
   if (partieProgression.succes > 0) lignes.push(['🏆 Succès', partieProgression.succes]);
   const h = document.createElement('h3');

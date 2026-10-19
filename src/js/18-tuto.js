@@ -279,6 +279,7 @@ function lancerTuto() {
   enemies = [];
   pendingSpawnWarning = null;
   baseTickInterval = tickIntervalDifficile / vitesseTuto;
+  majHudMalediction(); // jamais de malédiction dans le tutoriel
   joueurs[0].tickInterval = baseTickInterval;
   waitingToStart = false;
   countdownActive = true;

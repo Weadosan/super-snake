@@ -620,8 +620,8 @@ function rafraichirMenuBuffs() {
   if (typeof remplacerEmojis === 'function') remplacerEmojis(document.getElementById('boutiqueFiche'));
 
   // boutons tactiles : bouclier masqué, Boost ne sert plus qu'à démarrer
-  document.getElementById('touchBouclier').classList.toggle('capacite-off', !capacitesActives.bouclier);
-  document.getElementById('touchBoost').textContent = capacitesActives.sprint ? '🚀 Boost' : '▶️ Démarrer';
+  document.getElementById('touchBouclier').classList.toggle('capacite-off', !bouclierDisponible());
+  document.getElementById('touchBoost').textContent = sprintDisponible() ? '🚀 Boost' : '▶️ Démarrer';
   const dispo = buffsDisponibles();
   document.querySelectorAll('.legend-buffs li[data-buff]').forEach(li => {
     li.classList.toggle('buff-desactive', !dispo.includes(li.dataset.buff));

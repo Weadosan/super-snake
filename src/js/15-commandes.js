@@ -22,7 +22,8 @@ const touchesParDefaut = {
   haut: 'KeyW', bas: 'KeyS', gauche: 'KeyA', droite: 'KeyD', boost: 'Space', bouclier: 'ShiftLeft',
   hautJ2: 'ArrowUp', basJ2: 'ArrowDown', gaucheJ2: 'ArrowLeft', droiteJ2: 'ArrowRight',
   boostJ2: 'ControlRight', bouclierJ2: 'ShiftRight', tirJ2: 'Enter', rollbackJ2: 'Backspace',
-  pause: 'KeyP', buffs: 'KeyB', aide: 'KeyH', succes: 'KeyU', tuto: 'KeyT', options: 'KeyO', pleinEcran: 'KeyF'
+  pause: 'KeyP', buffs: 'KeyB', aide: 'KeyH', succes: 'KeyU', tuto: 'KeyT', options: 'KeyO', pleinEcran: 'KeyF',
+  malediction: 'KeyM'
 };
 let touches = {...touchesParDefaut};
 (function chargerTouches() {
@@ -100,7 +101,7 @@ function actionPrincipale(j = joueurs[0]) {
   }
   if (countdownActive || j.elimine) return;
   if (j !== joueurActif) return avecJoueur(j, () => actionPrincipale(j));
-  if (!capacitesActives.sprint) return; // sprint désactivé dans le menu
+  if (!sprintDisponible()) return; // sprint désactivé dans la Boutique ou par une malédiction
   if (!boosting) {
     boosting = true;
     tickInterval = baseTickInterval * boostFactor;
@@ -118,7 +119,7 @@ function arreterBoost(j = joueurs[0]) {
 function activerBouclier(j = joueurs[0]) {
   if (j !== joueurActif) return avecJoueur(j, () => activerBouclier(j));
   if (isPaused || menuBuffsOuvert || waitingToStart || countdownActive || gameOver || j.elimine) return;
-  if (!capacitesActives.bouclier) return; // bouclier désactivé dans le menu
+  if (!bouclierDisponible()) return; // bouclier désactivé dans la Boutique ou par une malédiction
   const now = performance.now();
   if (now >= shieldReadyAt) {
     shieldActiveUntil = now + shieldDuration;
@@ -227,6 +228,11 @@ document.addEventListener('keydown', (e) => {
 
   if (e.code === touches.aide) {
     ouvrirAide();
+    return;
+  }
+
+  if (e.code === touches.malediction) {
+    ouvrirMalediction();
     return;
   }
 

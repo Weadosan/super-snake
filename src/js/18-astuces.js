@@ -94,13 +94,13 @@ const astuces = [
   {
     cle: 'boss',
     cible: () => bossSpawnPending ? bossSpawnPosition : enemies.find(e => e.isBoss),
-    texte: () => 'Un boss ! Il te poursuit sans relâche : il faut ' + reglagesDifficulte().pvBoss + ' tirs pour le battre.'
+    texte: () => 'Un boss ! Il te poursuit sans relâche : il faut ' + pvBossPartie() + ' tirs pour le battre.'
   },
   {
     cle: 'blessure',
     cible: () => joueursEnJeu().some(j => j.lives < maxLives) ? centreCase(joueurActif.snake[0]) : null,
     texte: () => 'Aïe ! Un coup coûte 1 ❤️ et 1 segment.' +
-      (capacitesActives.bouclier ? ' Le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
+      (bouclierDisponible() ? ' Le bouclier (' + texteCommande(nomToucheBouclierSolo(), 'B', 'bouton 🛡️') + ') protège 2 secondes.' : '')
   },
   {
     cle: 'rollback',

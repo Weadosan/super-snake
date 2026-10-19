@@ -182,7 +182,7 @@ function sauverCapacites() {
 
 // tire un buff au hasard parmi ceux activés et débloqués dans la Boutique (null si aucun)
 function tirerBuffAleatoire() {
-  const dispo = buffsDisponibles();
+  const dispo = buffsEnJeu();
   if (!dispo.length) return null;
   return dispo[Math.floor(Math.random() * dispo.length)];
 }

@@ -63,7 +63,8 @@ function nouveauJoueur(numero) {
     direction: {x: 0, y: 0},
     nextDirection: {x: 0, y: 0},
     directionLockedThisTick: false, // un seul virage entre deux déplacements (évite le demi-tour en 2 appuis rapides)
-    lives: maxLives + bonusProgression('coeur'), // + Cœur de réserve (js/03-progression.js)
+    // + Cœur de réserve (js/03-progression.js), ou un seul sous la malédiction « Un seul cœur »
+    lives: maledictionActive('unCoeur') ? 1 : maxLives + bonusProgression('coeur'),
     pendingGrowth: 0, // nombre de prochains ticks où la queue ne doit pas être retirée (croissance différée)
     tongueUntil: 0,
     snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~6 dernières secondes

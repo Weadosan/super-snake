@@ -77,9 +77,10 @@ const pagesAide = [
             ['🕹️', 'Stick gauche ou croix', 'se déplacer'],
             ['🎯', 'Stick droit', 'viser'],
             ['🔫', 'RT / R2, RB ou X', 'tirer'],
-            ['🚀', 'A / Croix', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-            capacitesActives.bouclier ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
+            ['🚀', 'A / Croix', sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+            bouclierDisponible() ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
             ['🛒', 'Y / Triangle ou Select', 'boutique'],
+            ['💀', 'X entre deux parties', 'malédiction (plus dur, plus d\'Écailles)'],
             ['❓', 'LT / L2', 'cette aide'],
             ['⏸️', 'Start', 'pause']
           ]
@@ -88,17 +89,18 @@ const pagesAide = [
               ['👆', 'Pad ou zone 👆', 'tourner (flèche ou glissé)'],
               ['🕹️', 'Zone 🎯 : stick', 'orienter la tourelle'],
               ['🔫', 'Stick à fond (ou toucher la zone)', 'tirer'],
-              ['🚀', 'Bouton Boost', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-              capacitesActives.bouclier ? ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'] : null,
+              ['🚀', 'Bouton Boost', sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              bouclierDisponible() ? ['🛡️', 'Bouton Bouclier', 'bouclier 2s (recharge 15s)'] : null,
               ['☰', 'Bouton Menu', 'buffs, options, aide, tutoriel']
             ]
           : [
               ['⬆️', nomTouchesDirection(true) + ' ou ' + nomTouchesDirection(false), 'se déplacer'],
-              ['🚀', nomTouche(touches.boost), capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
-              capacitesActives.bouclier ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
+              ['🚀', nomTouche(touches.boost), sprintDisponible() ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
+              bouclierDisponible() ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
               ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
               ['🛒', nomTouche(touches.buffs), 'boutique'],
+              ['💀', nomTouche(touches.malediction), 'malédiction : des malus contre plus d\'Écailles'],
               ['❓', nomTouche(touches.aide), 'cette aide  •  ' + nomTouche(touches.tuto) + ' sur l\'écran de départ : tutoriel'],
               ['🏆', nomTouche(touches.succes), 'tes succès'],
               ['⚙️', nomTouche(touches.options), 'options : volume, plein écran (' + nomTouche(touches.pleinEcran) + '), touches'],
@@ -183,11 +185,11 @@ const pagesAide = [
         'Plusieurs rollbacks de suite remontent de plus en plus loin.'));
       zone.appendChild(ligneAide('🐍', 'Se mordre la queue',
         'Le bout coupé est perdu (-10 points par segment) et tu perds 1 ❤️, mais la partie continue.'));
-      if (capacitesActives.bouclier) {
+      if (bouclierDisponible()) {
         zone.appendChild(ligneAide('🛡️', 'Bouclier : 2 secondes sans dégât',
           'Les ennemis qui te touchent sont détruits. Il se recharge en 15 secondes (anneau autour de la tête).'));
       }
-      if (capacitesActives.sprint) {
+      if (sprintDisponible()) {
         zone.appendChild(ligneAide('🚀', 'Sprint', 'Le serpent va 25 % plus vite tant que tu maintiens le boost.'));
       }
       zone.appendChild(ligneAide('🔫', 'La tourelle', 'Elle est portée par le 2e segment et vise ' +
@@ -210,6 +212,11 @@ const pagesAide = [
       zone.appendChild(ligneAide('👥', 'Coop à 2', 'Score commun. Un joueur KO revient quand l\'autre ramasse un cœur. ' +
         'Option « Collision entre joueurs » dans les options.'));
       zone.appendChild(ligneAide('🌐', 'En ligne', 'Crée une partie et donne le code à ton ami : il joue le serpent J2 depuis son appareil.'));
+      const malus = progression.maledictions;
+      zone.appendChild(ligneAide('💀', 'Malédiction' + (malus.length ? ' (' + iconesMaledictions(malus) + ' +' +
+        Math.round(bonusMaledictions(malus) * 100) + ' %)' : ''), 'Avant une partie, choisis des malus (ennemis rapides, sans bouclier, ' +
+        'un seul cœur…) : chacun ajoute un bonus aux Écailles de la partie. ' +
+        texteCommande('Touche ' + nomTouche(touches.malediction), 'Bouton X', 'Bouton 💀') + ' entre deux parties.'));
       zone.appendChild(paragrapheAide('Difficulté, Solo / Coop, thèmes et skins se changent dans le menu ☰. Les meilleurs scores sont gardés par difficulté.'));
     }
   }

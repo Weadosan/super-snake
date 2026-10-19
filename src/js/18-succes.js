@@ -370,7 +370,7 @@ function majSucces(now, delta) {
   if (duree >= 15 * 60000) debloquerSucces('marathon');
   if (score >= 1000) debloquerSucces('score_1000');
   if (score >= 10000) debloquerSucces('score_10000');
-  if (capacitesActives.bouclier || capacitesActives.sprint) partieSucces.sansCapacites = false;
+  if (bouclierDisponible() || sprintDisponible()) partieSucces.sansCapacites = false;
   if (!capacitesActives.collisionJoueurs) partieSucces.collisionOk = false;
   if (joueursEnJeu().some(j => j.boosting)) {
     partieSucces.sprintMs += delta;

@@ -6,7 +6,8 @@ function init() {
   finirTutoSiActif(); // une partie relancée arrête le tutoriel (js/18-tuto.js)
   astuceEnCours = null;
   // un serpent par joueur, avec ses vies, buffs, bouclier et commandes (voir 04-joueurs.js)
-  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse; // avant creerJoueurs
+  progressionNouvellePartie(); // fixe aussi les malédictions de la partie, avant creerJoueurs
+  baseTickInterval = tickIntervalDifficile / reglagesDifficulte().vitesse / reglageMalediction('serpentRapide', 'vitesse', 1);
   creerJoueurs();
   score = 0;
   gameOver = false;
@@ -26,7 +27,7 @@ function init() {
   };
   statsPanelEl.style.display = 'none';
   succesNouvellePartie();
-  progressionNouvellePartie();
+  majHudMalediction();
   killThreshold = randomKillThreshold();
   heartPickup = null;
   lootApples = [];
@@ -136,8 +137,8 @@ function majCompteurSegments() {
 }
 
 function updateShieldDisplay() {
-  shieldStatusEl.style.display = capacitesActives.bouclier ? '' : 'none';
-  if (!capacitesActives.bouclier) return;
+  shieldStatusEl.style.display = bouclierDisponible() ? '' : 'none';
+  if (!bouclierDisponible()) return;
   const now = performance.now();
   if (enCoop()) {
     // une seule ligne pour les deux joueurs
@@ -275,7 +276,7 @@ function dropBossLoot(x, y) {
 
   // pomme bleue avec le buff x2 (s'ajoute à une éventuelle pomme bleue déjà présente)
   // si x2 est désactivé dans le menu, on prend un autre buff actif ; aucun buff actif = pas de pomme bleue
-  const bossBuff = buffsDisponibles().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
+  const bossBuff = buffsEnJeu().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
   if (bossBuff) {
     const blueSpot = pickSafeDropPosition(Math.PI * 0.25);
     const angleBlue = Math.random() * Math.PI * 2;
@@ -368,7 +369,7 @@ function awardEnemyKill(e, facon) {
       changeDirTimer: 800 + Math.random() * 1000,
       ne: performance.now() // pour le succès « Rattrapé ! »
     });
-  } else if (!blueApples.length && buffsDisponibles().length &&
+  } else if (!blueApples.length && buffsEnJeu().length &&
       Math.random() < reglagesDifficulte().chancePommeBleue + bonusProgression('pommeBleue')) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
     const angle = Math.random() * Math.PI * 2;
@@ -495,6 +496,7 @@ function announceBoss() {
 }
 
 function spawnHeartPickup() {
+  if (maledictionActive('unCoeur')) return; // malédiction : plus aucun cœur bonus
   let x, y;
   const safeDistance = 130;
   const heartPickupRadius = reglagesDifficulte().rayonCoeur; // plus gros en Facile
@@ -621,8 +623,8 @@ function spawnBoss(forcedPos) {
     speedFactor: 1,
     radius: bossRadius,
     changeDirTimer: 0,
-    hp: reglagesDifficulte().pvBoss,
-    maxHp: reglagesDifficulte().pvBoss,
+    hp: pvBossPartie(),
+    maxHp: pvBossPartie(),
     color: bossColor,
     hitFlashUntil: 0,
     isBoss: true,
@@ -687,7 +689,8 @@ function spawnEnemy(preAssignedPos) {
 
   const angle = Math.random() * Math.PI * 2;
   // chance d'obtenir un ennemi résistant (2 coups) selon la difficulté (Difficile 30%, Facile aucun)
-  const isTough = Math.random() < reglagesDifficulte().chanceResistant;
+  // (tous sous la malédiction « Ennemis coriaces »)
+  const isTough = maledictionActive('coriaces') || Math.random() < reglagesDifficulte().chanceResistant;
   const newEnemy = {
     x, y,
     vx: Math.cos(angle) * enemySpeed * speedFactor,
@@ -850,7 +853,7 @@ function updateCombat(deltaMs) {
   if (tutoActif()) {
     // rien : voir js/18-tuto.js
   } else if (!endgameNoEnemies) {
-    const timeUntilNextSpawn = enemySpawnInterval - (performance.now() - lastEnemySpawn);
+    const timeUntilNextSpawn = enemySpawnInterval * reglageMalediction('horde', 'intervalle', 1) - (performance.now() - lastEnemySpawn);
 
     if (!pendingSpawnWarning && timeUntilNextSpawn <= spawnWarningDuration) {
       pendingSpawnWarning = pickEnemySpawnPosition();
@@ -877,7 +880,8 @@ function updateCombat(deltaMs) {
 
   // déplacement aléatoire des ennemis (rebond sur les murs + changements de direction)
   // le boss, lui, poursuit directement la tête du serpent le plus proche sans relâche
-  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse;
+  const lengthSpeedMultiplier = getEnemySpeedMultiplier() * reglagesDifficulte().vitesse *
+    reglageMalediction('rapides', 'vitesse', 1);
 
   enemies.forEach(e => {
     if (performance.now() < (e.frozenUntil || 0)) return; // gelé : ne bouge pas

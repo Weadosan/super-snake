@@ -1707,3 +1707,97 @@
   }
   #optionsActions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
   #optionsFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; border: none !important; }
+
+  /* --- Mode Malédiction (js/18-malediction.js) --- */
+  #maledictionJeuBtn {
+    position: absolute;
+    top: 200px;
+    right: -52px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    border: 2px solid #ff5252;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 5;
+    opacity: 0.6;
+  }
+  #maledictionJeuBtn.actif { opacity: 1; background: rgba(120, 0, 0, 0.8); box-shadow: 0 0 8px #ff5252; }
+  #maledictionJeuBtn:hover { background: #ff5252; opacity: 1; }
+  @media (max-width: 600px) {
+    #maledictionJeuBtn { top: 6px; right: 190px; }
+  }
+  body:not(.entre-parties) #maledictionJeuBtn { display: none; }
+  body.mode-tactile #maledictionJeuBtn { position: fixed; top: 12px; right: 120px; z-index: 16; }
+  body.plateau-adapte #maledictionJeuBtn,
+  body.plateau-adapte #maledictionPanel { zoom: var(--zoom-interface, 1); }
+  #maledictionHud { color: #ff8a80; }
+  #maledictionMenu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100001;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #maledictionMenu.ouvert { display: flex; }
+  #maledictionPanel {
+    background: var(--bg-canvas);
+    border: 2px solid #ff5252;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--text-color);
+    font-family: var(--font-family);
+    box-shadow: 0 0 24px rgba(255, 23, 68, 0.35);
+  }
+  #maledictionPanel h2 { margin: 0 0 6px 0; font-size: 18px; text-align: center; color: #ff8a80; }
+  .malediction-intro { font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0; text-align: center; }
+  #maledictionListe { overflow-y: auto; min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 2px; }
+  .malediction-ligne {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .malediction-ligne:hover, .malediction-ligne:focus-visible, .malediction-ligne.focus-manette { border-color: #ff8a80; outline: none; }
+  .malediction-ligne.actif { border: 2px solid #ff5252; background: rgba(255, 23, 68, 0.18); }
+  .malediction-icone { font-size: 20px; width: 26px; text-align: center; }
+  .malediction-texte { flex: 1; display: flex; flex-direction: column; }
+  .malediction-texte b { font-size: 14px; }
+  .malediction-texte small { font-size: 11px; color: var(--text-muted); }
+  .malediction-bonus { font-weight: bold; color: #ffd700; font-size: 13px; white-space: nowrap; }
+  .malediction-ligne:not(.actif) .malediction-bonus { opacity: 0.55; }
+  #maledictionTotal { text-align: center; font-weight: bold; color: #ffd700; margin: 10px 0 0 0; font-size: 14px; }
+  #maledictionActions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  #maledictionActions button {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #maledictionFermer { background: #ff5252 !important; color: #14141f !important; font-weight: bold; border: none !important; }

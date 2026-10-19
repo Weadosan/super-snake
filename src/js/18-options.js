@@ -137,6 +137,7 @@ const actionsTouches = [
   {groupe: '📋 Menus'},
   {action: 'pause', nom: 'Pause'},
   {action: 'buffs', nom: 'Boutique'},
+  {action: 'malediction', nom: 'Malédiction'},
   {action: 'aide', nom: 'Aide'},
   {action: 'succes', nom: 'Succès'},
   {action: 'tuto', nom: 'Tutoriel'},

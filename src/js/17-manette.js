@@ -3,7 +3,7 @@
 // ============================================================
 // A/Croix : démarrer, rejouer, boost (maintenu) — B/Rond ou LB : bouclier
 // RT/R2, RB ou X/Carré : tirer — stick droit : viser — stick gauche ou croix : se déplacer
-// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel)
+// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel) — X entre deux parties : malédiction
 const MANETTE = {A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, SELECT: 8, START: 9, HAUT: 12, BAS: 13, GAUCHE: 14, DROITE: 15};
 const zoneMorteStick = 0.5; // seuil pour qu'un stick compte comme une direction
 const zoneMorteVisee = 0.3;
@@ -103,6 +103,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
 
+  if (maledictionOuverte) {
+    manetteDansMalediction(dy, vientDAppuyer);
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
+
   if (succesOuvert) {
     manetteDansSucces(dy, vientDAppuyer);
     boutonsManettePrecedents[numero] = etat;
@@ -139,6 +145,12 @@ function lireUneManette(pad, numero, now) {
     return;
   }
   if (vientDAppuyer(MANETTE.START)) togglePause();
+  // X entre deux parties (il ne tire pas encore) : malédiction
+  if ((waitingToStart || gameOver) && !countdownActive && vientDAppuyer(MANETTE.X)) {
+    ouvrirMalediction();
+    boutonsManettePrecedents[numero] = etat;
+    return;
+  }
 
   if (!isPaused) {
     if (dx !== 0 || dy !== 0) changerDirection(dx, dy, joueur);
