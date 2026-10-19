@@ -596,6 +596,65 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     color: #14141f !important;
     font-weight: bold;
   }
+  /* --- Boutique (js/16-menu-buffs.js) --- */
+  #buffMenuPanel { max-width: 460px; }
+  #boutiqueSolde {
+    margin: 0 0 4px 0;
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffd700;
+  }
+  .boutique-ligne {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    margin-bottom: 6px;
+  }
+  .boutique-ligne .buff-option { margin-bottom: 0; flex: 1; min-width: 0; }
+  .boutique-achat {
+    flex-shrink: 0;
+    min-width: 76px;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    color: #14141f;
+    background: #ffd700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .boutique-achat.trop-cher { background: rgba(255, 215, 0, 0.25); color: var(--text-color); }
+  .boutique-achat.max { background: transparent; color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.2); }
+  .boutique-achat:focus-visible, .boutique-achat.focus-manette { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .buff-option.verrouille { opacity: 0.45; border-style: dashed; }
+  .buff-option.verrouille .buff-interrupteur { visibility: hidden; }
+  #boutiqueThemes .buff-interrupteur, #boutiqueSkins .buff-interrupteur { border-radius: 50%; width: 20px; }
+  #boutiqueThemes .buff-option.actif .buff-interrupteur::after,
+  #boutiqueSkins .buff-option.actif .buff-interrupteur::after { left: 2px; }
+  #buffMenu.lecture-seule .buff-option, #buffMenu.lecture-seule .boutique-achat,
+  #buffMenu.lecture-seule #boutiqueRembourser, #buffMenu.lecture-seule #buffMenuTout { cursor: not-allowed; }
+  #boutiqueMessage { min-height: 18px; margin: 8px 0; font-size: 13px; text-align: center; color: #ffd700; }
+  #boutiqueDev { text-align: center; font-size: 12px; color: #ff9100; }
+  #boutiqueDev:empty { display: none; }
+  #boutiqueDev p { margin: 0 0 6px 0; }
+  #boutiqueDev button {
+    margin: 0 4px 8px 4px;
+    padding: 5px 10px;
+    font-family: inherit;
+    color: var(--text-color);
+    background: transparent;
+    border: 1px solid #ff9100;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #buffMenuBtn.nouveau { animation: boutiqueNouveau 1.2s ease-in-out infinite; }
+  @keyframes boutiqueNouveau {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+    50% { box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8); }
+  }
+  .theme-btn.verrouille, .skin-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
   .legend-buffs li.buff-desactive {
     text-decoration: line-through;
     opacity: 0.5;
@@ -1637,7 +1696,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <div id="controlBar">
       <button id="pauseBtn">⏸️ Pause</button>
       <button id="muteBtn">🔊 Son</button>
-      <button id="buffMenuBtn">🧪 Buffs</button>
+      <button id="buffMenuBtn">🛒 Boutique</button>
       <button id="modeBtn">👤 Solo</button>
       <button id="difficulteBtn">🟡 Normal</button>
       <button id="viseeAutoBtn">🎯 Visée auto : non</button>
@@ -1744,13 +1803,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 <div id="buffMenu" role="dialog" aria-modal="true" aria-labelledby="buffMenuTitre">
   <div id="buffMenuPanel">
-    <h2 id="buffMenuTitre">🧪 Buffs de la pomme bleue</h2>
-    <p class="buff-menu-aide">Choisis les buffs que la pomme bleue peut te donner.</p>
+    <h2 id="buffMenuTitre">🛒 Boutique</h2>
+    <p id="boutiqueSolde"></p>
+    <p class="buff-menu-aide" id="boutiqueAide"></p>
+    <div id="boutiqueDev"></div>
+    <h3 class="buff-menu-sous-titre">⬆️ Améliorations</h3>
+    <div id="boutiqueAmeliorations"></div>
+    <h3 class="buff-menu-sous-titre">🔵 Buffs de la pomme bleue</h3>
     <div id="buffMenuListe"></div>
     <div id="buffMenuAvertissement"></div>
     <h3 class="buff-menu-sous-titre">🐍 Capacités du serpent</h3>
     <div id="capacitesMenuListe"></div>
+    <h3 class="buff-menu-sous-titre">🎨 Thèmes</h3>
+    <div id="boutiqueThemes"></div>
+    <h3 class="buff-menu-sous-titre">👾 Skins d'ennemis</h3>
+    <p class="buff-menu-aide">Chaque skin se débloque avec un succès.</p>
+    <div id="boutiqueSkins"></div>
+    <div id="boutiqueMessage"></div>
     <div id="buffMenuActions">
+      <button id="boutiqueRembourser">↺ Rembourser</button>
       <button id="buffMenuTout">Tout activer</button>
       <button id="buffMenuFermer">Fermer</button>
     </div>
@@ -2503,6 +2574,45 @@ kbbbbkkbbbbk
 ......xxxxx.
 .......xxx..
 ........x...`,
+  chariot: `
+kk..........
+.k..........
+.kkkkkkkkkkk
+.kggggggggk.
+..kggggggk..
+..kggggggk..
+...kkkkkkk..
+...k........
+...kkkkkkkk.
+....kk...kk.
+....kk...kk.
+............`,
+  sablier: `
+.kkkkkkkkkk.
+..kyyyyyyk..
+..kyyyyyyk..
+...kyyyyk...
+....kyyk....
+.....kk.....
+.....kk.....
+....k..k....
+...k.yy.k...
+..k.yyyy.k..
+..kyyyyyyk..
+.kkkkkkkkkk.`,
+  aimant: `
+............
+.kkkk..kkkk.
+.kwwk..kwwk.
+.kwwk..kwwk.
+.krrk..krrk.
+.krrk..krrk.
+.krrk..krrk.
+.krrrkkrrrk.
+..krrrrrrk..
+...kkkkkk...
+............
+............`,
   exporter: `
 .....kk.....
 ....kbbk....
@@ -3179,7 +3289,7 @@ const EMOJI_ICONE = {
   '👑': 'couronne', '⏱': 'chrono', '💀': 'crane', '☠': 'crane', '🎉': 'fete', '🎆': 'feu_artifice',
   '🎨': 'palette', '🦔': 'oursin', '🦇': 'chauve_souris', '👻': 'fantome', '🪼': 'meduse', '👁': 'oeil', '🤖': 'robot', '🕷': 'araignee', '🦀': 'crabe', '🎃': 'citrouille', '🍄': 'champignon', '⚙': 'engrenage',
   '🔊': 'son', '🔇': 'muet', '📖': 'livre', '↺': 'recommencer', '📋': 'presse_papier', '📊': 'graphique',
-  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer', '📤': 'exporter', '💾': 'disquette',
+  '🔒': 'cadenas', '🔓': 'cadenas_ouvert', '💪': 'bras', '⇅': 'deux_fleches', '📥': 'importer', '📤': 'exporter', '🛒': 'chariot', '⏳': 'sablier', '🧲': 'aimant', '💾': 'disquette',
   '🐢': 'tortue', '↑': 'fleche', '⬆': 'fleche', '→': 'fleche_droite', '➡': 'fleche_droite',
   '↓': 'fleche_bas', '⬇': 'fleche_bas', '←': 'fleche_gauche', '⬅': 'fleche_gauche',
   '⌨': 'clavier', '📱': 'telephone', '✛': 'croix_pad', '🖱': 'souris', '💢': 'colere', '🧱': 'brique',
@@ -3707,7 +3817,11 @@ function applyTheme(name) {
 }
 
 document.querySelectorAll('.theme-btn').forEach(btn => {
-  btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+  btn.addEventListener('click', () => {
+    // thème pas encore acheté : la Boutique s'ouvre pour le montrer (js/16-menu-buffs.js)
+    if (!contenuDebloque('theme', btn.dataset.theme)) return ouvrirMenuBuffs();
+    applyTheme(btn.dataset.theme);
+  });
 });
 
 // le canvas n'attend pas les polices : on les charge toutes dès le départ (elles sont dans le fichier)
@@ -3883,7 +3997,7 @@ const blueAppleRadius = 9;
 // --- Buffs (déclenchés par la pomme bleue) ---
 const buffTypes = ['freeze', 'laser', 'autoaim', 'explode', 'invincible', 'doublepoints'];
 
-// --- Menu des buffs : le joueur choisit quels buffs la pomme bleue peut donner (sauvegardé) ---
+// --- Boutique : le joueur choisit quels buffs débloqués la pomme bleue peut donner (sauvegardé) ---
 const buffDescriptions = {
   freeze: {icon: '❄️', nom: 'Gel des ennemis', detail: 'Fige tous les ennemis pendant 10s'},
   laser: {icon: '⚡', nom: 'Tourelle laser', detail: 'Les tirs deviennent un laser perçant pendant 30s'},
@@ -3949,15 +4063,16 @@ function sauverCapacites() {
   }
 }
 
-// tire un buff au hasard parmi ceux activés dans le menu (null si aucun)
+// tire un buff au hasard parmi ceux activés et débloqués dans la Boutique (null si aucun)
 function tirerBuffAleatoire() {
-  if (!buffsActifs.length) return null;
-  return buffsActifs[Math.floor(Math.random() * buffsActifs.length)];
+  const dispo = buffsDisponibles();
+  if (!dispo.length) return null;
+  return dispo[Math.floor(Math.random() * dispo.length)];
 }
 // durées de base des buffs (ms), multipliées par reglagesDifficulte().dureeBuffs (x1,5 en Facile)
 const dureesBuffs = {freeze: 10000, laser: 30000, autoaim: 30000, explode: 5000, invincible: 10000, doublepoints: 30000};
 function dureeBuff(type) {
-  return dureesBuffs[type] * reglagesDifficulte().dureeBuffs;
+  return dureesBuffs[type] * reglagesDifficulte().dureeBuffs * (1 + bonusProgression('dureeBuffs'));
 }
 // remplace la durée écrite dans un texte (« 10s ») par la durée réelle du buff, ex. « 15s » en Facile
 function texteAvecDureeBuff(texte, type) {
@@ -4190,10 +4305,13 @@ const popupLifetime = 800; // ms
 // ============================================================
 // Chaque partie rapporte des Écailles (même perdue), et chaque succès en rapporte à son premier déblocage.
 // Tout l'équilibrage est dans reglagesProgression : changer un gain ou un prix, c'est changer un nombre ici.
-// Le jeu ne lit ces valeurs que par gainPartie() et bonusProgression(cle).
+// Le jeu ne lit ces valeurs que par gainPartie(), bonusProgression(cle) et contenuDebloque(type, cle).
+// Les Écailles se dépensent dans la Boutique (js/16-menu-buffs.js), entre deux parties : améliorations,
+// buffs de la pomme bleue, thèmes. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
 // Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
 // reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
-// Étape 1 : gains et sauvegarde. Boutique, Arsenal et déblocages arrivent aux étapes suivantes.
+// Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
+// boutons pour se donner des Écailles ou tout débloquer, pas de succès.
 
 const reglagesProgression = {
   gains: {
@@ -4211,36 +4329,56 @@ const reglagesProgression = {
     }
   },
   multiplicateurDifficulte: {facile: 1, normal: 1.25, difficile: 1.5},
-  // ce qu'un nouveau joueur a dès le début (utilisé à partir de l'étape 3)
+  // ce qu'un nouveau joueur a dès le début
   depart: {
     themes: ['neon', 'espace', 'ocean'],
     skins: ['urchin', 'ghost', 'pixel'],
     buffs: ['doublepoints']
   },
-  // prix en Écailles (étapes 3 et 4)
+  // ce que gardent les joueurs qui avaient une sauvegarde avant la Boutique (tout ce qui existait alors)
+  ancienJoueur: {
+    themes: ['lave'],
+    skins: ['slime', 'bat'],
+    buffs: ['freeze', 'invincible', 'laser', 'autoaim', 'explode']
+  },
+  // prix en Écailles
   buffs: {freeze: 100, invincible: 150, laser: 150, autoaim: 150, explode: 250},
   themes: {lave: 300, aurore: 300, foret: 300, desert: 300, synthwave: 300, halloween: 300},
-  // skin d'ennemi -> succès qui le débloque (étape 4) ; jamais « Bestiaire » ni « Boss de chaque espèce »,
+  // skin d'ennemi -> succès qui le débloque ; jamais « Bestiaire » ni « Boss de chaque espèce »,
   // qui demandent d'avoir affronté tous les skins
   skinsParSucces: {
     slime: 'ca_pousse', bat: 'tueur_geant', jelly: 'boa', crab: 'chasseur', pumpkin: 'increvable',
     mushroom: 'gourmand', eye: 'trophees', drone: 'gros_bras', spider: 'hardcore'
   },
-  // améliorations permanentes (étape 2) : effet par niveau, et un prix par niveau
+  // améliorations permanentes : effet par niveau, et un prix par niveau (ajouter un prix = ajouter un niveau)
   ameliorations: {
-    coeur: {effet: 1, prix: [400]},
-    dureeBuffs: {effet: 0.10, prix: [100, 200, 300]},
-    bouclier: {effet: 0.10, prix: [80, 160, 240]},
-    pommeBleue: {effet: 0.01, prix: [150, 300]},
-    aimant: {effet: 30, prix: [120, 240]},
-    cadence: {effet: 0.10, prix: [150, 300]},
-    avarice: {effet: 0.10, prix: [100, 200, 300]}
-  }
+    coeur: {effet: 1, prix: [400]}, // cœurs en plus au départ
+    dureeBuffs: {effet: 0.10, prix: [100, 200, 300]}, // durée des buffs (+10 %)
+    bouclier: {effet: 0.10, prix: [80, 160, 240]}, // recharge du bouclier (-10 %)
+    pommeBleue: {effet: 0.01, prix: [150, 300]}, // chance de pomme bleue (+1 point de %)
+    aimant: {effet: 30, prix: [120, 240]}, // rayon (px) où les pommes en or et bleues glissent vers la tête
+    balles: {effet: 0.15, prix: [150, 300]}, // vitesse des tirs (+15 %)
+    avarice: {effet: 0.10, prix: [100, 200, 300]} // Écailles gagnées (+10 %)
+  },
+  vitesseAimant: 0.12 // px par ms : vitesse à laquelle l'aimant attire une pomme
 };
 
+// textes de la Boutique ; {n} = l'effet total au niveau affiché
+const textesAmeliorations = {
+  coeur: {icone: '❤️', nom: 'Cœur de réserve', detail: n => '+' + n + ' cœur au départ'},
+  dureeBuffs: {icone: '⏳', nom: 'Buffs prolongés', detail: n => '+' + Math.round(n * 100) + ' % de durée des buffs'},
+  bouclier: {icone: '🛡️', nom: 'Bouclier rapide', detail: n => '-' + Math.round(n * 100) + ' % de recharge du bouclier'},
+  pommeBleue: {icone: '🔵', nom: 'Pomme bleue', detail: n => '+' + Math.round(n * 100) + ' % de chance qu\'un ennemi en laisse une'},
+  aimant: {icone: '🧲', nom: 'Aimant', detail: n => 'Pommes en or et bleues attirées à ' + n + ' px de la tête'},
+  balles: {icone: '🔫', nom: 'Balles rapides', detail: n => '+' + Math.round(n * 100) + ' % de vitesse des tirs'},
+  avarice: {icone: '🪙', nom: 'Avarice', detail: n => '+' + Math.round(n * 100) + ' % d\'Écailles gagnées'}
+};
+
+const modeDev = /[?&]dev(=|&|$)/.test(location.search);
+
 // --- Sauvegarde ---
-const cleStockageProgression = 'snakeProgression';
-const cleStockageProgressionPrec = 'snakeProgression_prec';
+const cleStockageProgression = modeDev ? 'snakeProgression_dev' : 'snakeProgression';
+const cleStockageProgressionPrec = cleStockageProgression + '_prec';
 const versionProgression = 1;
 
 function progressionVide() {
@@ -4250,8 +4388,10 @@ function progressionVide() {
     total: 0, // gagnées depuis le début
     parties: 0, // parties qui ont rapporté
     achats: {}, // amélioration ou contenu -> niveau acheté
-    inactifs: [], // achats coupés dans l'Arsenal
-    succesPayes: [] // succès dont les Écailles ont déjà été données
+    inactifs: [], // améliorations coupées dans la Boutique
+    succesPayes: [], // succès dont les Écailles ont déjà été données
+    migre: false, // anciens joueurs déjà traités (ancienJoueur)
+    boutiqueVue: false // la Boutique a déjà été ouverte (sinon on la signale)
   };
 }
 
@@ -4272,6 +4412,7 @@ function lireProgression(cle) {
     ['inactifs', 'succesPayes'].forEach(c => {
       if (Array.isArray(lu[c])) p[c] = lu[c].filter(x => typeof x === 'string');
     });
+    ['migre', 'boutiqueVue'].forEach(c => { p[c] = lu[c] === true; });
     return p;
   } catch (e) {
     return null;
@@ -4290,6 +4431,7 @@ function sauverProgression() {
   } catch (e) {
     // stockage indisponible : la progression vaut pour cette session seulement
   }
+  if (typeof rafraichirMenuBuffs === 'function') rafraichirMenuBuffs(); // solde du bouton 🛒 Boutique
 }
 
 // demande au navigateur de ne pas effacer les données du jeu quand il manque de place
@@ -4301,16 +4443,129 @@ function demanderStockagePersistant() {
   }
 }
 
-// --- Améliorations (lues par le jeu à partir de l'étape 2) ---
-function niveauAmelioration(cle) {
-  if (progression.inactifs.includes(cle)) return 0;
+// --- Améliorations ---
+function niveauAchete(cle) {
   return progression.achats[cle] || 0;
 }
 
-// bonus total d'une amélioration : effet par niveau x niveau acheté (0 tant que rien n'est acheté)
+function niveauAmelioration(cle) {
+  if (progression.inactifs.includes(cle)) return 0;
+  return niveauAchete(cle);
+}
+
+// bonus total d'une amélioration : effet par niveau x niveau acheté et activé
+// (0 pendant le tutoriel, pour que tout le monde l'ait dans les mêmes conditions)
 function bonusProgression(cle) {
   const a = reglagesProgression.ameliorations[cle];
-  return a ? a.effet * niveauAmelioration(cle) : 0;
+  if (!a || enTuto()) return 0;
+  return a.effet * niveauAmelioration(cle);
+}
+
+// tutoActif() sans erreur pendant le chargement de la page (le tutoriel est défini plus loin, js/18-tuto.js)
+function enTuto() {
+  try {
+    return tutoActif();
+  } catch (e) {
+    return false;
+  }
+}
+
+// prix du prochain niveau, ou null au niveau maximum
+function prixProchainNiveau(cle) {
+  const prix = reglagesProgression.ameliorations[cle].prix;
+  const n = niveauAchete(cle);
+  return n < prix.length ? prix[n] : null;
+}
+
+function depenser(prix) {
+  if (prix === null || prix === undefined || progression.ecailles < prix) return false;
+  progression.ecailles -= prix;
+  return true;
+}
+
+function acheterAmelioration(cle) {
+  if (!depenser(prixProchainNiveau(cle))) return false;
+  progression.achats[cle] = niveauAchete(cle) + 1;
+  progression.inactifs = progression.inactifs.filter(c => c !== cle);
+  sauverProgression();
+  return true;
+}
+
+function basculerAmelioration(cle) {
+  if (!niveauAchete(cle)) return;
+  if (progression.inactifs.includes(cle)) progression.inactifs = progression.inactifs.filter(c => c !== cle);
+  else progression.inactifs.push(cle);
+  sauverProgression();
+}
+
+// rend toutes les Écailles dépensées en améliorations (les buffs et thèmes achetés restent)
+function rembourserAmeliorations() {
+  let rendu = 0;
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const prix = reglagesProgression.ameliorations[cle].prix;
+    for (let i = 0; i < Math.min(niveauAchete(cle), prix.length); i++) rendu += prix[i];
+    delete progression.achats[cle];
+  });
+  progression.ecailles += rendu;
+  progression.inactifs = progression.inactifs.filter(c => !reglagesProgression.ameliorations[c]);
+  sauverProgression();
+  return rendu;
+}
+
+// --- Contenu : buffs, thèmes, skins d'ennemis ---
+// type : 'buff', 'theme' ou 'skin'
+const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins'};
+
+function contenuDebloque(type, cle) {
+  if (modeDev) return true;
+  if (reglagesProgression.depart[listesDepart[type]].includes(cle)) return true;
+  if (progression.achats[type + ':' + cle]) return true;
+  if (type === 'skin') {
+    const succes = reglagesProgression.skinsParSucces[cle];
+    return !succes || !!succesSauves.obtenus[succes];
+  }
+  if (type === 'buff') return reglagesProgression.buffs[cle] === undefined;
+  if (type === 'theme') return reglagesProgression.themes[cle] === undefined;
+  return true;
+}
+
+// prix d'un buff ou d'un thème (les skins ne s'achètent pas)
+function prixContenu(type, cle) {
+  const table = type === 'buff' ? reglagesProgression.buffs : type === 'theme' ? reglagesProgression.themes : {};
+  return table[cle] !== undefined ? table[cle] : null;
+}
+
+function acheterContenu(type, cle) {
+  if (contenuDebloque(type, cle) || !depenser(prixContenu(type, cle))) return false;
+  progression.achats[type + ':' + cle] = 1;
+  sauverProgression();
+  return true;
+}
+
+// buffs que la pomme bleue peut donner : activés dans la Boutique et débloqués
+function buffsDisponibles() {
+  return buffsActifs.filter(t => contenuDebloque('buff', t));
+}
+
+// --- Effets des améliorations dans la partie ---
+function dureeRechargeBouclier() {
+  return shieldCooldownDuration * (1 - bonusProgression('bouclier'));
+}
+
+// Aimant : une pomme en or ou bleue proche d'une tête glisse vers elle
+function attirerPomme(pomme, deltaMs) {
+  const rayon = bonusProgression('aimant');
+  if (!rayon) return;
+  let cible = null, meilleure = Infinity;
+  joueursEnJeu().forEach(j => {
+    const t = j.snake[0];
+    const d = Math.hypot(t.x * gridSize + gridSize / 2 - pomme.x, t.y * gridSize + gridSize / 2 - pomme.y);
+    if (d < rayon + pomme.radius && d < meilleure) { meilleure = d; cible = t; }
+  });
+  if (!cible || meilleure < 1) return;
+  const pas = Math.min(meilleure, reglagesProgression.vitesseAimant * deltaMs);
+  pomme.x += (cible.x * gridSize + gridSize / 2 - pomme.x) / meilleure * pas;
+  pomme.y += (cible.y * gridSize + gridSize / 2 - pomme.y) / meilleure * pas;
 }
 
 // --- Gains ---
@@ -4338,11 +4593,42 @@ function payerSucces(id) {
   sauverProgression();
   partieProgression.succes += n;
   if (dernierGainPartie) majRecapEcailles(); // succès gagné après la fin (podium...)
+  // un succès peut débloquer un skin d'ennemi
+  Object.keys(reglagesProgression.skinsParSucces).forEach(skin => {
+    if (reglagesProgression.skinsParSucces[skin] !== id || progression.achats['skin:' + skin]) return;
+    const btn = document.querySelector('.skin-btn[data-skin="' + skin + '"]');
+    afficherBanniereSucces({titre: '🔓 Nouveau skin d\'ennemi', icone: '👾', nom: btn ? btn.dataset.nom || btn.textContent : skin});
+    majVerrous();
+  });
   return n;
+}
+
+// au lancement : les joueurs qui avaient déjà une sauvegarde gardent tout ce qui existait avant la Boutique
+function migrerAncienJoueur() {
+  if (progression.migre) return;
+  progression.migre = true;
+  let ancien = false;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const cle = localStorage.key(i);
+      if (cle === 'snakeTutoFait' || cle.startsWith('snakeHighscores')) ancien = true;
+    }
+  } catch (e) {
+    // stockage indisponible : nouveau joueur
+  }
+  if (Object.keys(succesSauves.obtenus).length) ancien = true;
+  if (ancien && !modeDev) {
+    const a = reglagesProgression.ancienJoueur;
+    a.themes.forEach(c => { progression.achats['theme:' + c] = 1; });
+    a.skins.forEach(c => { progression.achats['skin:' + c] = 1; });
+    a.buffs.forEach(c => { progression.achats['buff:' + c] = 1; });
+  }
+  sauverProgression();
 }
 
 // au lancement : paie les succès obtenus avant l'arrivée des Écailles (ou dont le paiement a été perdu)
 function rattraperSuccesProgression() {
+  migrerAncienJoueur();
   let n = 0;
   Object.keys(succesSauves.obtenus).forEach(id => {
     if (progression.succesPayes.includes(id)) return;
@@ -4386,7 +4672,7 @@ function gainPartie(partie) {
 
 // fin de partie (perdue ou gagnée) : calcule le gain, l'ajoute et le garde pour l'écran de fin
 function progressionFinPartie(victoire) {
-  if (!succesActifs() || !partieSucces.commencee) return;
+  if (tutoActif() || enEcranInvite() || !partieSucces.commencee) return;
   const gain = gainPartie({
     longueur: stats.maxSnakeLength,
     ennemis: stats.enemiesKilled,
@@ -4400,6 +4686,19 @@ function progressionFinPartie(victoire) {
   if (gain.total > 0) progression.parties++;
   sauverProgression();
   dernierGainPartie = gain;
+  // jeu en ligne : l'ami gagne les mêmes Écailles que l'hôte pour cette partie
+  if (enLigne && enLigne.role === 'hote' && enLigne.invite && gain.total > 0) {
+    enLigne.envoyer({t: 'ecailles', n: gain.total}, enLigne.invite);
+  }
+}
+
+// écran de l'invité : Écailles de la partie jouée chez l'hôte
+function recevoirEcaillesHote(n) {
+  n = Math.floor(n);
+  if (!(n > 0) || n > 5000) return;
+  ajouterEcailles(n);
+  sauverProgression();
+  afficherBanniereSucces({icone: '🪙', nom: '+' + n + ' Écailles', detail: 'Gagnées avec ton ami (total : ' + progression.ecailles + ')'});
 }
 
 // texte court pour l'écran de fin : « 🪙 +42 Écailles (total 310) »
@@ -4511,7 +4810,7 @@ function nouveauJoueur(numero) {
     direction: {x: 0, y: 0},
     nextDirection: {x: 0, y: 0},
     directionLockedThisTick: false, // un seul virage entre deux déplacements (évite le demi-tour en 2 appuis rapides)
-    lives: maxLives,
+    lives: maxLives + bonusProgression('coeur'), // + Cœur de réserve (js/03-progression.js)
     pendingGrowth: 0, // nombre de prochains ticks où la queue ne doit pas être retirée (croissance différée)
     tongueUntil: 0,
     snakeHistory: [], // {time, snake, direction, nextDirection} sur les ~6 dernières secondes
@@ -4783,8 +5082,9 @@ function majBoutonMode() {
     li.textContent = texteAvecDureeBuff(li.textContent, li.dataset.buff);
   });
   document.querySelectorAll('#buffMenuListe .buff-option').forEach(btn => {
+    const type = btn.dataset.cle.slice('buff:'.length);
     const petit = btn.querySelector('small');
-    if (petit) petit.textContent = texteAvecDureeBuff(buffDescriptions[btn.dataset.buff].detail, btn.dataset.buff);
+    if (petit) petit.textContent = texteAvecDureeBuff(buffDescriptions[type].detail, type);
   });
 }
 // --- Sons (Web Audio API, pas de fichiers externes) ---
@@ -5676,7 +5976,7 @@ function dropBossLoot(x, y) {
 
   // pomme bleue avec le buff x2 (s'ajoute à une éventuelle pomme bleue déjà présente)
   // si x2 est désactivé dans le menu, on prend un autre buff actif ; aucun buff actif = pas de pomme bleue
-  const bossBuff = buffsActifs.includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
+  const bossBuff = buffsDisponibles().includes('doublepoints') ? 'doublepoints' : tirerBuffAleatoire();
   if (bossBuff) {
     const blueSpot = pickSafeDropPosition(Math.PI * 0.25);
     const angleBlue = Math.random() * Math.PI * 2;
@@ -5769,7 +6069,8 @@ function awardEnemyKill(e, facon) {
       changeDirTimer: 800 + Math.random() * 1000,
       ne: performance.now() // pour le succès « Rattrapé ! »
     });
-  } else if (!blueApples.length && buffsActifs.length && Math.random() < reglagesDifficulte().chancePommeBleue) {
+  } else if (!blueApples.length && buffsDisponibles().length &&
+      Math.random() < reglagesDifficulte().chancePommeBleue + bonusProgression('pommeBleue')) {
     // sinon, chance qu'il laisse une pomme bleue mobile (buff aléatoire, déterminé dès l'apparition)
     const angle = Math.random() * Math.PI * 2;
     blueApples.push({
@@ -6208,8 +6509,8 @@ function fireProjectile(angleOverride) {
     projectiles.push({
       x: turretPixelPos.x,
       y: turretPixelPos.y,
-      vx: Math.cos(angle) * projectileSpeed,
-      vy: Math.sin(angle) * projectileSpeed,
+      vx: Math.cos(angle) * projectileSpeed * (1 + bonusProgression('balles')),
+      vy: Math.sin(angle) * projectileSpeed * (1 + bonusProgression('balles')),
       joueur: joueurActif // pour attribuer les kills et les buffs au bon joueur
     });
     playShootSound();
@@ -6334,6 +6635,8 @@ function updateCombat(deltaMs) {
   };
   goldenApples.forEach(p => deplacerPommeMobile(p, goldenAppleSpeed));
   blueApples.forEach(p => deplacerPommeMobile(p, blueAppleSpeed));
+  goldenApples.forEach(p => attirerPomme(p, deltaMs)); // amélioration Aimant
+  blueApples.forEach(p => attirerPomme(p, deltaMs));
 
   // ramassage des pommes mobiles, auto-visée : pour chaque serpent en jeu
   joueursEnJeu().forEach(j => avecJoueur(j, () => {
@@ -6830,6 +7133,7 @@ pauseBtn.addEventListener('click', togglePause);
 
 document.querySelectorAll('.skin-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (!contenuDebloque('skin', btn.dataset.skin)) return ouvrirMenuBuffs(); // skin gagné par un succès
     enemySkin = btn.dataset.skin;
     document.querySelectorAll('.skin-btn').forEach(b => b.classList.toggle('active', b === btn));
   });
@@ -7850,7 +8154,7 @@ function drawPauseOverlay() {
   const texteReprise = modeEntree === 'manette' ? 'Appuie sur START pour reprendre'
     : modeEntree === 'tactile' ? 'Touche le jeu pour reprendre'
     : 'Appuie sur Échap ou ' + nomTouche(touches.pause) + ' pour reprendre';
-  ctx.fillText(menuBuffsOuvert ? 'Menu des buffs ouvert' : texteReprise, largeurPlateau / 2, hauteurPlateau / 2 + 20);
+  ctx.fillText(menuBuffsOuvert ? 'Boutique ouverte' : texteReprise, largeurPlateau / 2, hauteurPlateau / 2 + 20);
   ctx.restore();
 }
 
@@ -8021,7 +8325,7 @@ function drawControlsTutorial() {
   // --- menu des buffs ---
   ctx.textAlign = 'center';
   ctx.font = '13px ' + currentTheme.fontFamily;
-  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' +
+  ctx.fillText(nomTouche(touches.buffs) + ' : boutique  •  ' + nomTouche(touches.pause) + ' : pause  •  ' +
     nomTouche(touches.aide) + ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, mouseY + 78);
   dessinerInvitationTuto(nomTouche(touches.tuto) + ' : tutoriel');
 
@@ -8090,9 +8394,9 @@ function drawTutorielCoop() {
   ctx.fillText(partage ? '🎮 Branche une manette pour J2' : '⌨️ Clavier + souris = J1  •  🎮 Manette = J2', largeurPlateau / 2, y);
   ctx.fillText('Score commun • un ❤️ réanime ton coéquipier', largeurPlateau / 2, y + 22);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.fillText(nomTouche(touches.buffs) + ' : buffs  •  ' + nomTouche(touches.pause) + ' : pause  •  ' + nomTouche(touches.aide) +
+  ctx.fillText(nomTouche(touches.buffs) + ' : boutique  •  ' + nomTouche(touches.pause) + ' : pause  •  ' + nomTouche(touches.aide) +
     ' : aide  •  ' + nomTouche(touches.options) + ' : options', largeurPlateau / 2, y + 44);
-  ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (menu B)' : '👻 Les serpents se traversent (menu B)',
+  ctx.fillText(capacitesActives.collisionJoueurs ? '💥 Collision entre joueurs activée (options)' : '👻 Les serpents se traversent (options)',
     largeurPlateau / 2, y + 66);
 
   ctx.fillStyle = '#ffffff';
@@ -8112,7 +8416,7 @@ function drawControlsTutorialListe(mode) {
         ['🔫', 'RT / R2, RB ou X', 'tirer'],
         ['🚀', 'A / Croix', 'démarrer, puis accélère (maintenir)'],
         ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'],
-        ['🧪', 'Y / Triangle ou Select', 'menu des buffs'],
+        ['🛒', 'Y / Triangle ou Select', 'boutique'],
         ['⏸️', 'Start', 'pause']
       ]
     : [
@@ -12397,7 +12701,7 @@ function drawShieldCooldownRing(headPos) {
   // masquée dès que le bouclier est prêt (ou pendant qu'il est actif, déjà géré à l'appel)
   if (remaining <= 0) return;
 
-  const progress = 1 - Math.min(1, remaining / shieldCooldownDuration);
+  const progress = 1 - Math.min(1, remaining / dureeRechargeBouclier());
 
   const cx = headPos.x * gridSize + gridSize / 2;
   const cy = headPos.y * gridSize + gridSize / 2;
@@ -12826,7 +13130,15 @@ function dessinerEcranGameOver() {
   ctx.shadowBlur = 0;
   ctx.fillStyle = currentTheme.textMuted;
   ctx.font = '12px ' + currentTheme.fontFamily;
-  ctx.fillText('Détails de la partie sous le jeu', w / 2, gainEcailles ? 384 : 368);
+  // tant que la Boutique n'a jamais été ouverte, on la signale à la place
+  const signalerBoutique = gainEcailles && !progression.boutiqueVue;
+  if (signalerBoutique) {
+    ctx.globalAlpha = contenu;
+    ctx.fillStyle = '#ffd700';
+  }
+  ctx.fillText(signalerBoutique
+    ? '🛒 Dépense-les dans la Boutique (' + texteCommande('touche ' + nomTouche(touches.buffs), 'Y', 'menu ☰') + ')'
+    : 'Détails de la partie sous le jeu', w / 2, gainEcailles ? 384 : 368);
   ctx.restore();
 }
 
@@ -13059,7 +13371,7 @@ function activerBouclier(j = joueurs[0]) {
   const now = performance.now();
   if (now >= shieldReadyAt) {
     shieldActiveUntil = now + shieldDuration;
-    shieldReadyAt = now + shieldCooldownDuration;
+    shieldReadyAt = now + dureeRechargeBouclier();
     playShieldSound();
   }
 }
@@ -13262,44 +13574,162 @@ function toucheCoop(e) {
 }
 
 // ============================================================
-// --- Menu des buffs ---
+// --- Boutique (ancien menu des buffs) ---
 // ============================================================
+// Bouton « 🛒 Boutique », touche B, Y / Select à la manette. Entre deux parties, on y dépense ses Écailles
+// (améliorations, buffs, thèmes : prix dans reglagesProgression, js/03-progression.js) et on choisit ce qu'on
+// emporte : chaque amélioration et chaque buff débloqué a son interrupteur. Pendant une partie, elle s'ouvre
+// en lecture seule (sauf en ?dev). La collision entre joueurs est dans les options (js/18-options.js).
 const buffMenuEl = document.getElementById('buffMenu');
 const buffMenuListeEl = document.getElementById('buffMenuListe');
 const buffMenuAvertissementEl = document.getElementById('buffMenuAvertissement');
 const buffMenuBtn = document.getElementById('buffMenuBtn');
+const boutiqueMessageEl = document.getElementById('boutiqueMessage');
 let menuBuffsOuvert = false;
 let menuAMisEnPause = false; // le menu a mis la partie en pause : il la relance en se fermant
 let focusMenuManette = 0; // index du bouton sélectionné à la manette
+let boutiqueAChange = false; // un achat ou un réglage à appliquer à la partie qui attend de démarrer
+
+// nom affiché des thèmes et skins (texte de leur bouton dans le menu ☰)
+document.querySelectorAll('.skin-btn, .theme-btn').forEach(b => { b.dataset.nom = b.textContent.trim(); });
+
+// achats et réglages seulement entre deux parties (avant le départ ou après la fin)
+function boutiqueModifiable() {
+  return modeDev || ((waitingToStart || gameOver) && !tutoActif() && !enEcranInvite());
+}
+
+function texteEcailles(n) {
+  return '🪙 ' + n.toLocaleString('fr-FR');
+}
+
+function messageBoutique(texte) {
+  boutiqueMessageEl.textContent = texte;
+}
+
+// une ligne : le bouton principal (interrupteur ou choix) et, si besoin, un bouton d'achat à droite
+function ligneBoutique(parent, {icone, nom, detail, cle, clic, achat}) {
+  const ligne = document.createElement('div');
+  ligne.className = 'boutique-ligne';
+  const btn = document.createElement('button');
+  btn.className = 'buff-option';
+  btn.dataset.cle = cle;
+  btn.innerHTML = '<span class="buff-option-icone"></span><span class="buff-option-texte"><span></span><small></small></span>' +
+    '<span class="buff-interrupteur"></span>';
+  btn.querySelector('.buff-option-icone').textContent = icone;
+  btn.querySelector('.buff-option-texte > span').textContent = nom;
+  btn.querySelector('small').textContent = detail;
+  btn.addEventListener('click', () => {
+    if (!boutiqueModifiable()) return messageBoutique('Les réglages se changent entre deux parties.');
+    clic();
+    rafraichirMenuBuffs();
+  });
+  ligne.appendChild(btn);
+  if (achat) {
+    const b = document.createElement('button');
+    b.className = 'boutique-achat';
+    b.dataset.cle = cle;
+    b.addEventListener('click', () => {
+      if (!boutiqueModifiable()) return messageBoutique('Les achats se font entre deux parties.');
+      achat();
+      rafraichirMenuBuffs();
+    });
+    ligne.appendChild(b);
+  }
+  parent.appendChild(ligne);
+}
+
+// achat commun : vérifie le solde et explique ce qui manque
+function payer(prix, faire, quoi) {
+  if (prix === null) return;
+  if (progression.ecailles < prix) {
+    messageBoutique('Il te manque ' + texteEcailles(prix - progression.ecailles) + ' pour ' + quoi + '.');
+    return;
+  }
+  if (faire()) {
+    boutiqueAChange = true;
+    playSuccesSound();
+    messageBoutique('✅ Acheté : ' + quoi + ' !');
+  }
+}
 
 function construireMenuBuffs() {
+  // améliorations
+  const ameliorationsEl = document.getElementById('boutiqueAmeliorations');
+  ameliorationsEl.innerHTML = '';
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const t = textesAmeliorations[cle];
+    ligneBoutique(ameliorationsEl, {
+      icone: t.icone, nom: t.nom, detail: '', cle: 'amelioration:' + cle,
+      clic: () => { basculerAmelioration(cle); boutiqueAChange = true; },
+      achat: () => payer(prixProchainNiveau(cle), () => acheterAmelioration(cle), t.nom + ' niveau ' + (niveauAchete(cle) + 1))
+    });
+  });
+
+  // buffs de la pomme bleue
   buffMenuListeEl.innerHTML = '';
   buffTypes.forEach(type => {
     const d = buffDescriptions[type];
-    const btn = document.createElement('button');
-    btn.className = 'buff-option';
-    btn.dataset.buff = type;
-    btn.innerHTML =
-      '<span class="buff-option-icone">' + d.icon + '</span>' +
-      '<span class="buff-option-texte">' + d.nom + '<small>' + texteAvecDureeBuff(d.detail, type) + '</small></span>' +
-      '<span class="buff-interrupteur"></span>';
-    btn.addEventListener('click', () => basculerBuff(type));
-    buffMenuListeEl.appendChild(btn);
+    ligneBoutique(buffMenuListeEl, {
+      icone: d.icon, nom: d.nom, detail: texteAvecDureeBuff(d.detail, type), cle: 'buff:' + type,
+      clic: () => { if (contenuDebloque('buff', type)) basculerBuff(type); },
+      achat: () => payer(prixContenu('buff', type), () => acheterContenu('buff', type), d.nom)
+    });
   });
+
+  // capacités (bouclier, sprint) ; la collision entre joueurs est dans les options
   const capacitesListeEl = document.getElementById('capacitesMenuListe');
   capacitesListeEl.innerHTML = '';
-  Object.keys(capaciteDescriptions).forEach(cle => {
+  ['bouclier', 'sprint'].forEach(cle => {
     const d = capaciteDescriptions[cle];
-    const btn = document.createElement('button');
-    btn.className = 'buff-option';
-    btn.dataset.capacite = cle;
-    btn.innerHTML =
-      '<span class="buff-option-icone">' + d.icon + '</span>' +
-      '<span class="buff-option-texte">' + d.nom + '<small>' + d.detail + '</small></span>' +
-      '<span class="buff-interrupteur"></span>';
-    btn.addEventListener('click', () => basculerCapacite(cle));
-    capacitesListeEl.appendChild(btn);
+    ligneBoutique(capacitesListeEl, {
+      icone: d.icon, nom: d.nom, detail: d.detail, cle: 'capacite:' + cle,
+      clic: () => basculerCapacite(cle)
+    });
   });
+
+  // thèmes : choisir celui de la partie, ou l'acheter
+  const themesEl = document.getElementById('boutiqueThemes');
+  themesEl.innerHTML = '';
+  document.querySelectorAll('.theme-btn').forEach(tb => {
+    const theme = tb.dataset.theme;
+    ligneBoutique(themesEl, {
+      icone: '🎨', nom: tb.dataset.nom, detail: '', cle: 'theme:' + theme,
+      clic: () => { if (contenuDebloque('theme', theme)) applyTheme(theme); },
+      achat: () => payer(prixContenu('theme', theme), () => acheterContenu('theme', theme), 'thème ' + tb.dataset.nom)
+    });
+  });
+
+  // skins d'ennemis : gagnés par les succès
+  const skinsEl = document.getElementById('boutiqueSkins');
+  skinsEl.innerHTML = '';
+  document.querySelectorAll('.skin-btn').forEach(sb => {
+    const skin = sb.dataset.skin;
+    ligneBoutique(skinsEl, {
+      icone: '👾', nom: sb.dataset.nom, detail: '', cle: 'skin:' + skin,
+      clic: () => { if (contenuDebloque('skin', skin)) sb.click(); }
+    });
+  });
+
+  // ?dev : de quoi tester un réglage en quelques secondes
+  const devEl = document.getElementById('boutiqueDev');
+  devEl.innerHTML = '';
+  if (modeDev) {
+    devEl.innerHTML = '<p>🧪 Mode dev : progression à part, tout est débloqué, pas de succès.</p>' +
+      '<button id="devEcailles">+1 000 🪙</button><button id="devZero">Remise à zéro</button>';
+    document.getElementById('devEcailles').addEventListener('click', () => {
+      ajouterEcailles(1000);
+      sauverProgression();
+      rafraichirMenuBuffs();
+    });
+    document.getElementById('devZero').addEventListener('click', () => {
+      progression = progressionVide();
+      progression.migre = true;
+      sauverProgression();
+      boutiqueAChange = true;
+      rafraichirMenuBuffs();
+    });
+  }
+  boutiqueConstruite = true;
   rafraichirMenuBuffs();
 }
 
@@ -13308,7 +13738,6 @@ function basculerCapacite(cle) {
   sauverCapacites();
   if (cle === 'sprint' && !capacitesActives.sprint) joueurs.forEach(j => arreterBoost(j));
   if (cle === 'bouclier' && !capacitesActives.bouclier) joueurs.forEach(j => j.shieldActiveUntil = 0);
-  rafraichirMenuBuffs();
 }
 
 function basculerBuff(type) {
@@ -13320,56 +13749,148 @@ function basculerBuff(type) {
   sauverBuffsActifs();
   // une pomme bleue déjà sur le terrain avec un buff désactivé change de buff (ou disparaît s'il n'en reste aucun)
   blueApples = blueApples.filter(pomme => {
-    if (buffsActifs.includes(pomme.buffType)) return true;
+    if (buffsDisponibles().includes(pomme.buffType)) return true;
     const remplacant = tirerBuffAleatoire();
     if (remplacant) pomme.buffType = remplacant;
     return !!remplacant;
   });
-  rafraichirMenuBuffs();
 }
 
+// met à jour une ligne : état (actif, verrouillé), texte et bouton d'achat (prix, ou null pour le cacher)
+function majLigne(cle, {actif, verrouille, detail, prix, achat}) {
+  const btn = buffMenuEl.querySelector('.buff-option[data-cle="' + cle + '"]');
+  if (!btn) return;
+  btn.classList.toggle('actif', !!actif);
+  btn.classList.toggle('verrouille', !!verrouille);
+  btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
+  if (detail !== undefined) btn.querySelector('small').textContent = detail;
+  const b = btn.parentNode.querySelector('.boutique-achat');
+  if (!b) return;
+  b.style.display = achat === null ? 'none' : '';
+  if (achat !== null) {
+    b.textContent = achat;
+    b.classList.toggle('trop-cher', typeof prix === 'number' && progression.ecailles < prix);
+    b.classList.toggle('max', achat === 'Max');
+  }
+}
+
+let boutiqueConstruite = false;
 function rafraichirMenuBuffs() {
-  buffMenuListeEl.querySelectorAll('.buff-option').forEach(btn => {
-    const actif = buffsActifs.includes(btn.dataset.buff);
-    btn.classList.toggle('actif', actif);
-    btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
+  if (!boutiqueConstruite) return;
+  document.getElementById('boutiqueSolde').textContent = texteEcailles(progression.ecailles) + ' Écailles';
+  document.getElementById('boutiqueAide').textContent = boutiqueModifiable()
+    ? 'Chaque partie rapporte des Écailles, même perdue. Touche une ligne pour l\'activer ou la couper.'
+    : '🔒 Partie en cours : les achats et réglages se font avant le départ ou après la fin.';
+  buffMenuEl.classList.toggle('lecture-seule', !boutiqueModifiable());
+
+  Object.keys(reglagesProgression.ameliorations).forEach(cle => {
+    const a = reglagesProgression.ameliorations[cle];
+    const n = niveauAchete(cle);
+    const prix = prixProchainNiveau(cle);
+    majLigne('amelioration:' + cle, {
+      actif: n > 0 && !progression.inactifs.includes(cle),
+      verrouille: n === 0,
+      detail: 'Niv. ' + n + '/' + a.prix.length + ' : ' + textesAmeliorations[cle].detail(Math.round(a.effet * Math.max(1, n) * 100) / 100),
+      prix,
+      achat: prix === null ? 'Max' : texteEcailles(prix)
+    });
   });
-  document.querySelectorAll('#capacitesMenuListe .buff-option').forEach(btn => {
-    const actif = !!capacitesActives[btn.dataset.capacite];
-    btn.classList.toggle('actif', actif);
-    btn.setAttribute('aria-pressed', actif ? 'true' : 'false');
+
+  buffTypes.forEach(type => {
+    const debloque = contenuDebloque('buff', type);
+    const prix = prixContenu('buff', type);
+    majLigne('buff:' + type, {
+      actif: debloque && buffsActifs.includes(type),
+      verrouille: !debloque,
+      prix,
+      achat: debloque ? null : texteEcailles(prix)
+    });
   });
+  ['bouclier', 'sprint'].forEach(cle => majLigne('capacite:' + cle, {actif: !!capacitesActives[cle]}));
+
+  document.querySelectorAll('.theme-btn').forEach(tb => {
+    const theme = tb.dataset.theme;
+    const debloque = contenuDebloque('theme', theme);
+    const prix = prixContenu('theme', theme);
+    majLigne('theme:' + theme, {
+      actif: theme === currentThemeName,
+      verrouille: !debloque,
+      detail: !debloque ? 'À acheter' : theme === currentThemeName ? 'Thème actuel' : 'Toucher pour le choisir',
+      prix,
+      achat: debloque ? null : texteEcailles(prix)
+    });
+  });
+  document.querySelectorAll('.skin-btn').forEach(sb => {
+    const skin = sb.dataset.skin;
+    const debloque = contenuDebloque('skin', skin);
+    const succes = succesParId[reglagesProgression.skinsParSucces[skin]];
+    majLigne('skin:' + skin, {
+      actif: skin === enemySkin,
+      verrouille: !debloque,
+      detail: !debloque && succes ? '🔒 Succès « ' + succes.nom + ' » : ' + succes.detail
+        : skin === enemySkin ? 'Skin actuel' : 'Toucher pour le choisir'
+    });
+  });
+
   // boutons tactiles : bouclier masqué, Boost ne sert plus qu'à démarrer
   document.getElementById('touchBouclier').classList.toggle('capacite-off', !capacitesActives.bouclier);
   document.getElementById('touchBoost').textContent = capacitesActives.sprint ? '🚀 Boost' : '▶️ Démarrer';
+  const dispo = buffsDisponibles();
   document.querySelectorAll('.legend-buffs li[data-buff]').forEach(li => {
-    li.classList.toggle('buff-desactive', !buffsActifs.includes(li.dataset.buff));
+    li.classList.toggle('buff-desactive', !dispo.includes(li.dataset.buff));
   });
-  buffMenuAvertissementEl.textContent = buffsActifs.length
-    ? buffsActifs.length + ' / ' + buffTypes.length + ' buffs actifs'
+  buffMenuAvertissementEl.textContent = dispo.length
+    ? dispo.length + ' / ' + buffTypes.length + ' buffs possibles'
     : '⚠️ Aucun buff actif : la pomme bleue n\'apparaîtra plus';
-  buffMenuBtn.textContent = '🧪 Buffs ' + buffsActifs.length + '/' + buffTypes.length;
+  buffMenuBtn.textContent = '🛒 Boutique ' + texteEcailles(progression.ecailles);
+  buffMenuBtn.classList.toggle('nouveau', !progression.boutiqueVue && progression.ecailles > 0);
+  majVerrous();
+}
+
+// menu ☰ : thèmes et skins verrouillés grisés, avec ce qu'il faut faire en bulle d'aide
+function majVerrous() {
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    const ok = contenuDebloque('theme', b.dataset.theme);
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok ? '' : 'À acheter dans la Boutique (' + prixContenu('theme', b.dataset.theme) + ' Écailles)';
+  });
+  document.querySelectorAll('.skin-btn').forEach(b => {
+    const ok = contenuDebloque('skin', b.dataset.skin);
+    const succes = succesParId[reglagesProgression.skinsParSucces[b.dataset.skin]];
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok || !succes ? '' : 'Se débloque avec le succès « ' + succes.nom + ' »';
+  });
 }
 
 function boutonsMenuBuffs() {
-  return Array.from(buffMenuEl.querySelectorAll('.buff-option, #buffMenuActions button'));
+  return Array.from(buffMenuEl.querySelectorAll('.buff-option, .boutique-achat, #boutiqueDev button, #buffMenuActions button'))
+    .filter(b => b.style.display !== 'none');
 }
 
 function majFocusManette() {
   const boutons = boutonsMenuBuffs();
   focusMenuManette = (focusMenuManette + boutons.length) % boutons.length;
   boutons.forEach((b, i) => b.classList.toggle('focus-manette', modeEntree === 'manette' && i === focusMenuManette));
+  const b = boutons[focusMenuManette];
+  if (b && modeEntree === 'manette' && b.scrollIntoView) b.scrollIntoView({block: 'nearest'});
 }
 
 function ouvrirMenuBuffs() {
   if (menuBuffsOuvert) return;
   menuBuffsOuvert = true;
   menuAMisEnPause = false;
+  boutiqueAChange = false;
   if (!isPaused && !waitingToStart && !countdownActive && !gameOver) {
     togglePause();
     menuAMisEnPause = true;
   }
   joueurs.forEach(j => arreterBoost(j));
+  if (!progression.boutiqueVue && boutiqueModifiable()) {
+    progression.boutiqueVue = true;
+    sauverProgression();
+  }
+  messageBoutique('');
+  rafraichirMenuBuffs();
   buffMenuEl.classList.add('ouvert');
   focusMenuManette = 0;
   majFocusManette();
@@ -13382,6 +13903,9 @@ function fermerMenuBuffs() {
   if (document.activeElement) document.activeElement.blur(); // évite qu'Espace ne réactive un bouton du menu
   if (menuAMisEnPause && isPaused) togglePause();
   menuAMisEnPause = false;
+  // partie pas encore lancée : on la prépare à nouveau pour appliquer les achats (cœurs de départ...)
+  if (boutiqueAChange && waitingToStart && !countdownActive && !tutoActif()) init();
+  boutiqueAChange = false;
 }
 
 buffMenuBtn.addEventListener('click', () => {
@@ -13390,26 +13914,34 @@ buffMenuBtn.addEventListener('click', () => {
 });
 document.getElementById('buffMenuFermer').addEventListener('click', fermerMenuBuffs);
 document.getElementById('buffMenuTout').addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique('Les réglages se changent entre deux parties.');
   buffsActifs = buffTypes.slice();
   sauverBuffsActifs();
-  // la collision entre joueurs est une règle, pas un bonus : « Tout activer » la laisse telle quelle
+  progression.inactifs = [];
+  sauverProgression();
   capacitesActives = {bouclier: true, sprint: true, collisionJoueurs: capacitesActives.collisionJoueurs};
   sauverCapacites();
+  boutiqueAChange = true;
+  rafraichirMenuBuffs();
+});
+document.getElementById('boutiqueRembourser').addEventListener('click', () => {
+  if (!boutiqueModifiable()) return messageBoutique('Les achats se font entre deux parties.');
+  const rendu = rembourserAmeliorations();
+  boutiqueAChange = true;
+  messageBoutique(rendu ? '↺ ' + texteEcailles(rendu) + ' rendues : répartis-les comme tu veux.' : 'Aucune amélioration à rembourser.');
   rafraichirMenuBuffs();
 });
 // clic sur le fond sombre = fermer
 buffMenuEl.addEventListener('click', (e) => {
   if (e.target === buffMenuEl) fermerMenuBuffs();
 });
-
-construireMenuBuffs();
-
+// construite au démarrage (js/19-demarrage.js), une fois les succès chargés
 // ============================================================
 // --- Manette (Gamepad API, disposition standard Xbox / PlayStation) ---
 // ============================================================
 // A/Croix : démarrer, rejouer, boost (maintenu) — B/Rond ou LB : bouclier
 // RT/R2, RB ou X/Carré : tirer — stick droit : viser — stick gauche ou croix : se déplacer
-// Start : pause — Select/Back ou Y/Triangle : menu des buffs — LT/L2 : aide (et tutoriel)
+// Start : pause — Select/Back ou Y/Triangle : Boutique — LT/L2 : aide (et tutoriel)
 const MANETTE = {A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, SELECT: 8, START: 9, HAUT: 12, BAS: 13, GAUCHE: 14, DROITE: 15};
 const zoneMorteStick = 0.5; // seuil pour qu'un stick compte comme une direction
 const zoneMorteVisee = 0.3;
@@ -13654,7 +14186,7 @@ const pagesAide = [
             ['🔫', 'RT / R2, RB ou X', 'tirer'],
             ['🚀', 'A / Croix', capacitesActives.sprint ? 'démarrer, puis accélère (maintenir)' : 'démarrer'],
             capacitesActives.bouclier ? ['🛡️', 'B / Rond ou LB', 'bouclier 2s (recharge 15s)'] : null,
-            ['🧪', 'Y / Triangle ou Select', 'menu des buffs'],
+            ['🛒', 'Y / Triangle ou Select', 'boutique'],
             ['❓', 'LT / L2', 'cette aide'],
             ['⏸️', 'Start', 'pause']
           ]
@@ -13673,7 +14205,7 @@ const pagesAide = [
               capacitesActives.bouclier ? ['🛡️', nomToucheBouclierSolo() === 'Maj' ? 'Maj (Shift)' : nomToucheBouclierSolo(), 'bouclier 2s (recharge 15s)'] : null,
               ['🖱️', 'Clic gauche', viseeAutoActive(joueurs[0]) ? 'tirer (visée auto)' : 'viser avec la souris et tirer'],
               ['⏪', 'Clic droit', 'rollback : le serpent recule (-' + d.coutRollback + ' ❤️)'],
-              ['🧪', nomTouche(touches.buffs), 'menu des buffs'],
+              ['🛒', nomTouche(touches.buffs), 'boutique'],
               ['❓', nomTouche(touches.aide), 'cette aide  •  ' + nomTouche(touches.tuto) + ' sur l\'écran de départ : tutoriel'],
               ['🏆', nomTouche(touches.succes), 'tes succès'],
               ['⚙️', nomTouche(touches.options), 'options : volume, plein écran (' + nomTouche(touches.pleinEcran) + '), touches'],
@@ -13735,12 +14267,13 @@ const pagesAide = [
   {
     onglet: '🧪', titre: 'Buffs',
     remplir(zone) {
-      zone.appendChild(paragrapheAide('Chaque ' + nomPomme('bleue') + ' donne un de ces buffs. Le menu des buffs (' +
-        texteCommande('touche B', 'Y / Triangle', 'menu ☰') + ') permet de choisir ceux qui peuvent sortir.'));
+      zone.appendChild(paragrapheAide('Chaque ' + nomPomme('bleue') + ' donne un de ces buffs. Au début, seul Points x2 est débloqué : ' +
+        'les autres s\'achètent avec des Écailles dans la Boutique (' + texteCommande('touche ' + nomTouche(touches.buffs), 'Y / Triangle', 'menu ☰') +
+        '), qui permet aussi de choisir ceux qui peuvent sortir.'));
       buffTypes.forEach(type => {
         const b = buffDescriptions[type];
-        const off = !buffsActifs.includes(type);
-        zone.appendChild(ligneAide(b.icon, b.nom + (off ? ' (désactivé)' : ''), texteAvecDureeBuff(b.detail, type)));
+        const etat = !contenuDebloque('buff', type) ? ' (à débloquer)' : !buffsActifs.includes(type) ? ' (désactivé)' : '';
+        zone.appendChild(ligneAide(b.icon, b.nom + etat, texteAvecDureeBuff(b.detail, type)));
       });
       zone.appendChild(paragrapheAide('Les buffs en cours et leur temps restant s\'affichent en haut ; ils clignotent 3 secondes avant de finir.'));
     }
@@ -13781,7 +14314,7 @@ const pagesAide = [
         zone.appendChild(ligneAide(n.icone, n.nom + (cle === difficulte ? ' (actuel)' : ''), details));
       });
       zone.appendChild(ligneAide('👥', 'Coop à 2', 'Score commun. Un joueur KO revient quand l\'autre ramasse un cœur. ' +
-        'Option « Collision entre joueurs » dans le menu des buffs.'));
+        'Option « Collision entre joueurs » dans les options.'));
       zone.appendChild(ligneAide('🌐', 'En ligne', 'Crée une partie et donne le code à ton ami : il joue le serpent J2 depuis son appareil.'));
       zone.appendChild(paragrapheAide('Difficulté, Solo / Coop, thèmes et skins se changent dans le menu ☰. Les meilleurs scores sont gardés par difficulté.'));
     }
@@ -14909,7 +15442,7 @@ const actionsTouches = [
   {action: 'rollbackJ2', nom: 'Rollback'},
   {groupe: '📋 Menus'},
   {action: 'pause', nom: 'Pause'},
-  {action: 'buffs', nom: 'Menu des buffs'},
+  {action: 'buffs', nom: 'Boutique'},
   {action: 'aide', nom: 'Aide'},
   {action: 'succes', nom: 'Succès'},
   {action: 'tuto', nom: 'Tutoriel'},
@@ -14963,6 +15496,13 @@ optionsMenuEl.innerHTML = `
         </div>
       </div>
       <p class="options-note" id="optionsInfoAffichage"></p>
+
+      <h3>👥 Coop</h3>
+      <div class="options-ligne">
+        <span>Collision entre joueurs</span>
+        <button id="optionsCollision" class="options-bascule"></button>
+      </div>
+      <p class="options-note">Activée, toucher le serpent de l'autre coûte un cœur.</p>
 
       <h3>⌨️ Touches</h3>
       <p class="options-note">Clique sur une touche puis appuie sur la nouvelle. Une touche déjà prise est échangée.
@@ -15021,6 +15561,9 @@ function majMenuOptions() {
   const plein = document.getElementById('optionsPleinEcran');
   plein.textContent = (enPleinEcran() ? '✔ Oui' : 'Non') + '  (' + nomTouche(touches.pleinEcran) + ')';
   plein.classList.toggle('actif', enPleinEcran());
+  const collision = document.getElementById('optionsCollision');
+  collision.textContent = capacitesActives.collisionJoueurs ? '💥 Activée' : '👻 Non';
+  collision.classList.toggle('actif', capacitesActives.collisionJoueurs);
   document.querySelectorAll('#optionsTaille button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionTaillePlateau));
   document.querySelectorAll('#optionsQualite button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionQualite));
   optionsTouchesEl.querySelectorAll('button').forEach(b => {
@@ -15117,6 +15660,11 @@ optionsVolumeEl.addEventListener('input', () => {
 optionsVolumeEl.addEventListener('change', () => playApplePickupSound());
 document.getElementById('optionsMuet').addEventListener('click', toggleMute);
 document.getElementById('optionsPleinEcran').addEventListener('click', basculerPleinEcran);
+document.getElementById('optionsCollision').addEventListener('click', () => {
+  capacitesActives.collisionJoueurs = !capacitesActives.collisionJoueurs;
+  sauverCapacites();
+  majMenuOptions();
+});
 document.querySelectorAll('#optionsTaille button').forEach(b => b.addEventListener('click', () => {
   optionTaillePlateau = b.dataset.valeur;
   ecrireOption('taillePlateau', optionTaillePlateau);
@@ -15489,7 +16037,7 @@ function succesNouvellePartie() {
 
 // pas de succès pendant le tutoriel, ni sur l'écran de l'invité (c'est l'hôte qui fait tourner la partie)
 function succesActifs() {
-  return !tutoActif() && !enEcranInvite();
+  return !tutoActif() && !enEcranInvite() && !modeDev;
 }
 
 function debloquerSucces(id, depuisHote) {
@@ -15513,8 +16061,8 @@ function debloquerSucces(id, depuisHote) {
 
 // --- Ce que le jeu signale ---
 function succesDebutPartie() {
+  if (!tutoActif() && !enEcranInvite()) partieSucces.commencee = true; // compte aussi pour les Écailles (même en ?dev)
   if (!succesActifs()) return;
-  partieSucces.commencee = true;
   if (compterSucces('parties') >= 50) debloquerSucces('accro');
   if (ajouterSucces('themesJoues', currentThemeName) >= themesSucces.length) debloquerSucces('touriste');
   if (enCoop()) debloquerSucces('duo');
@@ -15709,7 +16257,7 @@ function afficherBanniereSucces(s) {
   const texte = document.createElement('span');
   texte.className = 'succes-banniere-texte';
   const titre = document.createElement('small');
-  titre.textContent = '🏆 Succès débloqué !';
+  titre.textContent = s.titre || '🏆 Succès débloqué !';
   const nom = document.createElement('b');
   nom.textContent = s.nom;
   texte.appendChild(titre);
@@ -16694,6 +17242,7 @@ document.getElementById('viseeAutoBtn').addEventListener('click', () => {
   majBoutonMode();
 });
 
+construireMenuBuffs();
 applyTheme('neon');
 majBoutonMode();
 init();
@@ -17003,6 +17552,8 @@ async function rejoindrePartieEnLigne(saisie) {
       etatEnLigne('Cette partie a déjà deux joueurs.');
     } else if (m.t === 'hud' && id === enLigne.hote && Array.isArray(m.textes)) {
       afficherHudInvite(m.textes);
+    } else if (m.t === 'ecailles' && id === enLigne.hote && typeof m.n === 'number') {
+      recevoirEcaillesHote(m.n); // Écailles de la partie jouée chez l'hôte (js/03-progression.js)
     } else if (m.t === 'succes' && id === enLigne.hote && typeof m.id === 'string') {
       debloquerSucces(m.id, true); // succès gagné ensemble dans la partie de l'hôte
     }
