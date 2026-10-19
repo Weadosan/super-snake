@@ -316,7 +316,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     color: #14141f;
     font-weight: bold;
   }
-  #enemySkinSelector, #snakeSkinSelector {
+  #enemySkinSelector, #snakeSkinSelector, #turretSkinSelector {
     display: flex;
     gap: 6px;
     margin-bottom: 14px;
@@ -324,7 +324,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     justify-content: center;
     max-width: 420px;
   }
-  .skin-btn, .serpent-btn {
+  .skin-btn, .serpent-btn, .tourelle-btn {
     padding: 6px 12px;
     font-size: 12px;
     background: transparent;
@@ -334,10 +334,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     cursor: pointer;
     transition: background 0.15s;
   }
-  .skin-btn:hover, .serpent-btn:hover {
+  .skin-btn:hover, .serpent-btn:hover, .tourelle-btn:hover {
     background: rgba(255, 255, 255, 0.1);
   }
-  .skin-btn.active, .serpent-btn.active {
+  .skin-btn.active, .serpent-btn.active, .tourelle-btn.active {
     background: var(--accent);
     color: #14141f;
     font-weight: bold;
@@ -797,7 +797,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
     50% { box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8); }
   }
-  .theme-btn.verrouille, .skin-btn.verrouille, .serpent-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
+  .theme-btn.verrouille, .skin-btn.verrouille, .serpent-btn.verrouille, .tourelle-btn.verrouille { opacity: 0.45; border-style: dashed !important; }
   .legend-buffs li.buff-desactive {
     text-decoration: line-through;
     opacity: 0.5;
@@ -854,6 +854,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.mode-tactile:not(.menu-tactile-ouvert) #gamepadStatus,
   body.mode-tactile:not(.menu-tactile-ouvert) #enemySkinSelector,
   body.mode-tactile:not(.menu-tactile-ouvert) #snakeSkinSelector,
+  body.mode-tactile:not(.menu-tactile-ouvert) #turretSkinSelector,
   body.mode-tactile:not(.menu-tactile-ouvert) #restart,
   body.mode-tactile:not(.menu-tactile-ouvert) #message,
   body.mode-tactile:not(.menu-tactile-ouvert) #statsPanel,
@@ -1077,6 +1078,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #controlBar,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #enemySkinSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #snakeSkinSelector,
+  body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #turretSkinSelector,
   body.ecran-epure:not(.mode-tactile):not(.menu-tactile-ouvert) #highscoreSidebar {
     display: none;
   }
@@ -1230,8 +1232,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   @media (max-width: 600px) {
     body { padding: 8px; align-items: flex-start; }
     h1 { margin: 4px 0; font-size: 24px; }
-    #themeSelector, #controlBar, #enemySkinSelector, #snakeSkinSelector { margin-bottom: 6px; }
-    .theme-btn, .skin-btn, .serpent-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
+    #themeSelector, #controlBar, #enemySkinSelector, #snakeSkinSelector, #turretSkinSelector { margin-bottom: 6px; }
+    .theme-btn, .skin-btn, .serpent-btn, .tourelle-btn, #controlBar button { padding: 4px 8px; font-size: 11px; }
     #score { font-size: 15px; margin-bottom: 2px; }
     #hearts { font-size: 16px; margin-bottom: 2px; }
     #segmentCounter, #killProgress, #difficulteHud { display: inline; margin: 0 4px; }
@@ -1872,6 +1874,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <h3 class="titre-categorie">🐍 Skin du serpent</h3>
     <!-- boutons créés par js/08-skins-serpent.js -->
     <div id="snakeSkinSelector"></div>
+
+    <h3 class="titre-categorie">🔫 Tourelle</h3>
+    <!-- boutons créés par js/13-skins-tourelle.js -->
+    <div id="turretSkinSelector"></div>
 
     <!-- aperçu animé du thème (map) et des ennemis choisis, visible dans le menu ☰ -->
     <div id="apercuMenu">
@@ -4519,7 +4525,7 @@ const popupLifetime = 800; // ms
 // Tout l'équilibrage est dans reglagesProgression : changer un gain ou un prix, c'est changer un nombre ici.
 // Le jeu ne lit ces valeurs que par gainPartie(), bonusProgression(cle) et contenuDebloque(type, cle).
 // Les Écailles se dépensent dans la Boutique (js/16-menu-buffs.js), entre deux parties : améliorations,
-// buffs de la pomme bleue, thèmes, skins du serpent. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
+// buffs de la pomme bleue, thèmes, skins du serpent et de la tourelle. Les skins d'ennemis se gagnent par les succès (skinsParSucces).
 // Sauvegarde dans snakeProgression, avec une copie de la version précédente (snakeProgression_prec)
 // reprise si la principale est illisible. Plan complet : plans/progression_permanente.md du dossier du projet.
 // Adresse du jeu avec ?dev : progression à part (snakeProgression_dev), Boutique ouverte en pleine partie,
@@ -4546,6 +4552,7 @@ const reglagesProgression = {
     themes: ['neon', 'espace', 'ocean'],
     skins: ['urchin', 'ghost', 'pixel'],
     serpents: ['classique'],
+    tourelles: ['classique'],
     buffs: ['doublepoints']
   },
   // ce que gardent les joueurs qui avaient une sauvegarde avant la Boutique (tout ce qui existait alors)
@@ -4553,6 +4560,7 @@ const reglagesProgression = {
     themes: ['lave'],
     skins: ['slime', 'bat'],
     serpents: [],
+    tourelles: [],
     buffs: ['freeze', 'invincible', 'laser', 'autoaim', 'explode']
   },
   // prix en Écailles
@@ -4560,6 +4568,8 @@ const reglagesProgression = {
   themes: {lave: 300, aurore: 300, foret: 300, desert: 300, synthwave: 300, halloween: 300},
   // skins du serpent du joueur (js/08-skins-serpent.js)
   serpents: {corail: 200, tigre: 250, robot: 300, dragon: 400, galaxie: 400, arcenciel: 500, roi: 800},
+  // skins de la tourelle du joueur (js/13-skins-tourelle.js)
+  tourelles: {canon: 150, arbalete: 150, fleur: 200, gatling: 250, blaster: 300, dragon: 400},
   // skin d'ennemi -> succès qui le débloque ; jamais « Bestiaire » ni « Boss de chaque espèce »,
   // qui demandent d'avoir affronté tous les skins
   skinsParSucces: {
@@ -4728,9 +4738,9 @@ function rembourserAmeliorations() {
   return rendu;
 }
 
-// --- Contenu : buffs, thèmes, skins d'ennemis, skins du serpent ---
-// type : 'buff', 'theme', 'skin' (ennemis) ou 'serpent'
-const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins', serpent: 'serpents'};
+// --- Contenu : buffs, thèmes, skins d'ennemis, skins du serpent et de la tourelle ---
+// type : 'buff', 'theme', 'skin' (ennemis), 'serpent' ou 'tourelle'
+const listesDepart = {buff: 'buffs', theme: 'themes', skin: 'skins', serpent: 'serpents', tourelle: 'tourelles'};
 
 function contenuDebloque(type, cle) {
   if (modeDev) return true;
@@ -4743,13 +4753,14 @@ function contenuDebloque(type, cle) {
   if (type === 'buff') return reglagesProgression.buffs[cle] === undefined;
   if (type === 'theme') return reglagesProgression.themes[cle] === undefined;
   if (type === 'serpent') return reglagesProgression.serpents[cle] === undefined;
+  if (type === 'tourelle') return reglagesProgression.tourelles[cle] === undefined;
   return true;
 }
 
-// prix d'un buff, d'un thème ou d'un skin du serpent (les skins d'ennemis ne s'achètent pas)
+// prix d'un buff, d'un thème, d'un skin du serpent ou de la tourelle (les skins d'ennemis ne s'achètent pas)
 function prixContenu(type, cle) {
   const table = type === 'buff' ? reglagesProgression.buffs : type === 'theme' ? reglagesProgression.themes
-    : type === 'serpent' ? reglagesProgression.serpents : {};
+    : type === 'serpent' ? reglagesProgression.serpents : type === 'tourelle' ? reglagesProgression.tourelles : {};
   return table[cle] !== undefined ? table[cle] : null;
 }
 
@@ -4841,6 +4852,7 @@ function migrerAncienJoueur() {
     a.skins.forEach(c => { progression.achats['skin:' + c] = 1; });
     a.buffs.forEach(c => { progression.achats['buff:' + c] = 1; });
     a.serpents.forEach(c => { progression.achats['serpent:' + c] = 1; });
+    a.tourelles.forEach(c => { progression.achats['tourelle:' + c] = 1; });
   }
   sauverProgression();
 }
@@ -13245,47 +13257,13 @@ function drawProjectiles() {
   ctx.restore();
 }
 
-function drawTurret() {
-  const now = performance.now();
-  const hasLaserSkin = now < laserBuffUntil;
-  const hasAutoAimSkin = now < autoAimBuffUntil;
-  const isAutoAiming = hasAutoAimSkin && autoAimAngle !== null;
-
-  // option Visée auto : le viseur se place sur l'ennemi accroché
-  const accroche = cibleAuto && enemies.includes(cibleAuto) ? cibleAuto : null;
-  const viseX = accroche ? accroche.x : mouseX;
-  const viseY = accroche ? accroche.y : mouseY;
-  const angle = isAutoAiming
-    ? autoAimAngle
-    : Math.atan2(viseY - turretPixelPos.y, viseX - turretPixelPos.x);
-  const barrelLength = gridSize * 0.9;
-
-  // laser de visée manuel : uniquement affiché quand le joueur vise lui-même (pas en auto-visée)
-  if (!isAutoAiming) {
-    const tipX = turretPixelPos.x + Math.cos(angle) * barrelLength;
-    const tipY = turretPixelPos.y + Math.sin(angle) * barrelLength;
-
-    ctx.save();
-    ctx.setLineDash([6, 6]);
-    ctx.strokeStyle = hasLaserSkin ? 'rgba(255, 109, 0, 0.7)' : currentTheme.laserColor;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(tipX, tipY);
-    ctx.lineTo(viseX, viseY);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.fillStyle = hasLaserSkin ? 'rgba(255, 109, 0, 0.9)' : currentTheme.laserColor;
-    ctx.beginPath();
-    ctx.arc(viseX, viseY, accroche ? 5 : 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
+// tourelle « Classique » : canon et base selon le monde, centrés en (x, y)
+function dessinerTourelleTheme(x, y, angle, barrelLength, hasLaserSkin, now) {
   // canon : skin rouge intense pendant le buff laser, couleur normale sinon ; forme selon le monde
   const barrelColor = hasLaserSkin ? '#ff6d00' : currentTheme.turretBody;
   const theme = currentThemeName;
   ctx.save();
-  ctx.translate(turretPixelPos.x, turretPixelPos.y);
+  ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.shadowColor = barrelColor;
   ctx.shadowBlur = hasLaserSkin ? 14 : (currentTheme.glow ? 12 : 0);
@@ -13344,7 +13322,7 @@ function drawTurret() {
   // base de la tourelle
   const rayonBase = gridSize / 3;
   ctx.save();
-  ctx.translate(turretPixelPos.x, turretPixelPos.y);
+  ctx.translate(x, y);
   ctx.shadowColor = barrelColor;
   ctx.shadowBlur = hasLaserSkin ? 14 : (currentTheme.glow ? 12 : 0);
   ctx.fillStyle = currentTheme.turretBase;
@@ -13405,6 +13383,46 @@ function drawTurret() {
     ctx.fill();
   }
   ctx.restore();
+}
+
+function drawTurret() {
+  const now = performance.now();
+  const hasLaserSkin = now < laserBuffUntil;
+  const hasAutoAimSkin = now < autoAimBuffUntil;
+  const isAutoAiming = hasAutoAimSkin && autoAimAngle !== null;
+
+  // option Visée auto : le viseur se place sur l'ennemi accroché
+  const accroche = cibleAuto && enemies.includes(cibleAuto) ? cibleAuto : null;
+  const viseX = accroche ? accroche.x : mouseX;
+  const viseY = accroche ? accroche.y : mouseY;
+  const angle = isAutoAiming
+    ? autoAimAngle
+    : Math.atan2(viseY - turretPixelPos.y, viseX - turretPixelPos.x);
+  const barrelLength = gridSize * 0.9;
+
+  // laser de visée manuel : uniquement affiché quand le joueur vise lui-même (pas en auto-visée)
+  if (!isAutoAiming) {
+    const tipX = turretPixelPos.x + Math.cos(angle) * barrelLength;
+    const tipY = turretPixelPos.y + Math.sin(angle) * barrelLength;
+
+    ctx.save();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = hasLaserSkin ? 'rgba(255, 109, 0, 0.7)' : currentTheme.laserColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(viseX, viseY);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = hasLaserSkin ? 'rgba(255, 109, 0, 0.9)' : currentTheme.laserColor;
+    ctx.beginPath();
+    ctx.arc(viseX, viseY, accroche ? 5 : 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // canon et base : skin de tourelle acheté (js/13-skins-tourelle.js), sinon forme selon le monde
+  dessinerTourelle(turretPixelPos.x, turretPixelPos.y, angle, barrelLength, hasLaserSkin, now);
 
   // anneau de scan tournant pendant le buff auto-visée
   if (hasAutoAimSkin) {
@@ -13575,6 +13593,385 @@ function drawTongue(headPos) {
   ctx.restore();
 }
 
+// ============================================================
+// --- Skins de la tourelle du joueur (J1) ---
+// ============================================================
+// « Classique » garde la tourelle du thème (dessinerTourelleTheme, js/13-dessin-combat.js). Les autres ont leur
+// propre canon et leur propre base. Ils s'achètent à l'échoppe de Sifflet (prix dans reglagesProgression.tourelles)
+// et se choisissent dans le menu ☰ ou à la Boutique. Le choix est gardé dans snakeSkinTourelle. En coop, le J2
+// garde la tourelle du thème. Chaque dessin reçoit le contexte déjà placé sur la tourelle, non tourné :
+//   dessin(c, angle, L, R, now) avec L la longueur du canon et R le rayon de la base.
+const skinsTourelle = {
+  classique: {nom: 'Classique', icone: '🎯', detail: 'La tourelle du thème, assortie au décor'},
+  canon: {nom: 'Canon de pirate', icone: '💣', lueur: '#ffb74d',
+    detail: 'Un gros canon de bronze cerclé, sur sa roue en bois'},
+  arbalete: {nom: 'Arbalète', icone: '🏹', lueur: '#bcaaa4', detail: 'Un arc de bois tendu, carreau prêt à partir'},
+  fleur: {nom: 'Tournesol', icone: '🌱', lueur: '#ffeb3b', detail: 'Une fleur qui tourne la tête vers les ennemis'},
+  gatling: {nom: 'Gatling', icone: '⚙️', lueur: '#90a4ae', detail: 'Trois canons qui tournent sans arrêt'},
+  blaster: {nom: 'Blaster', icone: '⚡', lueur: '#00e5ff', detail: 'Canon à énergie, ses anneaux se chargent l\'un après l\'autre'},
+  dragon: {nom: 'Tête de dragon', icone: '🔥', lueur: '#ff9100', detail: 'Une tête de dragon qui crache des flammes. La plus chère'}
+};
+
+const cleStockageSkinTourelle = 'snakeSkinTourelle';
+let skinTourelle = (() => {
+  try {
+    const lu = localStorage.getItem(cleStockageSkinTourelle);
+    return skinsTourelle[lu] ? lu : 'classique';
+  } catch (e) {
+    return 'classique';
+  }
+})();
+let tourelleModele = null; // tourelle imposée pour une icône ou un aperçu, même pas encore achetée
+
+// tourelle d'un joueur : J1 seulement, et seulement si elle est débloquée
+function cleTourelleJoueur(j) {
+  if (!j || j.numero !== 0) return 'classique';
+  if (tourelleModele) return tourelleModele;
+  return contenuDebloque('tourelle', skinTourelle) ? skinTourelle : 'classique';
+}
+
+// tourelle du joueur actif centrée en (x, y), canon tourné de angle
+function dessinerTourelle(x, y, angle, L, laser, now) {
+  const cle = cleTourelleJoueur(joueurActif);
+  const dessin = DESSINS_TOURELLES[cle];
+  if (!dessin) return dessinerTourelleTheme(x, y, angle, L, laser, now);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.shadowColor = laser ? '#ff6d00' : skinsTourelle[cle].lueur;
+  ctx.shadowBlur = laser ? 14 : (currentTheme.glow ? 8 : 0);
+  dessin(ctx, angle, L, gridSize / 3, now);
+  if (laser) {
+    // buff laser : cœur lumineux orange et blanc dans l'axe du canon, comme la tourelle du thème
+    ctx.rotate(angle);
+    ctx.shadowColor = '#ff6d00';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(255, 109, 0, 0.85)';
+    ctx.fillRect(0, -1.6, L, 3.2);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.fillRect(0, -0.7, L, 1.4);
+  }
+  ctx.restore();
+}
+
+// petit cercle plein
+function rondTourelle(c, x, y, r, couleur) {
+  c.fillStyle = couleur;
+  c.beginPath();
+  c.arc(x, y, r, 0, Math.PI * 2);
+  c.fill();
+}
+
+const DESSINS_TOURELLES = {
+  canon(c, angle, L, R, now) {
+    // roue en bois à rayons, sous le canon
+    c.fillStyle = '#6d4c41';
+    c.strokeStyle = '#3e2723';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.arc(0, 0, R * 1.1, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.shadowBlur = 0;
+    c.lineWidth = 1.2;
+    for (let k = 0; k < 4; k++) {
+      const a = k * Math.PI / 4;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * R, Math.sin(a) * R);
+      c.lineTo(-Math.cos(a) * R, -Math.sin(a) * R);
+      c.stroke();
+    }
+    // fût de bronze qui s'affine, cerclé, avec son bouton à l'arrière
+    c.rotate(angle);
+    rondTourelle(c, -3.5, 0, 2.6, '#8d6e00');
+    const grad = c.createLinearGradient(0, -5, 0, 5);
+    grad.addColorStop(0, '#ffe082');
+    grad.addColorStop(0.45, '#c79100');
+    grad.addColorStop(1, '#6d4c00');
+    c.fillStyle = grad;
+    c.beginPath();
+    c.moveTo(-3, -5);
+    c.lineTo(L, -3.6);
+    c.lineTo(L, 3.6);
+    c.lineTo(-3, 5);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#5d4000';
+    [L * 0.3, L - 2.5].forEach(x => c.fillRect(x, -4.8, 2, 9.6));
+    rondTourelle(c, L, 0, 2.2, '#1a1a1a');
+  },
+
+  arbalete(c, angle, L, R, now) {
+    // base de fer ronde
+    c.fillStyle = '#455a64';
+    c.strokeStyle = '#b0bec5';
+    c.lineWidth = 1.6;
+    c.beginPath();
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.shadowBlur = 0;
+    c.rotate(angle);
+    // fût en bois
+    c.fillStyle = '#8d6e63';
+    c.strokeStyle = '#4e342e';
+    c.lineWidth = 1;
+    c.fillRect(-3, -2, L * 0.85 + 3, 4);
+    c.strokeRect(-3, -2, L * 0.85 + 3, 4);
+    // arc courbé et sa corde tendue vers l'arrière
+    const xa = L * 0.62;
+    c.strokeStyle = '#5d4037';
+    c.lineWidth = 2.6;
+    c.beginPath();
+    c.moveTo(xa - 2, -10);
+    c.quadraticCurveTo(xa + 6, 0, xa - 2, 10);
+    c.stroke();
+    c.strokeStyle = '#eceff1';
+    c.lineWidth = 0.8;
+    c.beginPath();
+    c.moveTo(xa - 2, -10);
+    c.lineTo(L * 0.3, 0);
+    c.lineTo(xa - 2, 10);
+    c.stroke();
+    // carreau
+    c.strokeStyle = '#cfd8dc';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(L * 0.3, 0);
+    c.lineTo(L + 1, 0);
+    c.stroke();
+    c.fillStyle = '#eceff1';
+    c.beginPath();
+    c.moveTo(L + 4, 0);
+    c.lineTo(L, -2.2);
+    c.lineTo(L, 2.2);
+    c.closePath();
+    c.fill();
+  },
+
+  fleur(c, angle, L, R, now) {
+    // tige verte et sa feuille, puis la fleur par-dessus (elle tourne doucement)
+    c.save();
+    c.rotate(angle);
+    c.fillStyle = '#43a047';
+    c.strokeStyle = '#1b5e20';
+    c.lineWidth = 1;
+    c.fillRect(0, -2, L, 4);
+    c.strokeRect(0, -2, L, 4);
+    c.beginPath();
+    c.ellipse(L * 0.55, -4, 4, 2, -0.5, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    rondTourelle(c, L, 0, 2.6, '#6d4c41');
+    c.restore();
+    const tour = now / 2500;
+    for (let k = 0; k < 10; k++) {
+      const a = tour + k * Math.PI / 5;
+      c.save();
+      c.rotate(a);
+      c.beginPath();
+      c.ellipse(R * 0.95, 0, R * 0.6, R * 0.32, 0, 0, Math.PI * 2);
+      c.fillStyle = k % 2 ? '#ffd600' : '#ffea00';
+      c.fill();
+      c.strokeStyle = '#f57f17';
+      c.lineWidth = 0.6;
+      c.stroke();
+      c.restore();
+    }
+    c.shadowBlur = 0;
+    rondTourelle(c, 0, 0, R * 0.62, '#5d4037');
+    c.fillStyle = '#3e2723';
+    for (let k = 0; k < 6; k++) {
+      const a = k * Math.PI / 3;
+      rondTourelle(c, Math.cos(a) * R * 0.32, Math.sin(a) * R * 0.32, 0.7, '#a1887f');
+    }
+  },
+
+  gatling(c, angle, L, R, now) {
+    c.rotate(angle);
+    // base blindée carrée, tournée avec le canon, et ses rivets
+    c.fillStyle = '#37474f';
+    c.strokeStyle = '#90a4ae';
+    c.lineWidth = 1.6;
+    c.fillRect(-R, -R, R * 2, R * 2);
+    c.strokeRect(-R, -R, R * 2, R * 2);
+    c.shadowBlur = 0;
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => rondTourelle(c, a * R * 0.6, b * R * 0.6, 0.9, '#cfd8dc'));
+    // trois canons qui tournent : on dessine d'abord ceux de derrière
+    const phase = now / 70;
+    [0, 1, 2].map(k => phase + k * Math.PI * 2 / 3)
+      .sort((a, b) => Math.cos(a) - Math.cos(b))
+      .forEach(a => {
+        const y = Math.sin(a) * 3;
+        const clair = 0.5 + Math.cos(a) * 0.5;
+        c.fillStyle = 'rgb(' + Math.round(70 + clair * 120) + ', ' + Math.round(80 + clair * 120) + ', ' + Math.round(90 + clair * 120) + ')';
+        c.fillRect(1, y - 1.3, L, 2.6);
+      });
+    // colliers qui tiennent les canons
+    c.fillStyle = '#263238';
+    c.fillRect(L * 0.35, -5, 2, 10);
+    c.fillRect(L - 2, -5, 2, 10);
+  },
+
+  blaster(c, angle, L, R, now) {
+    // base blanche avec un anneau d'énergie qui tourne
+    c.fillStyle = '#eceff1';
+    c.strokeStyle = '#90a4ae';
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.arc(0, 0, R, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.strokeStyle = '#00e5ff';
+    c.lineWidth = 1.8;
+    c.beginPath();
+    c.arc(0, 0, R * 0.6, now / 300, now / 300 + Math.PI * 1.3);
+    c.stroke();
+    c.shadowBlur = 0;
+    c.rotate(angle);
+    // corps effilé
+    c.fillStyle = '#f5f5f5';
+    c.strokeStyle = '#78909c';
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(0, -4.2);
+    c.lineTo(L * 0.85, -2.8);
+    c.lineTo(L * 0.85, 2.8);
+    c.lineTo(0, 4.2);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    // anneaux qui s'allument l'un après l'autre, puis la pointe qui pulse
+    const allume = Math.floor(now / 140) % 4;
+    [0.25, 0.45, 0.65].forEach((k, i) => {
+      c.fillStyle = i < allume ? '#00e5ff' : '#4dd0e1';
+      c.globalAlpha = i < allume ? 1 : 0.35;
+      c.fillRect(L * k, -3.6, 1.8, 7.2);
+    });
+    c.globalAlpha = 1;
+    c.shadowColor = '#00e5ff';
+    c.shadowBlur = 8;
+    rondTourelle(c, L * 0.9, 0, 2.3 + Math.sin(now / 110) * 0.6, '#84ffff');
+  },
+
+  dragon(c, angle, L, R, now) {
+    // cou couvert d'écailles
+    c.fillStyle = '#2e7d32';
+    c.strokeStyle = '#1b5e20';
+    c.lineWidth = 1.6;
+    c.beginPath();
+    c.arc(0, 0, R * 1.05, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.shadowBlur = 0;
+    c.rotate(angle);
+    // flammes qui lèchent la gueule
+    const f = Math.sin(now / 60) * 1.5;
+    [['#ff5722', 7 + f, 3.2], ['#ffc107', 4.5 + f * 0.6, 1.9]].forEach(([coul, long, larg]) => {
+      c.fillStyle = coul;
+      c.beginPath();
+      c.moveTo(L - 1, -larg);
+      c.quadraticCurveTo(L + long * 0.6, -larg * 0.6, L + long, 0);
+      c.quadraticCurveTo(L + long * 0.6, larg * 0.6, L - 1, larg);
+      c.closePath();
+      c.fill();
+    });
+    // cornes vers l'arrière
+    c.strokeStyle = '#f5e6c8';
+    c.lineWidth = 1.8;
+    [1, -1].forEach(s => {
+      c.beginPath();
+      c.moveTo(1, s * 4);
+      c.quadraticCurveTo(-3, s * 5, -6, s * 8.5);
+      c.stroke();
+    });
+    // tête allongée
+    c.fillStyle = '#43a047';
+    c.strokeStyle = '#1b5e20';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(-2, -5);
+    c.quadraticCurveTo(L * 0.6, -7, L, -2.6);
+    c.lineTo(L, 2.6);
+    c.quadraticCurveTo(L * 0.6, 7, -2, 5);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    // gueule, narines et yeux jaunes à pupille fendue
+    c.strokeStyle = '#1b5e20';
+    c.lineWidth = 0.9;
+    c.beginPath();
+    c.moveTo(L * 0.55, 0);
+    c.lineTo(L, 0);
+    c.stroke();
+    rondTourelle(c, L - 2.5, -1.6, 0.6, '#1b5e20');
+    rondTourelle(c, L - 2.5, 1.6, 0.6, '#1b5e20');
+    [1, -1].forEach(s => {
+      rondTourelle(c, L * 0.35, s * 3.3, 1.7, '#ffeb3b');
+      c.fillStyle = '#1a1a1a';
+      c.fillRect(L * 0.35 - 0.35, s * 3.3 - 1.4, 0.7, 2.8);
+    });
+  }
+};
+
+// --- Choix ---
+function choisirSkinTourelle(cle) {
+  if (!skinsTourelle[cle] || !contenuDebloque('tourelle', cle)) return false;
+  skinTourelle = cle;
+  try {
+    localStorage.setItem(cleStockageSkinTourelle, cle);
+  } catch (e) {
+    // stockage indisponible : le choix vaut pour cette session
+  }
+  majBoutonsSkinTourelle();
+  if (typeof majLegendeApercu === 'function') majLegendeApercu();
+  return true;
+}
+
+// boutons du menu ☰ (créés ici à partir de skinsTourelle)
+const selecteurSkinTourelle = document.getElementById('turretSkinSelector');
+Object.keys(skinsTourelle).forEach(cle => {
+  const s = skinsTourelle[cle];
+  const b = document.createElement('button');
+  b.className = 'tourelle-btn';
+  b.dataset.tourelle = cle;
+  b.dataset.nom = s.nom;
+  b.textContent = s.icone + ' ' + s.nom;
+  b.addEventListener('click', () => {
+    // pas encore achetée : la Boutique s'ouvre pour la montrer (js/16-menu-buffs.js)
+    if (!contenuDebloque('tourelle', cle)) return ouvrirMenuBuffs('tourelle:' + cle);
+    choisirSkinTourelle(cle);
+  });
+  selecteurSkinTourelle.appendChild(b);
+});
+
+function majBoutonsSkinTourelle() {
+  const actuel = cleTourelleJoueur({numero: 0});
+  document.querySelectorAll('.tourelle-btn').forEach(b => {
+    const cle = b.dataset.tourelle;
+    const ok = contenuDebloque('tourelle', cle);
+    b.classList.toggle('active', cle === actuel);
+    b.classList.toggle('verrouille', !ok);
+    b.title = ok ? '' : 'À acheter dans la Boutique (' + prixContenu('tourelle', cle) + ' Écailles)';
+  });
+}
+
+// tourelle de démonstration (aperçu du menu ☰, icônes de la Boutique) : la tourelle cle en (x, y)
+function dessinerTourelleModele(x, y, angle, cle, themeEnPlus) {
+  const avantJoueur = joueurActif, avantTheme = currentTheme;
+  joueurActif = joueurs[0];
+  tourelleModele = cle;
+  currentTheme = Object.assign({}, paletteJoueur(joueurs[0]), themeEnPlus || {});
+  try {
+    dessinerTourelle(x, y, angle, gridSize * 0.9, false, performance.now());
+  } finally {
+    joueurActif = avantJoueur;
+    currentTheme = avantTheme;
+    tourelleModele = null;
+  }
+}
 function triggerWin() {
   hasWon = true;
   gameOver = true;
@@ -14626,6 +15023,24 @@ function pixelsSerpentIB(cle) {
   return reduireIB(grand);
 }
 
+// --- Tourelles : la tourelle dessinée par le jeu en grand, canon vers le haut à droite, réduite en 24 x 24 ---
+function pixelsTourelleIB(cle) {
+  const grand = document.createElement('canvas');
+  grand.width = grand.height = 96;
+  const ctxJeu = ctx;
+  ctx = grand.getContext('2d');
+  try {
+    ctx.translate(34, 62);
+    ctx.scale(2.6, 2.6);
+    dessinerTourelleModele(0, 0, -Math.PI / 4, cle, {glow: false});
+  } catch (err) {
+    return null;
+  } finally {
+    ctx = ctxJeu;
+  }
+  return reduireIB(grand);
+}
+
 const cacheIconesBoutique = {};
 // url (data:) de l'icône d'un objet de la Boutique, ou null s'il n'a pas de dessin à lui
 function urlIconeBoutique(cle) {
@@ -14643,6 +15058,8 @@ function urlIconeBoutique(cle) {
     pixels = pixelsSkinIB(nom);
   } else if (categorie === 'serpent') {
     pixels = pixelsSerpentIB(nom);
+  } else if (categorie === 'tourelle') {
+    pixels = pixelsTourelleIB(nom);
   }
   cacheIconesBoutique[cle] = pixels ? canvasDepuisIB(pixels).toDataURL() : null;
   return cacheIconesBoutique[cle];
@@ -14708,6 +15125,8 @@ const REPLIQUES_SIFFLET = {
   serpent: ['« {nom} » ? Il te va comme une seconde peau. Sss.', 'Très chic. Je portais le même dans ma jeunesse.',
     'Avec « {nom} », tous les serpents vont te regarder.', 'Une mue de luxe, garantie sans démangeaisons.',
     'Ah, « {nom} » ! Tu as l\'œil, l\'ami.'],
+  tourelle: ['« {nom} » sur ton dos ? Les ennemis vont trembler.', 'Une tourelle neuve, ça se respecte. Sss.',
+    'Avec « {nom} », tu tires avec style.', 'Elle tire aussi bien que l\'ancienne. Mais avec plus de classe.'],
   skin: ['Ces ennemis-là ? Ils sont tout à fait effrayants.', 'Bon choix d\'ennemis, sss.',
     'Ceux-là piquent un peu. Enfin, beaucoup.', 'Des ennemis bien élevés. Ils mordent quand même.'],
   capacite: ['Coupe-la si tu veux corser la partie. Moi je dis ça…', 'C\'est gratuit, mais tu peux la laisser au vestiaire.',
@@ -14762,6 +15181,12 @@ const REPLIQUES_OBJETS = {
   'serpent:galaxie': ['Il a avalé le ciel de nuit. Les étoiles, c\'est cadeau.'],
   'serpent:arcenciel': ['Toutes les couleurs à la fois. Tu ne passeras pas inaperçu.'],
   'serpent:roi': ['L\'or le plus fin du plateau. Même ma couronne est jalouse.'],
+  'tourelle:canon': ['Un canon de pirate. Boum, et l\'ennemi part par le fond.'],
+  'tourelle:arbalete': ['Une arbalète ! Silencieuse, élégante, mortelle.'],
+  'tourelle:fleur': ['Un tournesol qui tire. Ne me demande pas comment.'],
+  'tourelle:gatling': ['Trois canons qui tournent. Ça fait un bruit… délicieux.'],
+  'tourelle:blaster': ['Un blaster du futur. Je l\'ai trouvé dans une étoile filante.'],
+  'tourelle:dragon': ['Une tête de dragon qui crache du feu. Pas dans ma boutique, merci.'],
   'serpent:classique': ['Le look de toujours. Les classiques ne se démodent pas.'],
   'theme:lave': ['La Lave… il fait chaud là-bas. Prends de l\'eau.'],
   'theme:ocean': ['L\'Océan. Je n\'y vais jamais, je nage mal.'],
@@ -14907,6 +15332,7 @@ const CATEGORIES_BOUTIQUE = [
   {cle: 'capacites', nom: 'Capacités'},
   {cle: 'themes', nom: 'Thèmes'},
   {cle: 'serpents', nom: 'Skins du serpent'},
+  {cle: 'tourelles', nom: 'Tourelles'},
   {cle: 'skins', nom: 'Skins d\'ennemis'}
 ];
 const ICONES_THEMES = {neon: '💡', espace: '🔭', lave: '🌋', ocean: '🐢', aurore: '❄️', foret: '🌱', desert: '🧭', synthwave: '📼', halloween: '🎃'};
@@ -15009,6 +15435,22 @@ function definirObjets() {
         acheter: () => acheterContenu('serpent', cle) && (choisirSkinSerpent(cle) || true), quoi: 'skin ' + s.nom,
         basculer: debloque && !actuel ? () => choisirSkinSerpent(cle) : null, texteBasculer: 'Jouer avec',
         replique: debloque ? repliqueSifflet('serpent', {nom: s.nom}) : repliqueSifflet('contenu', {nom: s.nom, prix})};
+    }};
+  });
+
+  Object.keys(skinsTourelle).forEach(cle => {
+    const t = skinsTourelle[cle];
+    objetsBoutique['tourelle:' + cle] = {categorie: 'tourelles', icone: t.icone, nom: t.nom, etat: () => {
+      const debloque = contenuDebloque('tourelle', cle);
+      const prix = debloque ? null : prixContenu('tourelle', cle);
+      const actuel = cle === cleTourelleJoueur({numero: 0});
+      return {verrouille: !debloque, actif: actuel, prix,
+        detail: [t.detail, !debloque ? 'Une tourelle pour ton serpent, à acheter' : actuel ? 'C\'est la tourelle de ton serpent'
+          : 'Une tourelle à toi'],
+        // achetée : le serpent la porte tout de suite
+        acheter: () => acheterContenu('tourelle', cle) && (choisirSkinTourelle(cle) || true), quoi: 'tourelle ' + t.nom,
+        basculer: debloque && !actuel ? () => choisirSkinTourelle(cle) : null, texteBasculer: 'Jouer avec',
+        replique: debloque ? repliqueSifflet('tourelle', {nom: t.nom}) : repliqueSifflet('contenu', {nom: t.nom, prix})};
     }};
   });
 
@@ -15145,7 +15587,7 @@ ficheBasculerEl.addEventListener('click', () => {
   if (e.basculer) e.basculer();
   rafraichirMenuBuffs();
   // buffs, améliorations, capacités : Sifflet commente ce qui part ou reste
-  if (e.basculer && o.categorie !== 'themes' && o.categorie !== 'skins' && o.categorie !== 'serpents') {
+  if (e.basculer && !['themes', 'serpents', 'tourelles', 'skins'].includes(o.categorie)) {
     messageBoutique(repliqueSifflet(o.etat().actif ? 'emporter' : 'laisser', {nom: o.nom}));
   }
 });
@@ -15193,7 +15635,7 @@ function rafraichirMenuBuffs() {
   etageresEl.querySelectorAll('.objet').forEach(btn => {
     const o = objetsBoutique[btn.dataset.cle];
     const e = o.etat();
-    const aChoisir = ['themes', 'serpents', 'skins'].includes(o.categorie);
+    const aChoisir = ['themes', 'serpents', 'tourelles', 'skins'].includes(o.categorie);
     btn.classList.toggle('verrouille', !!e.verrouille);
     btn.classList.toggle('cadenas', !!e.verrouille && !e.max); // pas encore à toi (une amélioration au niveau 0 n'a pas de cadenas)
     btn.classList.toggle('actif', !e.verrouille && !!e.actif);
@@ -15221,7 +15663,7 @@ function rafraichirMenuBuffs() {
   // comptoir : la fiche de l'objet choisi
   const o = objetsBoutique[objetChoisi];
   const e = o.etat();
-  const aChoisir = ['themes', 'serpents', 'skins'].includes(o.categorie);
+  const aChoisir = ['themes', 'serpents', 'tourelles', 'skins'].includes(o.categorie);
   document.getElementById('ficheIcone').innerHTML = htmlIconeBoutique(objetChoisi, o.icone);
   document.getElementById('ficheNom').textContent = o.nom;
   const niveauEl = document.getElementById('ficheNiveau');
@@ -15267,6 +15709,7 @@ function rafraichirMenuBuffs() {
 // menu ☰ : thèmes et skins verrouillés grisés, avec ce qu'il faut faire en bulle d'aide
 function majVerrous() {
   majBoutonsSkinSerpent();
+  majBoutonsSkinTourelle();
   document.querySelectorAll('.theme-btn').forEach(b => {
     const ok = contenuDebloque('theme', b.dataset.theme);
     b.classList.toggle('verrouille', !ok);
@@ -16048,6 +16491,10 @@ function dessinerSerpentApercu(now) {
   waitingToStart = countdownActive = gameOver = false;
   try {
     dessinerSerpentModele(serpentApercu, (now % pasSerpentApercu) / pasSerpentApercu, cleSkinJoueur({numero: 0}));
+    // sa tourelle, qui vise le boss
+    const pos = serpentApercu.turretPixelPos;
+    const boss = ennemisApercu[ennemisApercu.length - 1];
+    if (pos) dessinerTourelleModele(pos.x, pos.y, Math.atan2(boss.y - pos.y, boss.x - pos.x), cleTourelleJoueur({numero: 0}));
   } finally {
     waitingToStart = attente;
     countdownActive = decompte;
@@ -16061,7 +16508,8 @@ function majLegendeApercu() {
   const serpent = skinsSerpent[cleSkinJoueur({numero: 0})];
   document.getElementById('apercuLegende').textContent =
     'Aperçu : ' + (theme ? theme.textContent.trim() : '') + ' · ' + (skin ? skin.textContent.trim() : '') +
-    ' · ' + serpent.icone + ' ' + serpent.nom;
+    ' · ' + serpent.icone + ' ' + serpent.nom + ' · ' + skinsTourelle[cleTourelleJoueur({numero: 0})].icone + ' ' +
+    skinsTourelle[cleTourelleJoueur({numero: 0})].nom;
 }
 
 function dessinerApercu() {
