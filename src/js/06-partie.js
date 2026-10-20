@@ -61,7 +61,7 @@ function init() {
   bossSpawnPosition = null;
   reinitialiserAttaquesBoss(); // js/13-attaques-boss.js
   hasWon = false;
-  fireworks = [];
+  viderFeuxArtifice(); // js/14-feux-artifice.js
   previousFrameTime = 0;
   isPaused = false;
   pauseBtn.textContent = '⏸️ Pause';
