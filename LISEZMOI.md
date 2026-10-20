@@ -9,6 +9,7 @@ Le jeu se modifie dans `src/`, puis on régénère le fichier unique `snake.html
     python3 outils/compare_solo.py ancien.html snake.html  # même partie solo rejouée sur les deux fichiers
     python3 outils/test_tuto.py snake.html [captures]  # tutoriel joué en entier, écran d'aide, astuces
     python3 outils/test_succes.py snake.html [captures] # succès : déblocages, bannière, écran 🏆, sauvegarde
+    python3 outils/test_feux_artifice.py snake.html [captures] # feu d'artifice de victoire : un style par thème, léger
     python3 outils/test_icones.py snake.html [captures] # aucun emoji affiché, icônes pixel partout, polices chargées
     python3 outils/test_options.py snake.html [captures] # plateau 1080p/1440p/4K net, menu ⚙️ Options, touches
     python3 outils/test_skins_serpent.py snake.html [captures] # skins du serpent et de la tourelle : achat, choix gardé
@@ -31,7 +32,7 @@ Dans le dépôt GitHub, le jeu publié est `index.html` à la racine : voir « V
   04 joueurs (solo / coop) · 05 sons · 06 partie (init, HUD, pommes, ennemis, combat) ·
   07 boucle (tick, pause, renderLoop) · 08 dessin du serpent · 09 dessin de la scène, overlays, tutoriels ·
   10 dessin des ennemis et boss · 11 dessin des pommes · 12 décor animé ·
-  13 dessin du combat (tourelle, yeux, langue) · 14 fin de partie et meilleurs scores · 15 commandes (clavier, souris) ·
+  13 dessin du combat (tourelle, yeux, langue) · 14 fin de partie, feux d'artifice de victoire (un style par thème) et meilleurs scores · 15 commandes (clavier, souris) ·
   16 icônes 24 x 24 de la Boutique, Boutique (ancien menu des buffs) · 17 manettes · 18 aide, aperçu, astuces, disposition, options, succès, tactile, tutoriel · 19 démarrage ·
   20 jeu à deux en ligne (code de salle, Trystero).
 

@@ -16,67 +16,193 @@ function triggerWin() {
   launchFireworks();
 }
 
-// lance plusieurs fusées à des instants décalés, qui explosent en gerbes de particules colorées
-function launchFireworks() {
-  const colors = ['#ff1744', '#ffd700', '#40c4ff', '#69f0ae', '#ff9100', '#e040fb', '#ffffff'];
-  const now = performance.now();
+// --- Feux d'artifice de victoire : un style par thème ---
+// Pensés pour un vieux PC : 6 fusées par salve, 20 à 32 particules par gerbe, aucun flou
+// (shadowBlur) ni dégradé, et les objets sont recyclés au lieu d'être recréés à chaque gerbe.
+// fireworks contient fusées et particules ; une fusée a vie < 0 tant qu'elle attend son tour.
+const reserveArtifice = [];
 
-  for (let i = 0; i < 10; i++) {
-    fireworks.push({
-      x: 40 + Math.random() * (largeurPlateau - 80),
-      y: hauteurPlateau,
-      targetY: 50 + Math.random() * 140,
-      vy: -0.28 - Math.random() * 0.08,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      exploded: false,
-      spawnTime: now,
-      launchDelay: i * 280 + Math.random() * 300,
-      burstParticles: []
-    });
+function elementArtifice(style, forme, x, y, vx, vy, vieMax, couleur, taille) {
+  const e = reserveArtifice.pop() || {};
+  e.style = style; e.forme = forme;
+  e.x = x; e.y = y; e.vx = vx; e.vy = vy;
+  e.vie = 0; e.vieMax = vieMax;
+  e.couleur = couleur; e.taille = taille;
+  e.graine = Math.random() * 6.28; // décale clignotements et balancements d'une particule à l'autre
+  fireworks.push(e);
+  return e;
+}
+
+// gerbe en cercle : n particules réparties autour de (x, y), vitesse entre vMin et vMax
+function gerbeArtifice(style, forme, x, y, n, vMin, vMax, vieMin, vieMax, couleurs, tMin, tMax) {
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.2;
+    const v = vMin + Math.random() * (vMax - vMin);
+    elementArtifice(style, forme, x, y, Math.cos(a) * v, Math.sin(a) * v,
+      vieMin + Math.random() * (vieMax - vieMin), couleurs[i % couleurs.length], tMin + Math.random() * (tMax - tMin));
   }
 }
 
-// met à jour fusées + particules d'explosion, entièrement indépendant de gameOver/updateCombat
+// gravite et air (freinage) en px/ms ; fusee : couleur, durée de montée et longueur de traînée (ms de vol)
+const stylesArtifice = {
+  // néon : traits lumineux nets, en anneau
+  neon: {
+    gravite: 0.00010, air: 0.0012, fusee: {trainee: 45},
+    eclater(f) {
+      const c = f.couleur === '#00f0ff' ? ['#39ff14', '#00f0ff'] : [f.couleur, '#00f0ff'];
+      gerbeArtifice(this, 'trait', f.x, f.y, 26, 0.17, 0.2, 900, 1100, c, 2, 2);
+    },
+    couleurs: ['#39ff14', '#ff2079', '#b026ff', '#00f0ff']
+  },
+  // espace : étoiles filantes en diagonale qui éclatent en scintillements et une onde
+  espace: {
+    gravite: 0.00002, air: 0.0016, fusee: {trainee: 110, filante: true},
+    eclater(f) {
+      gerbeArtifice(this, 'etoile', f.x, f.y, 20, 0.03, 0.14, 1200, 1800, ['#40c4ff', '#ea80fc', '#ffff8d', '#ffffff'], 2, 4);
+      elementArtifice(this, 'onde', f.x, f.y, 0, 0, 700, '#b3e5fc', 0.09);
+    },
+    couleurs: ['#ffffff']
+  },
+  // lave : jet de braises vers le haut qui retombent en refroidissant
+  lave: {
+    gravite: 0.00050, air: 0.0010, fusee: {trainee: 60},
+    eclater(f) {
+      for (let i = 0; i < 26; i++) {
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.6; // surtout vers le haut, comme un volcan
+        const v = 0.08 + Math.random() * 0.17;
+        elementArtifice(this, 'braise', f.x, f.y, Math.cos(a) * v, Math.sin(a) * v,
+          1000 + Math.random() * 600, '', 2 + Math.random() * 2);
+      }
+    },
+    couleurs: ['#ff9100']
+  },
+  // océan : une grosse bulle monte lentement et éclate en petites bulles qui remontent en ondulant
+  ocean: {
+    gravite: -0.00014, air: 0.0025, fusee: {bulle: true, montee: 1700},
+    eclater(f) {
+      gerbeArtifice(this, 'bulle', f.x, f.y, 16, 0.04, 0.12, 1300, 1900, ['#80deea', '#b2ebf2', '#1de9b6', '#ffffff'], 2, 5);
+      elementArtifice(this, 'onde', f.x, f.y, 0, 0, 350, '#e0f7fa', 0.06);
+    },
+    couleurs: ['#b2ebf2']
+  },
+  // aurore : flocons aux couleurs de l'aurore qui tournent et descendent doucement
+  aurore: {
+    gravite: 0.00004, air: 0.0022, fusee: {trainee: 40},
+    eclater(f) {
+      gerbeArtifice(this, 'flocon', f.x, f.y, 18, 0.06, 0.13, 1800, 2400, ['#80d8ff', '#69f0ae', '#b388ff', '#e1f5fe'], 3, 4.5);
+    },
+    couleurs: ['#e1f5fe']
+  },
+  // forêt : nuée de lucioles qui clignotent et quelques feuilles qui tombent en se balançant
+  foret: {
+    gravite: 0, air: 0.0022, fusee: {trainee: 40},
+    eclater(f) {
+      gerbeArtifice(this, 'luciole', f.x, f.y, 18, 0.03, 0.11, 1800, 2600, ['#eeff41', '#c6ff00', '#ffee58'], 2, 2);
+      for (let i = 0; i < 5; i++) {
+        elementArtifice(this, 'feuille', f.x + (Math.random() - 0.5) * 30, f.y, (Math.random() - 0.5) * 0.06, 0.02 + Math.random() * 0.03,
+          2000 + Math.random() * 600, i % 2 ? '#9ccc65' : '#ff8f00', 4);
+      }
+    },
+    couleurs: ['#c5e1a5']
+  },
+  // désert : « palmier » doré, des branches de sable qui retombent lourdement
+  desert: {
+    gravite: 0.00030, air: 0.0012, fusee: {trainee: 60},
+    eclater(f) {
+      const base = Math.random();
+      for (let b = 0; b < 8; b++) {
+        const a = base + b * Math.PI / 4;
+        for (let k = 0; k < 4; k++) {
+          const v = 0.07 + k * 0.035;
+          elementArtifice(this, 'grain', f.x, f.y, Math.cos(a) * v, Math.sin(a) * v - 0.03,
+            1200 + k * 100, k === 3 ? '#e0f7fa' : (k % 2 ? '#ffb74d' : '#ffd54f'), k === 3 ? 3 : 2.5);
+        }
+      }
+    },
+    couleurs: ['#ffd54f']
+  },
+  // synthwave : deux anneaux de pixels parfaits (rose et cyan) et un trait de balayage horizontal
+  synthwave: {
+    gravite: 0.00006, air: 0.0012, fusee: {trainee: 50},
+    eclater(f) {
+      gerbeArtifice(this, 'pixel', f.x, f.y, 20, 0.17, 0.17, 1100, 1100, ['#ff2bd6'], 3, 3);
+      gerbeArtifice(this, 'pixel', f.x, f.y, 12, 0.09, 0.09, 1100, 1100, ['#00f0ff'], 3, 3);
+      elementArtifice(this, 'balayage', f.x, f.y, 0, 0, 450, '#ffe600', 0.35);
+    },
+    couleurs: ['#ff2bd6']
+  },
+  // halloween : étincelles orange et vertes, et trois chauves-souris qui s'envolent
+  halloween: {
+    gravite: 0.00012, air: 0.0014, fusee: {trainee: 50},
+    eclater(f) {
+      gerbeArtifice(this, 'etincelle', f.x, f.y, 18, 0.08, 0.17, 900, 1200, ['#ff7518', '#76ff03', '#ffab40'], 2, 3);
+      for (let i = 0; i < 3; i++) {
+        const a = -Math.PI / 2 + (i - 1) * 0.9 + (Math.random() - 0.5) * 0.4;
+        elementArtifice(this, 'chauve', f.x, f.y, Math.cos(a) * 0.08, Math.sin(a) * 0.08, 1800, '#b388ff', 7);
+      }
+    },
+    couleurs: ['#ff7518']
+  }
+};
+
+// lance une salve de fusées décalées dans le temps, dans le style du thème courant
+function launchFireworks() {
+  const style = stylesArtifice[currentThemeName] || stylesArtifice.neon;
+  const fusee = style.fusee;
+  for (let i = 0; i < 6; i++) {
+    let x, y, vx, vy, duree;
+    if (fusee.filante) {
+      // étoile filante : part d'en haut, file en diagonale vers le bas
+      const versDroite = Math.random() < 0.5;
+      duree = 700 + Math.random() * 300;
+      vx = (versDroite ? 1 : -1) * (0.28 + Math.random() * 0.1);
+      vy = 0.08 + Math.random() * 0.06;
+      x = versDroite ? 20 + Math.random() * largeurPlateau * 0.3 : largeurPlateau * 0.7 + Math.random() * (largeurPlateau * 0.3 - 20);
+      y = 15 + Math.random() * 70;
+    } else {
+      duree = (fusee.montee || 1000) + Math.random() * 300;
+      x = 40 + Math.random() * (largeurPlateau - 80);
+      y = hauteurPlateau;
+      vx = (Math.random() - 0.5) * 0.03;
+      vy = (50 + Math.random() * 140 - y) / duree;
+    }
+    const f = elementArtifice(style, fusee.bulle ? 'fuseeBulle' : 'fusee', x, y, vx, vy, duree,
+      style.couleurs[i % style.couleurs.length], fusee.trainee || 0);
+    f.vie = -(i * 330 + Math.random() * 250); // attend son tour
+  }
+}
+
+// met à jour fusées + particules, entièrement indépendant de gameOver/updateCombat
 // (pour continuer à s'animer pendant l'écran de victoire)
 function updateFireworks(deltaMs) {
   if (fireworks.length === 0) return;
-  const now = performance.now();
-
-  fireworks.forEach(fw => {
-    if (!fw.exploded) {
-      if (now - fw.spawnTime < fw.launchDelay) return; // pas encore lancée
-      fw.y += fw.vy * deltaMs;
-      if (fw.y <= fw.targetY) {
-        fw.exploded = true;
-        const colorVariants = [fw.color, '#ffffff'];
-        for (let i = 0; i < 45; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = 0.05 + Math.random() * 0.15;
-          fw.burstParticles.push({
-            x: fw.x, y: fw.y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            life: 0,
-            maxLife: 700 + Math.random() * 500,
-            color: colorVariants[Math.floor(Math.random() * colorVariants.length)],
-            radius: 1.5 + Math.random() * 1.5
-          });
-        }
+  const dt = Math.min(deltaMs, 50); // après une saccade, pas de bond géant
+  let n = 0;
+  // les éléments ajoutés pendant la boucle (gerbes) sont traités dans la même boucle ; le tableau
+  // est compacté sur place (n ≤ i), sans créer de nouveau tableau
+  for (let i = 0; i < fireworks.length; i++) {
+    const e = fireworks[i];
+    const enAttente = e.vie < 0;
+    e.vie += dt;
+    if (enAttente) { fireworks[n++] = e; continue; }
+    e.x += e.vx * dt;
+    e.y += e.vy * dt;
+    if (e.forme === 'fusee' || e.forme === 'fuseeBulle') {
+      if (e.vie >= e.vieMax) {
+        e.style.eclater(e);
         playFireworkPopSound();
+        reserveArtifice.push(e);
+        continue;
       }
     } else {
-      fw.burstParticles.forEach(p => {
-        p.x += p.vx * deltaMs;
-        p.y += p.vy * deltaMs;
-        p.vy += 0.0004 * deltaMs; // légère gravité
-        p.life += deltaMs;
-      });
-      fw.burstParticles = fw.burstParticles.filter(p => p.life < p.maxLife);
+      if (e.vie >= e.vieMax) { reserveArtifice.push(e); continue; }
+      const freinage = 1 - e.style.air * dt;
+      e.vx *= freinage;
+      e.vy = e.vy * freinage + e.style.gravite * dt;
     }
-  });
-
-  // retire les fusées explosées dont toutes les particules sont éteintes
-  fireworks = fireworks.filter(fw => !fw.exploded || fw.burstParticles.length > 0);
+    fireworks[n++] = e;
+  }
+  fireworks.length = n;
 
   // relance une nouvelle salve tant que l'écran de victoire est affiché
   if (fireworks.length === 0 && hasWon) {
@@ -84,31 +210,160 @@ function updateFireworks(deltaMs) {
   }
 }
 
+const couleursBraise = ['#fff59d', '#ffab00', '#ff3d00', '#8d1c00'];
+
 function drawFireworks() {
-  fireworks.forEach(fw => {
-    if (!fw.exploded) {
-      if (performance.now() - fw.spawnTime < fw.launchDelay) return;
-      ctx.save();
-      ctx.fillStyle = fw.color;
-      ctx.shadowColor = fw.color;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(fw.x, fw.y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    } else {
-      fw.burstParticles.forEach(p => {
-        const progress = p.life / p.maxLife;
-        ctx.save();
-        ctx.globalAlpha = 1 - progress;
-        ctx.fillStyle = p.color;
+  if (fireworks.length === 0) return;
+  ctx.save();
+  for (let i = 0; i < fireworks.length; i++) {
+    const e = fireworks[i];
+    if (e.vie < 0) continue;
+    const t = e.vie / e.vieMax;
+    const x = e.x, y = e.y, s = e.taille;
+    let alpha = 1 - t;
+    switch (e.forme) {
+      case 'fusee':
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.moveTo(x - e.vx * s, y - e.vy * s);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = e.couleur;
+        ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+        break;
+      case 'fuseeBulle':
+        ctx.globalAlpha = 0.8;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x + Math.sin(e.vie * 0.006 + e.graine) * 4, y, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      case 'trait': // néon : un trait dans le sens du mouvement (un seul tracé, sans halo : le flou coûte cher)
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = s;
+        ctx.beginPath();
+        ctx.moveTo(x - e.vx * 55, y - e.vy * 55);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        break;
+      case 'etoile': { // espace : petite croix qui scintille
+        ctx.globalAlpha = alpha * (0.55 + 0.45 * Math.sin(e.vie * 0.02 + e.graine));
+        ctx.fillStyle = e.couleur;
+        const d = s * (1 - t * 0.5);
+        ctx.fillRect(x - d, y - 0.6, d * 2, 1.2);
+        ctx.fillRect(x - 0.6, y - d, 1.2, d * 2);
+        break;
+      }
+      case 'onde': // anneau qui s'élargit (espace, éclatement de bulle)
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, 4 + e.vie * s, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      case 'braise': { // lave : carré qui refroidit, du jaune au rouge sombre
+        ctx.globalAlpha = t < 0.75 ? 1 : (1 - t) * 4;
+        ctx.fillStyle = couleursBraise[Math.min(3, Math.floor(t * 4))];
+        const d = s * (1 - t * 0.5);
+        ctx.fillRect(x - d / 2, y - d / 2, d, d);
+        break;
+      }
+      case 'bulle': // océan : cercle creux avec un reflet, qui ondule en montant
+        ctx.globalAlpha = t < 0.7 ? 0.85 : (1 - t) * 2.8;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x + Math.sin(e.vie * 0.005 + e.graine) * 3, y, s, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + Math.sin(e.vie * 0.005 + e.graine) * 3 - s * 0.45, y - s * 0.55, 1.5, 1.5);
+        break;
+      case 'flocon': { // aurore : trois branches qui tournent lentement
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = e.couleur;
+        ctx.lineWidth = 1.2;
+        const r = e.vie * 0.0015 + e.graine;
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+          const dx = Math.cos(r + k * 1.047) * s, dy = Math.sin(r + k * 1.047) * s;
+          ctx.moveTo(x - dx, y - dy);
+          ctx.lineTo(x + dx, y + dy);
+        }
+        ctx.stroke();
+        break;
+      }
+      case 'luciole': { // forêt : point qui clignote et se promène, avec un halo carré pâle
+        const lx = x + Math.sin(e.vie * 0.003 + e.graine) * 6;
+        const ly = y + Math.cos(e.vie * 0.0023 + e.graine) * 4;
+        const lueur = alpha * (0.5 + 0.5 * Math.sin(e.vie * 0.012 + e.graine));
+        ctx.fillStyle = e.couleur;
+        ctx.globalAlpha = lueur * 0.25;
+        ctx.fillRect(lx - 3, ly - 3, 6, 6);
+        ctx.globalAlpha = lueur;
+        ctx.fillRect(lx - 1, ly - 1, 2, 2);
+        break;
+      }
+      case 'feuille': { // forêt : losange qui se balance en tombant
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = e.couleur;
+        const fx = x + Math.sin(e.vie * 0.004 + e.graine) * 10;
+        const r = Math.sin(e.vie * 0.004 + e.graine) * 0.8;
+        const ax = Math.cos(r) * s, ay = Math.sin(r) * s;
+        ctx.beginPath();
+        ctx.moveTo(fx - ax, y - ay);
+        ctx.lineTo(fx - ay * 0.4, y + ax * 0.4);
+        ctx.lineTo(fx + ax, y + ay);
+        ctx.lineTo(fx + ay * 0.4, y - ax * 0.4);
         ctx.fill();
-        ctx.restore();
-      });
+        break;
+      }
+      case 'grain': // désert : grain de sable doré
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = e.couleur;
+        ctx.fillRect(x - s / 2, y - s / 2, s, s);
+        break;
+      case 'pixel': // synthwave : gros pixel aligné sur la grille
+        ctx.globalAlpha = t < 0.6 ? 1 : (1 - t) * 2.5;
+        ctx.fillStyle = e.couleur;
+        ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2), s, s);
+        break;
+      case 'balayage': { // synthwave : trait horizontal qui s'étire puis s'efface
+        const l = e.vie * s;
+        ctx.globalAlpha = alpha * 0.8;
+        ctx.fillStyle = e.couleur;
+        ctx.fillRect(x - l, y - 1, l * 2, 2);
+        break;
+      }
+      case 'etincelle':
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = e.couleur;
+        ctx.fillRect(x - s / 2, y - s / 2, s, s);
+        break;
+      case 'chauve': { // halloween : silhouette de chauve-souris qui bat des ailes
+        ctx.globalAlpha = t < 0.7 ? 1 : (1 - t) * 3.3;
+        ctx.fillStyle = e.couleur;
+        const battement = Math.sin(e.vie * 0.025 + e.graine);
+        ctx.beginPath();
+        ctx.moveTo(x, y - s * 0.3);
+        ctx.lineTo(x + s, y - s * 0.6 * battement);
+        ctx.lineTo(x + s * 0.55, y + s * 0.15);
+        ctx.lineTo(x + s * 0.3, y);
+        ctx.lineTo(x, y + s * 0.4);
+        ctx.lineTo(x - s * 0.3, y);
+        ctx.lineTo(x - s * 0.55, y + s * 0.15);
+        ctx.lineTo(x - s, y - s * 0.6 * battement);
+        ctx.fill();
+        break;
+      }
     }
-  });
+  }
+  ctx.restore();
 }
 
 // infos affichées sur l'écran de game over (null pendant la partie)

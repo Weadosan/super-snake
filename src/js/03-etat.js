@@ -263,7 +263,7 @@ const bossRewardScore = 150;
 // --- Victoire à 400 segments ---
 const winSnakeLength = 400;
 let hasWon = false;
-let fireworks = []; // {x, y, vy, exploded, color, spawnTime, launchDelay} + particules d'explosion propres
+let fireworks = []; // fusées et particules du feu d'artifice de victoire (js/14-fin-de-partie.js)
 const endgameAppleCount = 5; // total de pommes visées (pomme principale + pommes bonus)
 let endgameNoEnemies = false;
 let endgameTransitionMessageUntil = 0;

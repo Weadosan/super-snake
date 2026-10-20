@@ -575,17 +575,20 @@ function playVictorySound() {
   });
 }
 
+let bufferPetard = null; // bruit du pétard, calculé une seule fois (pas à chaque gerbe)
 function playFireworkPopSound() {
   if (isMuted) return;
   const ctx = getAudioCtx();
-  const bufferSize = ctx.sampleRate * 0.15;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  if (!bufferPetard || bufferPetard.sampleRate !== ctx.sampleRate) {
+    const bufferSize = Math.floor(ctx.sampleRate * 0.15);
+    bufferPetard = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = bufferPetard.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
   }
   const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
+  noise.buffer = bufferPetard;
   const filter = ctx.createBiquadFilter();
   filter.type = 'highpass';
   filter.frequency.setValueAtTime(1500, ctx.currentTime);
