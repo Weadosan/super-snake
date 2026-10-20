@@ -92,7 +92,8 @@ function styleArtifice() {
 }
 
 function qualiteArtifice() {
-  return optionQualite === 'basse' ? 0.5 : optionQualite === 'moyenne' ? 0.75 : 1;
+  // le mode Performances (js/18-options.js) allège aussi le feu d'artifice
+  return optionQualite === 'basse' || niveauPerf >= 2 ? 0.5 : optionQualite === 'moyenne' || niveauPerf >= 1 ? 0.75 : 1;
 }
 
 function eclatArtifice(x, y, angle, vitesse, couleur, forme, vieMax, taille, gravite, frein) {
@@ -109,7 +110,7 @@ function eclatArtifice(x, y, angle, vitesse, couleur, forme, vieMax, taille, gra
 // lance une salve de fusées à des instants décalés, chacune explose en gerbe du thème en cours
 function launchFireworks() {
   const style = styleArtifice();
-  const nombre = optionQualite === 'basse' ? 5 : 7;
+  const nombre = qualiteArtifice() === 0.5 ? 5 : 7;
   for (let i = 0; i < nombre; i++) {
     const f = reserveArtifice.pop() || {};
     f.fusee = true; f.style = style;
@@ -382,10 +383,10 @@ function dessinerEcranGameOver() {
   ctx.globalAlpha = apparition;
   ctx.fillStyle = 'rgba(10, 0, 4, 0.72)';
   ctx.fillRect(0, 0, w, h);
-  if (!vignetteGameOverCache) {
+  if (!vignetteGameOverCache || vignetteGameOverCache.echelle !== echelleRendu) {
     vignetteGameOverCache = creerVignette('rgba(255, 23, 68, 0)', 'rgba(255, 23, 68, 0.35)');
   }
-  ctx.drawImage(vignetteGameOverCache, 0, 0);
+  poserCalque(vignetteGameOverCache, 0, 0);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

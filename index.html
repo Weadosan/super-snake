@@ -7670,7 +7670,10 @@ function renderLoop(now) {
   } else {
     const timeScale = now < slowMotionUntil ? slowMotionFactor : 1;
 
-    if (!gameOver) updateCombat(frameDelta * timeScale);
+    if (!gameOver) {
+      updateCombat(frameDelta * timeScale);
+      surveillerPerformances(now, frameDelta);
+    }
     majTuto(now, frameDelta);
     majAstuces(now);
     majSucces(now, frameDelta);
@@ -8564,8 +8567,10 @@ function draw(t) {
   const shakeRemaining = shakeUntil - performance.now();
   if (shakeRemaining > 0) {
     const intensity = shakeMagnitude * (shakeRemaining / shakeDuration);
-    const offsetX = (Math.random() - 0.5) * 2 * intensity;
-    const offsetY = (Math.random() - 0.5) * 2 * intensity;
+    // décalage arrondi aux pixels réels : les images en mémoire restent recopiées pixel pour pixel
+    // (un décalage au demi-pixel les faisait toutes ré-échantillonner pendant la secousse)
+    const offsetX = Math.round((Math.random() - 0.5) * 2 * intensity * echelleRendu) / echelleRendu;
+    const offsetY = Math.round((Math.random() - 0.5) * 2 * intensity * echelleRendu) / echelleRendu;
     ctx.translate(offsetX, offsetY);
   }
 
@@ -9080,12 +9085,12 @@ function drawSlowMotionOverlay() {
   const w = largeurPlateau, h = hauteurPlateau;
 
   // vignette bleue sur les bords (le centre reste net)
-  if (!vignetteRalentiCache) {
+  if (!vignetteRalentiCache || vignetteRalentiCache.echelle !== echelleRendu) {
     vignetteRalentiCache = creerVignette('rgba(33, 150, 243, 0)', 'rgba(33, 150, 243, 0.55)');
   }
   ctx.save();
   ctx.globalAlpha = force;
-  ctx.drawImage(vignetteRalentiCache, 0, 0);
+  poserCalque(vignetteRalentiCache, 0, 0);
   ctx.restore();
 
   // liseré bleu fin sur les bords (ne cache pas le terrain), qui pulse légèrement
@@ -14072,7 +14077,29 @@ function couleurBossEnrage(couleur, rage) {
   return `rgb(${m(r, 230)}, ${m(g, 20)}, ${m(b, 40)})`;
 }
 
+// contours des ennemis sans flou : le remplissage de la même forme en porte déjà la lueur ; flouter
+// aussi chaque contour doublait le travail pour un halo presque identique (gros ralentissement à
+// l'apparition des ennemis et du boss sur un vieux PC)
+const traitAvecOmbre = CanvasRenderingContext2D.prototype.stroke;
+const ombreFloue = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+function traitSansOmbre() {
+  const flou = ombreFloue.get.call(this);
+  if (!flou) return traitAvecOmbre.apply(this, arguments);
+  ombreFloue.set.call(this, 0);
+  traitAvecOmbre.apply(this, arguments);
+  ombreFloue.set.call(this, flou);
+}
+
 function drawEnemies() {
+  ctx.stroke = traitSansOmbre;
+  try {
+    dessinerEnnemis();
+  } finally {
+    delete ctx.stroke;
+  }
+}
+
+function dessinerEnnemis() {
   enemies.forEach(e => {
     const isFlashing = performance.now() < e.hitFlashUntil;
     const isFrozen = performance.now() < (e.frozenUntil || 0);
@@ -15084,7 +15111,8 @@ function styleArtifice() {
 }
 
 function qualiteArtifice() {
-  return optionQualite === 'basse' ? 0.5 : optionQualite === 'moyenne' ? 0.75 : 1;
+  // le mode Performances (js/18-options.js) allège aussi le feu d'artifice
+  return optionQualite === 'basse' || niveauPerf >= 2 ? 0.5 : optionQualite === 'moyenne' || niveauPerf >= 1 ? 0.75 : 1;
 }
 
 function eclatArtifice(x, y, angle, vitesse, couleur, forme, vieMax, taille, gravite, frein) {
@@ -15101,7 +15129,7 @@ function eclatArtifice(x, y, angle, vitesse, couleur, forme, vieMax, taille, gra
 // lance une salve de fusées à des instants décalés, chacune explose en gerbe du thème en cours
 function launchFireworks() {
   const style = styleArtifice();
-  const nombre = optionQualite === 'basse' ? 5 : 7;
+  const nombre = qualiteArtifice() === 0.5 ? 5 : 7;
   for (let i = 0; i < nombre; i++) {
     const f = reserveArtifice.pop() || {};
     f.fusee = true; f.style = style;
@@ -15374,10 +15402,10 @@ function dessinerEcranGameOver() {
   ctx.globalAlpha = apparition;
   ctx.fillStyle = 'rgba(10, 0, 4, 0.72)';
   ctx.fillRect(0, 0, w, h);
-  if (!vignetteGameOverCache) {
+  if (!vignetteGameOverCache || vignetteGameOverCache.echelle !== echelleRendu) {
     vignetteGameOverCache = creerVignette('rgba(255, 23, 68, 0)', 'rgba(255, 23, 68, 0.35)');
   }
-  ctx.drawImage(vignetteGameOverCache, 0, 0);
+  poserCalque(vignetteGameOverCache, 0, 0);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -18748,6 +18776,64 @@ let optionQualite = lireOption('qualite', 'haute'); // 'haute' | 'moyenne' | 'ba
 const echelleMaxQualite = {haute: 6, moyenne: 3, basse: 1};
 const echelleMaxEnLigne = 2; // l'hôte envoie au plus 800 x 800 à son ami
 
+// --- Mode Performances (auto) ---
+// Si les images mettent trop longtemps à se dessiner pendant une partie (moins de ~40 par seconde pendant
+// 2 secondes), le jeu s'allège tout seul, par paliers : 1 = plus d'ombres floues (lueurs des ennemis, pommes,
+// tirs...), 2 et 3 = image du plateau moins fine (bien moins de pixels à dessiner). Il ne remonte pas en cours de
+// session (pour ne pas osciller) et il est retenu pour les parties suivantes, qui ne ralentissent donc pas au
+// début ; repasser l'option sur Non puis Oui dans ⚙️ Options rend tous les effets.
+let optionPerfAuto = lireOption('perfAuto', true);
+// niveau retenu des parties précédentes ; la finesse du plateau suit au premier réglage (js/20-en-ligne.js)
+let niveauPerf = optionPerfAuto ? Math.min(Number(lireOption('niveauPerf', 0)) || 0, 3) : 0;
+const echelleMaxPerf = [99, 99, 2, 1.5];
+const seuilImageLente = 25; // ms : au-delà, l'image est jugée lente (moins de 40 images/s)
+const surveillancePerf = {debut: 0, images: 0, lentes: 0, pause: 0};
+const ombreFlouePrototype = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+appliquerOmbresPerf();
+
+// appelé à chaque image d'une partie en cours (renderLoop, js/07-boucle.js)
+function surveillerPerformances(now, frameDelta) {
+  const s = surveillancePerf;
+  if (!optionPerfAuto || niveauPerf >= echelleMaxPerf.length - 1 || now < s.pause) return;
+  if (frameDelta > 250) { // onglet caché, chargement... : on recommence la mesure
+    s.debut = 0;
+    return;
+  }
+  if (!s.debut) {
+    s.debut = now;
+    s.images = s.lentes = 0;
+    return;
+  }
+  s.images++;
+  if (frameDelta > seuilImageLente) s.lentes++;
+  if (now - s.debut < 2000) return;
+  const tropLent = s.lentes > s.images * 0.5;
+  s.debut = 0;
+  if (tropLent) {
+    changerNiveauPerf(niveauPerf + 1);
+    s.pause = now + 1500; // laisse le temps au nouveau réglage de faire effet avant de remesurer
+  }
+}
+
+// niveau 1 et plus : les ombres floues du plateau sont ignorées (l'aperçu du menu, sur son propre canvas, les garde)
+function appliquerOmbresPerf() {
+  const ctxJeu = canvas.getContext('2d');
+  if (niveauPerf >= 1) {
+    ombreFlouePrototype.set.call(ctxJeu, 0);
+    Object.defineProperty(ctxJeu, 'shadowBlur', {configurable: true, get: () => 0, set: () => {}});
+  } else {
+    delete ctxJeu.shadowBlur;
+  }
+}
+
+function changerNiveauPerf(niveau) {
+  niveauPerf = niveau;
+  ecrireOption('niveauPerf', niveau);
+  appliquerOmbresPerf();
+  majResolutionPlateau();
+  if (typeof majMenuOptions === 'function' && optionsOuvertes) majMenuOptions();
+}
+
 // --- Taille du plateau ---
 function enPleinEcran() {
   return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -18758,6 +18844,7 @@ function majResolutionPlateau() {
   const cote = canvas.clientWidth;
   if (!cote) return; // plateau caché (menu ☰ ouvert) : on garde la résolution actuelle
   let max = echelleMaxQualite[optionQualite] || echelleMaxQualite.haute;
+  max = Math.min(max, echelleMaxPerf[niveauPerf]); // mode Performances : image moins fine si le PC peine
   if (enLigne && enLigne.role === 'hote') max = Math.min(max, echelleMaxEnLigne);
   const echelle = Math.min(max, Math.max(1, cote * (window.devicePixelRatio || 1) / largeurPlateau));
   const largeur = Math.round(largeurPlateau * echelle);
@@ -18927,6 +19014,10 @@ optionsMenuEl.innerHTML = `
           <button data-valeur="basse">Basse</button>
         </div>
       </div>
+      <div class="options-ligne">
+        <span>Performances auto</span>
+        <button id="optionsPerf" class="options-bascule"></button>
+      </div>
       <p class="options-note" id="optionsInfoAffichage"></p>
 
       <h3>👥 Coop</h3>
@@ -18979,7 +19070,8 @@ function majInfoAffichage() {
   const cote = canvas.clientWidth;
   info.textContent = cote
     ? 'Plateau : ' + cote + ' px à l\'écran, image de ' + canvas.width + ' px.' +
-      (optionQualite !== 'haute' ? ' Choisis Haute pour une image plus nette.' : ' Baisse la qualité si le jeu saccade.')
+      (niveauPerf ? ' Performances auto : effets allégés car le jeu ralentissait.' :
+        optionQualite !== 'haute' ? ' Choisis Haute pour une image plus nette.' : ' Baisse la qualité si le jeu saccade.')
     : '';
 }
 
@@ -18998,6 +19090,9 @@ function majMenuOptions() {
   collision.classList.toggle('actif', capacitesActives.collisionJoueurs);
   document.querySelectorAll('#optionsTaille button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionTaillePlateau));
   document.querySelectorAll('#optionsQualite button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionQualite));
+  const perf = document.getElementById('optionsPerf');
+  perf.textContent = !optionPerfAuto ? 'Non' : niveauPerf ? '⚡ Allégé (' + niveauPerf + '/3)' : '✔ Oui';
+  perf.classList.toggle('actif', optionPerfAuto);
   optionsTouchesEl.querySelectorAll('button').forEach(b => {
     const action = b.dataset.action;
     b.textContent = action === actionEnAttente ? 'Appuie sur une touche…' : nomTouche(touches[action]);
@@ -19109,6 +19204,12 @@ document.querySelectorAll('#optionsQualite button').forEach(b => b.addEventListe
   majResolutionPlateau();
   majMenuOptions();
 }));
+document.getElementById('optionsPerf').addEventListener('click', () => {
+  optionPerfAuto = !optionPerfAuto;
+  ecrireOption('perfAuto', optionPerfAuto);
+  if (!optionPerfAuto) changerNiveauPerf(0); // tous les effets et toute la finesse reviennent
+  majMenuOptions();
+});
 document.getElementById('optionsTouchesDefaut').addEventListener('click', () => {
   touches = {...touchesParDefaut};
   actionEnAttente = null;
