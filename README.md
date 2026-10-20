@@ -28,6 +28,7 @@ Chaque test prend le fichier construit et échoue s'il voit une erreur JavaScrip
     python3 outils/test_collision.py snake.html
     python3 outils/test_tuto.py snake.html
     python3 outils/test_succes.py snake.html
+    python3 outils/test_feux_artifice.py snake.html
     python3 outils/test_icones.py snake.html
     python3 outils/test_options.py snake.html
     python3 outils/test_progression.py snake.html
