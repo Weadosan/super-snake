@@ -43,10 +43,10 @@ with sync_playwright() as p:
     # --- calcul pur : le bonus s'ajoute à la difficulté ---
     partie = "{longueur: 100, ennemis: 50, boss: 1, pommesOr: 2, victoire: false, dureeSecondes: 60, difficulte: 'normal'"
     g = page.evaluate('gainPartie(' + partie + ', maledictions: ["rapides", "unCoeur"]})')
-    verifier(g['base'] == 56 and g['bonusMaledictions'] == 0.65 and g['total'] == round(56 * 1.25 * 1.65),
-             'gain : base 56 x 1,25 (Normal) x 1,65 (malus)', (g['base'], g['bonusMaledictions'], g['total']))
+    verifier(g['base'] == 56 and g['bonusMaledictions'] == 0.65 and g['total'] == round(56 * 1.75 * 1.65),
+             'gain : base 56 x 1,75 (Normal) x 1,65 (malus)', (g['base'], g['bonusMaledictions'], g['total']))
     g = page.evaluate('gainPartie(' + partie + '})')
-    verifier(g['total'] == 70 and g['bonusMaledictions'] == 0, 'gain inchangé sans malus', g['total'])
+    verifier(g['total'] == 98 and g['bonusMaledictions'] == 0, 'gain inchangé sans malus', g['total'])
     tout = page.evaluate('bonusMaledictions(Object.keys(reglagesProgression.maledictions))')
     verifier(tout == 1.7, 'tous les malus : +170 %', tout)
     verifier(page.evaluate('Object.keys(textesMaledictions).length') == 8 and
@@ -122,8 +122,8 @@ with sync_playwright() as p:
       stats.goldenApplesEaten = 1; partieSucces.boss = 0; endGame()""")
     page.wait_for_timeout(1500)
     gain = page.evaluate('dernierGainPartie')
-    attendu = round((12 + 5 + 3) * 1.25 * 2.45)
-    verifier(gain and gain['total'] == attendu, 'gain avec malus (20 x 1,25 x 2,45)', gain and gain['total'])
+    attendu = round((12 + 5 + 3) * 1.75 * 2.45)
+    verifier(gain and gain['total'] == attendu, 'gain avec malus (20 x 1,75 x 2,45)', gain and gain['total'])
     texte = page.locator('#statsEcailles').inner_text()
     verifier('Malédiction' in texte and '×2,45' in texte and 'Bonus Normal' in texte, 'détail du bonus sous le jeu', texte.replace('\n', ' | '))
     verifier('+145 %' in page.evaluate('texteGainPartie()'), 'bonus sur l\'écran de game over', page.evaluate('texteGainPartie()'))

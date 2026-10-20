@@ -12,11 +12,12 @@ const fin = source.indexOf('\n};', debut);
 const reglages = new Function(source.slice(debut, fin + 3) + '\nreturn reglagesProgression;')();
 const g = reglages.gains;
 
-// parties typiques (moyennes estimées) ; à corriger avec de vraies parties si besoin
+// parties typiques : moyennes de 14 parties automatiques par difficulté (bots moyen et fort,
+// outils/parties_auto.py, 19 octobre 2026) ; minutes = durée moyenne d'une partie
 const profils = {
-  facile: {longueur: 90, ennemis: 45, boss: 0.6, pommesOr: 2, victoire: 0.05},
-  normal: {longueur: 70, ennemis: 35, boss: 0.4, pommesOr: 1.5, victoire: 0.02},
-  difficile: {longueur: 55, ennemis: 30, boss: 0.25, pommesOr: 1, victoire: 0.01}
+  facile: {longueur: 136, ennemis: 163, boss: 3.1, pommesOr: 12, victoire: 0, minutes: 6},
+  normal: {longueur: 76, ennemis: 74, boss: 0.8, pommesOr: 4.4, victoire: 0, minutes: 2.7},
+  difficile: {longueur: 79, ennemis: 51, boss: 0.4, pommesOr: 3.2, victoire: 0, minutes: 1.85}
 };
 // Écailles des succès réparties sur les 60 premières parties environ
 const totalSucces = 58 * g.succes.parDefaut;
@@ -32,9 +33,11 @@ const somme = l => l.reduce((a, b) => a + b, 0);
 const coutAmeliorations = somme(Object.values(reglages.ameliorations).map(a => somme(a.prix)));
 const coutBuffs = somme(Object.values(reglages.buffs));
 const coutThemes = somme(Object.values(reglages.themes));
-const coutTotal = coutAmeliorations + coutBuffs + coutThemes;
+const coutSkins = somme(Object.values(reglages.serpents)) + somme(Object.values(reglages.tourelles));
+const coutTotal = coutAmeliorations + coutBuffs + coutThemes + coutSkins;
 
-console.log('Coûts : améliorations ' + coutAmeliorations + ', buffs ' + coutBuffs + ', thèmes ' + coutThemes + ' = ' + coutTotal + ' Écailles');
+console.log('Coûts : améliorations ' + coutAmeliorations + ', buffs ' + coutBuffs + ', thèmes ' + coutThemes +
+  ', skins du serpent et de la tourelle ' + coutSkins + ' = ' + coutTotal + ' Écailles');
 console.log('Succès : environ ' + totalSucces + ' Écailles au total\n');
 
 // Avarice achetée en premier (c'est le plus rentable), puis le reste
@@ -58,6 +61,9 @@ Object.keys(profils).forEach(difficulte => {
     }
     if (partiesAmeliorations === null && depense >= coutAmeliorations) partiesAmeliorations = parties;
   }
-  console.log(difficulte.padEnd(10) + ' : ~' + Math.round(gainMoyen(profils[difficulte], difficulte, 0)) + ' Écailles par partie, ' +
-    'améliorations en ' + partiesAmeliorations + ' parties, tout en ' + parties + ' parties');
+  const p = profils[difficulte];
+  const gain = gainMoyen(p, difficulte, 0);
+  console.log(difficulte.padEnd(10) + ' : ~' + Math.round(gain) + ' Écailles par partie (' + Math.round(gain / p.minutes) + ' par minute), ' +
+    'améliorations en ' + partiesAmeliorations + ' parties, tout en ' + parties + ' parties (' +
+    Math.round(parties * p.minutes / 60) + ' h de jeu)');
 });

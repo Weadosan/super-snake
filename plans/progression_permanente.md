@@ -45,7 +45,7 @@ Une partie moyenne rapporte 40 à 80 Écailles, une victoire en Difficile enviro
 | Pomme en or mangée | 3 chacune |
 | Victoire (longueur 400) | 50 |
 | Succès débloqué (une seule fois) | 10, 25 ou 50 selon sa difficulté |
-| Multiplicateur de difficulté | Facile ×1, Normal ×1,25, Difficile ×1,5 |
+| Multiplicateur de difficulté | Facile ×1, Normal ×1,75, Difficile ×2,25 (avant le 19 octobre : ×1,25 et ×1,5) |
 
 - Une partie perdue rapporte quand même : c'est ce qui donne envie de relancer.
 - Une partie de moins de 10 secondes ne rapporte rien (pas de « farm » en relançant).
