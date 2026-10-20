@@ -269,7 +269,10 @@ function renderLoop(now) {
   } else {
     const timeScale = now < slowMotionUntil ? slowMotionFactor : 1;
 
-    if (!gameOver) updateCombat(frameDelta * timeScale);
+    if (!gameOver) {
+      updateCombat(frameDelta * timeScale);
+      surveillerPerformances(now, frameDelta);
+    }
     majTuto(now, frameDelta);
     majAstuces(now);
     majSucces(now, frameDelta);

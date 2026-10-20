@@ -76,6 +76,9 @@ score, pommes, ennemis et cœurs sont partagés.
   pas de musique), son coupé, plein écran (touche F), taille du plateau (tout l'écran / classique 400 px), qualité
   d'image (haute / moyenne / basse) et toutes les touches du clavier (J1, J2 en coop, menus). Une touche déjà prise
   est échangée. Le tout est gardé dans `snakeOptions`.
+- Performances auto (⚙️ Options, activé par défaut) : si la partie tombe sous ~40 images/s pendant 2 s, le jeu
+  s'allège par paliers (1 = plus d'ombres floues, 2 et 3 = plateau moins fin). Le palier est retenu (`niveauPerf`) ;
+  repasser l'option sur Non rend tous les effets. Code dans js/18-options.js (`surveillerPerformances`).
 - Touches : objet `touches` (e.code) dans js/15-commandes.js, `nomTouche()` et `nomTouchesDirection()` pour les textes.
 
 

@@ -6,8 +6,10 @@ function draw(t) {
   const shakeRemaining = shakeUntil - performance.now();
   if (shakeRemaining > 0) {
     const intensity = shakeMagnitude * (shakeRemaining / shakeDuration);
-    const offsetX = (Math.random() - 0.5) * 2 * intensity;
-    const offsetY = (Math.random() - 0.5) * 2 * intensity;
+    // décalage arrondi aux pixels réels : les images en mémoire restent recopiées pixel pour pixel
+    // (un décalage au demi-pixel les faisait toutes ré-échantillonner pendant la secousse)
+    const offsetX = Math.round((Math.random() - 0.5) * 2 * intensity * echelleRendu) / echelleRendu;
+    const offsetY = Math.round((Math.random() - 0.5) * 2 * intensity * echelleRendu) / echelleRendu;
     ctx.translate(offsetX, offsetY);
   }
 
@@ -522,12 +524,12 @@ function drawSlowMotionOverlay() {
   const w = largeurPlateau, h = hauteurPlateau;
 
   // vignette bleue sur les bords (le centre reste net)
-  if (!vignetteRalentiCache) {
+  if (!vignetteRalentiCache || vignetteRalentiCache.echelle !== echelleRendu) {
     vignetteRalentiCache = creerVignette('rgba(33, 150, 243, 0)', 'rgba(33, 150, 243, 0.55)');
   }
   ctx.save();
   ctx.globalAlpha = force;
-  ctx.drawImage(vignetteRalentiCache, 0, 0);
+  poserCalque(vignetteRalentiCache, 0, 0);
   ctx.restore();
 
   // liseré bleu fin sur les bords (ne cache pas le terrain), qui pulse légèrement
