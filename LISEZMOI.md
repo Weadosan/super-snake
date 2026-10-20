@@ -12,6 +12,7 @@ Le jeu se modifie dans `src/`, puis on régénère le fichier unique `snake.html
     python3 outils/test_icones.py snake.html [captures] # aucun emoji affiché, icônes pixel partout, polices chargées
     python3 outils/test_options.py snake.html [captures] # plateau 1080p/1440p/4K net, menu ⚙️ Options, touches
     python3 outils/test_skins_serpent.py snake.html [captures] # skins du serpent et de la tourelle : achat, choix gardé
+    python3 outils/test_artifice.py snake.html [captures] # feu d'artifice de victoire : un style par thème, nombre d'éclats borné
     python3 outils/mesure_fps.py snake.html [--cpu 4] [--gpu] [--detail]  # temps de dessin d'une image, par thème et skin
     python3 outils/compare_rendu.py ancien.html snake.html dossier       # même image dessinée par les deux versions, et l'écart
 
