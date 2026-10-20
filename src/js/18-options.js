@@ -43,8 +43,10 @@ function ajusterTaillePlateau() {
   // textes et boutons agrandis avec l'écran : 1,2 en 1080p, 1,6 en 1440p, 2,4 en 4K
   const zoom = adapte ? Math.max(1, Math.min(2.4, Math.min(innerHeight / 900, innerWidth / 1600))) : 1;
   corps.style.setProperty('--zoom-interface', zoom);
+  // toggle plutôt que add/remove : add et remove réécrivent l'attribut class même sans changement, ce qui
+  // relançait cet ajustement (observateur plus bas) à chaque image, avec un recalcul de la page à chaque fois
   if (!adapte) {
-    corps.classList.remove('plateau-large');
+    corps.classList.toggle('plateau-large', false);
     corps.style.removeProperty('--cote-plateau');
     majResolutionPlateau();
     return;
@@ -57,12 +59,12 @@ function ajusterTaillePlateau() {
   // HUD à gauche, plateau sur toute la hauteur : dès que la fenêtre est assez large
   const coteLarge = Math.floor(Math.min(hauteurDispo, largeurDispo - colonneInfos - ecart - boutons));
   if (coteLarge >= 440) {
-    corps.classList.add('plateau-large');
+    corps.classList.toggle('plateau-large', true);
     corps.style.setProperty('--colonne-infos', colonneInfos + 'px');
     corps.style.setProperty('--cote-plateau', (coteLarge - bordure) + 'px');
   } else {
     // fenêtre étroite : HUD au-dessus, comme avant, mais le plateau prend la place qui reste
-    corps.classList.remove('plateau-large');
+    corps.classList.toggle('plateau-large', false);
     const conteneur = document.getElementById('plateauConteneur');
     const haut = conteneur.getBoundingClientRect().top - document.getElementById('gameColumn').getBoundingClientRect().top;
     const reserveBas = 70; // message et bouton Rejouer sous le plateau

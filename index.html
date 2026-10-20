@@ -3871,6 +3871,33 @@ function echelleCaches() {
   return Math.max(1, Math.ceil(echelleRendu * 2) / 2);
 }
 
+// image en mémoire (lw x lh dans les coordonnées du plateau) aussi fine que l'écran : sans rotation ni
+// zoom, elle est recopiée pixel pour pixel, calée sur les pixels réels, au lieu d'être ré-échantillonnée
+// (un fond plein écran étiré coûtait plusieurs millisecondes par image sur un PC sans carte graphique)
+function creerCalque(lw, lh) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(lw * echelleRendu));
+  c.height = Math.max(1, Math.round(lh * echelleRendu));
+  c.lw = lw;
+  c.lh = lh;
+  c.echelle = echelleRendu;
+  const cctx = c.getContext('2d');
+  cctx.scale(c.width / lw, c.height / lh);
+  return c;
+}
+
+function poserCalque(img, x, y) {
+  const lw = img.lw || img.width, lh = img.lh || img.height;
+  const m = ctx.getTransform();
+  if (m.b === 0 && m.c === 0 && Math.abs(m.a * lw - img.width) < 1 && Math.abs(m.d * lh - img.height) < 1) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(img, Math.round(m.e + x * m.a), Math.round(m.f + y * m.d));
+    ctx.setTransform(m);
+  } else {
+    ctx.drawImage(img, x, y, lw, lh);
+  }
+}
+
 // --- Thèmes graphiques ---
 const themes = {
   neon: {
@@ -6254,8 +6281,14 @@ function majCompteurSegments() {
   ).join('<span class="separateur-joueurs">·</span>');
 }
 
+// appelé à chaque image : le HUD n'est réécrit que si son texte change (sinon la page est recalculée à chaque image)
+function ecrireTexte(el, texte) {
+  if (el.textContent !== texte) el.textContent = texte;
+}
+
 function updateShieldDisplay() {
-  shieldStatusEl.style.display = bouclierDisponible() ? '' : 'none';
+  const affichage = bouclierDisponible() ? '' : 'none';
+  if (shieldStatusEl.style.display !== affichage) shieldStatusEl.style.display = affichage;
   if (!bouclierDisponible()) return;
   const now = performance.now();
   if (enCoop()) {
@@ -6272,12 +6305,12 @@ function updateShieldDisplay() {
   }
   if (now < shieldActiveUntil) {
     const remaining = ((shieldActiveUntil - now) / 1000).toFixed(1);
-    shieldStatusEl.textContent = '🛡️ Bouclier ACTIF : ' + remaining + 's';
+    ecrireTexte(shieldStatusEl, '🛡️ Bouclier ACTIF : ' + remaining + 's');
   } else if (now < shieldReadyAt) {
     const remaining = Math.ceil((shieldReadyAt - now) / 1000);
-    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : recharge ' + remaining + 's';
+    ecrireTexte(shieldStatusEl, 'Bouclier (' + nomToucheBouclierSolo() + ') : recharge ' + remaining + 's');
   } else {
-    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : Prêt';
+    ecrireTexte(shieldStatusEl, 'Bouclier (' + nomToucheBouclierSolo() + ') : Prêt');
   }
 }
 
@@ -6312,8 +6345,13 @@ function updateBuffStatusDisplay() {
     );
   });
 
+  // les pastilles ne sont refaites que si leur texte change (une fois par seconde au plus)
+  const actifs = activeBuffs.filter(b => now < b.until);
+  const cle = actifs.map(b => b.icon + ' ' + Math.ceil((b.until - now) / 1000)).join('|');
+  if (cle === buffStatusEl.dataset.cle) return;
+  buffStatusEl.dataset.cle = cle;
   buffStatusEl.innerHTML = '';
-  activeBuffs.filter(b => now < b.until).forEach(b => {
+  actifs.forEach(b => {
     const el = document.createElement('span');
     const remaining = Math.ceil((b.until - now) / 1000);
     el.className = 'buff-icon' + (remaining <= 3 ? ' buff-expiring' : '');
@@ -7833,11 +7871,6 @@ function drawSnakeConnections(positions) {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  if (currentTheme.glow) {
-    ctx.shadowColor = currentTheme.snakeBody;
-    ctx.shadowBlur = 8;
-  }
-
   // aux virages, arcTo arrondit le coude (rayon d'une demi-case) pour suivre l'arrondi des segments
   const rayonCoude = gridSize / 2;
   ctx.beginPath();
@@ -7853,8 +7886,29 @@ function drawSnakeConnections(positions) {
       ctx.lineTo(cx, cy);
     }
   });
+  if (currentTheme.glow) lueurTrait(currentTheme.snakeBody, 8);
   ctx.stroke();
   ctx.restore();
+}
+
+// lueur autour du trait en cours (comme shadowBlur = flou, couleur opaque), sans aucun flou : trois traits
+// plus larges et transparents reproduisent le dégradé de l'ombre floue. Un vrai flou sur un long trait
+// floute tout son rectangle englobant (le plateau entier pour un long serpent) : c'était le plus gros coût
+// d'une image, surtout avec une carte graphique ancienne. Le trait lui-même est dessiné ensuite par l'appelant.
+const bandesLueur = [[2.2, 0.045], [1.2, 0.16], [0.5, 0.254]]; // [demi-largeur en plus, en sigma ; opacité]
+function lueurTrait(couleur, flou) {
+  const m = ctx.getTransform();
+  const sigma = flou / 2 / (Math.hypot(m.a, m.b) || 1); // l'ombre floue se mesure en pixels de l'écran
+  const largeur = ctx.lineWidth, alpha = ctx.globalAlpha, style = ctx.strokeStyle;
+  ctx.strokeStyle = couleur;
+  bandesLueur.forEach(([ecart, opacite]) => {
+    ctx.lineWidth = largeur + ecart * sigma * 2;
+    ctx.globalAlpha = alpha * opacite;
+    ctx.stroke();
+  });
+  ctx.lineWidth = largeur;
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = style;
 }
 
 // dessine un segment carré du serpent avec dégradé + ombre + un léger motif d'écailles
@@ -10084,26 +10138,31 @@ function drawPixelEnemy(cx, cy, radius, color, etat) {
   const image2 = etat && Math.floor(etat.temps / 350 + etat.phase) % 2 === 1;
   const motif = image2 ? pixelEnemyPattern2 : pixelEnemyPattern;
 
+  // tous les pixels en un seul tracé (comme le boss) : un seul flou de lueur au lieu d'un par pixel
   ctx.fillStyle = color;
+  ctx.beginPath();
   for (let row = 0; row < 5; row++) {
     for (let col = 0; col < 5; col++) {
       if (motif[row][col]) {
-        ctx.fillRect(startX + col * cell, startY + row * cell, cell + 0.5, cell + 0.5);
+        ctx.rect(startX + col * cell, startY + row * cell, cell + 0.5, cell + 0.5);
       }
     }
   }
+  ctx.fill();
   // yeux pixel : blancs (rouges en colère) avec une pupille d'un pixel tournée vers le serpent
   if (etat) {
     const p = cell / 2;
     const dx = Math.round(etat.regardX) * p / 2;
     const dy = Math.round(etat.regardY) * p / 2;
-    [1, 3].forEach(col => {
-      const x = startX + col * cell, y = startY + 2 * cell;
-      ctx.fillStyle = etat.colere ? '#ff5252' : '#ffffff';
-      ctx.fillRect(x, y, cell, cell);
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(x + cell / 4 + dx, y + cell / 4 + dy, p, p);
-    });
+    const y = startY + 2 * cell;
+    ctx.fillStyle = etat.colere ? '#ff5252' : '#ffffff';
+    ctx.beginPath();
+    [1, 3].forEach(col => ctx.rect(startX + col * cell, y, cell, cell));
+    ctx.fill();
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    [1, 3].forEach(col => ctx.rect(startX + col * cell + cell / 4 + dx, y + cell / 4 + dy, p, p));
+    ctx.fill();
   }
 }
 
@@ -11438,33 +11497,27 @@ function drawBackgroundPattern() {
   const spacing = gridSize;
   const drift = (performance.now() / 3000) % spacing;
   const largeurFond = largeurPlateau + spacing * 2, hauteurFond = hauteurPlateau + spacing * 2;
-  const echelle = echelleCaches();
-  if (!fondCache || fondCacheTheme !== currentThemeName || fondCache.echelle !== echelle) {
-    fondCache = document.createElement('canvas');
-    fondCache.width = largeurFond * echelle;
-    fondCache.height = hauteurFond * echelle;
-    fondCache.echelle = echelle;
-    const fctx = fondCache.getContext('2d');
-    fctx.scale(echelle, echelle);
-    dessinerFondTheme(fctx, largeurFond, hauteurFond, spacing);
+  if (!fondCache || fondCacheTheme !== currentThemeName || fondCache.echelle !== echelleRendu) {
+    fondCache = creerCalque(largeurFond, hauteurFond);
+    dessinerFondTheme(fondCache.getContext('2d'), largeurFond, hauteurFond, spacing);
     fondCacheTheme = currentThemeName;
   }
-  ctx.drawImage(fondCache, -spacing + drift, -spacing + drift, largeurFond, hauteurFond);
+  poserCalque(fondCache, -spacing + drift, -spacing + drift);
 
   // lave : la lumière des fissures pulse doucement
   if (currentThemeName === 'lave') {
-    if (!lueurLaveCache) lueurLaveCache = creerVignette('rgba(255, 61, 0, 0.18)', 'rgba(255, 61, 0, 0)');
+    if (!lueurLaveCache || lueurLaveCache.echelle !== echelleRendu) lueurLaveCache = creerVignette('rgba(255, 61, 0, 0.18)', 'rgba(255, 61, 0, 0)');
     ctx.save();
     ctx.globalAlpha = 0.5 + Math.sin(performance.now() / 900) * 0.5;
-    ctx.drawImage(lueurLaveCache, 0, 0, largeurPlateau, hauteurPlateau);
+    poserCalque(lueurLaveCache, 0, 0);
     ctx.restore();
   }
 
   // vignette : bords légèrement assombris pour donner de la profondeur
-  if (!vignetteCache) {
+  if (!vignetteCache || vignetteCache.echelle !== echelleRendu) {
     vignetteCache = creerVignette('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.45)');
   }
-  ctx.drawImage(vignetteCache, 0, 0, largeurPlateau, hauteurPlateau);
+  poserCalque(vignetteCache, 0, 0);
 }
 
 // dessine le décor fixe du thème (appelé une seule fois par thème, dans le canvas en mémoire)
@@ -11569,17 +11622,9 @@ function dessinerFondTheme(fctx, w, h, spacing) {
 // sprite dessiné une seule fois puis réutilisé (nom unique par thème)
 // (plus fin sur grand écran : c.lw / c.lh gardent sa taille dans les coordonnées du plateau)
 function spriteDecor(nom, largeur, hauteur, dessiner) {
-  const echelle = echelleCaches();
-  if (!spritesDecor[nom] || spritesDecor[nom].echelle !== echelle) {
-    const c = document.createElement('canvas');
-    c.width = Math.ceil(largeur * echelle);
-    c.height = Math.ceil(hauteur * echelle);
-    c.lw = largeur;
-    c.lh = hauteur;
-    c.echelle = echelle;
-    const sctx = c.getContext('2d');
-    sctx.scale(echelle, echelle);
-    dessiner(sctx, largeur, hauteur);
+  if (!spritesDecor[nom] || spritesDecor[nom].echelle !== echelleRendu) {
+    const c = creerCalque(largeur, hauteur);
+    dessiner(c.getContext('2d'), largeur, hauteur);
     spritesDecor[nom] = c;
   }
   return spritesDecor[nom];
@@ -11633,7 +11678,7 @@ function decorNeon(d, w, h) {
     c.fillRect(0, 0, bw, bh);
   });
   ctx.globalAlpha = 0.09;
-  ctx.drawImage(bande, 0, (d.temps / 14) % (h + 160) - 80, bande.lw, bande.lh);
+  poserCalque(bande, 0, (d.temps / 14) % (h + 160) - 80);
 
   const drift = (performance.now() / 3000) % gridSize;
   if (d.temps >= d.prochain) {
@@ -11705,7 +11750,7 @@ function decorEspace(d, w, h) {
   ctx.translate(w * 0.2, h * 0.78);
   ctx.scale(1, 0.55);
   ctx.rotate(t / 20000);
-  ctx.drawImage(galaxie, -45, -45, galaxie.lw, galaxie.lh);
+  poserCalque(galaxie, -45, -45);
   ctx.restore();
 
   const planete = spriteDecor('espace-planete', 100, 100, (c) => {
@@ -11735,7 +11780,7 @@ function decorEspace(d, w, h) {
   };
   if (Math.sin(angleLune) < 0) dessinerLune(); // la lune passe derrière la planète
   ctx.globalAlpha = 0.55;
-  ctx.drawImage(planete, px - 50, py - 50, planete.lw, planete.lh);
+  poserCalque(planete, px - 50, py - 50);
   if (Math.sin(angleLune) >= 0) dessinerLune();
 
   if (t >= d.prochain) {
@@ -11776,7 +11821,7 @@ function decorLave(d, w, h) {
     c.fillRect(0, 0, cw, ch);
   });
   ctx.globalAlpha = 0.55 + Math.sin(t / 1300) * 0.45;
-  ctx.drawImage(chaleur, 0, h - 90, chaleur.lw, chaleur.lh);
+  poserCalque(chaleur, 0, h - 90);
 
   const decalage = -gridSize + (performance.now() / 3000) % gridSize; // suit le léger glissement du fond
   if (t >= d.prochain && pointsFissuresLave.length && d.elements.length < 7) {
@@ -11842,7 +11887,7 @@ function decorOcean(d, w, h) {
   });
   for (let i = 0; i < 3; i++) {
     ctx.globalAlpha = 0.35 + 0.35 * Math.sin(t / 1700 + i * 2.1);
-    ctx.drawImage(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0, rayon.lw, rayon.lh);
+    poserCalque(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0);
   }
 
   // algues : une seule trace pour toutes, l'ondulation grandit vers le haut
@@ -11889,7 +11934,7 @@ function decorOcean(d, w, h) {
         ctx.save();
         ctx.translate(xTete + m.dx * e.sens, e.y + m.dy + Math.sin(t / 300 + m.phase) * 1.5);
         ctx.scale(e.sens, 1);
-        ctx.drawImage(poisson, -8, -5, poisson.lw, poisson.lh);
+        poserCalque(poisson, -8, -5);
         ctx.restore();
       });
     } else {
@@ -11920,11 +11965,9 @@ function decorOcean(d, w, h) {
 
 // canvas en mémoire avec un dégradé radial du centre (couleurCentre) vers les bords (couleurBord)
 function creerVignette(couleurCentre, couleurBord) {
-  const c = document.createElement('canvas');
-  c.width = largeurPlateau;
-  c.height = hauteurPlateau;
+  const c = creerCalque(largeurPlateau, hauteurPlateau);
   const vctx = c.getContext('2d');
-  const w = c.width, h = c.height;
+  const w = largeurPlateau, h = hauteurPlateau;
   const grad = vctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) / 2);
   grad.addColorStop(0, couleurCentre);
   grad.addColorStop(1, couleurBord);
@@ -12042,7 +12085,7 @@ const mondeAurore = {
       c.stroke();
     });
     ctx.globalAlpha = 1;
-    ctx.drawImage(banquise, 0, h - banquise.lh, banquise.lw, banquise.lh);
+    poserCalque(banquise, 0, h - banquise.lh);
   },
   creerParticule(p, depuisBord) {
     // flocons qui tombent en se balançant
@@ -12199,7 +12242,7 @@ const mondeForet = {
       for (let x = 50; x < aw - 40; x += 45) sapin(x, ah + 8, 50 + (x % 30), 22, '#0d2416');
     });
     ctx.globalAlpha = 0.85;
-    ctx.drawImage(arbres, 0, 0, arbres.lw, arbres.lh);
+    poserCalque(arbres, 0, 0);
 
     // rayon de lune qui respire
     const rayon = spriteDecor('foret-rayon', 200, h, (c, rw, rh) => {
@@ -12216,7 +12259,7 @@ const mondeForet = {
       c.fill();
     });
     ctx.globalAlpha = 0.6 + Math.sin(t / 2600) * 0.3;
-    ctx.drawImage(rayon, w * 0.18, 0, rayon.lw, rayon.lh);
+    poserCalque(rayon, w * 0.18, 0);
 
     // champignons lumineux au pied des arbres, qui pulsent chacun à leur rythme
     [[22, h - 14, 0], [w - 30, h - 20, 2], [w * 0.5, h - 8, 4]].forEach(([x, y, ph]) => {
@@ -12454,7 +12497,7 @@ const mondeDesert = {
       });
     });
     ctx.globalAlpha = 0.6;
-    ctx.drawImage(paysage, 0, h - paysage.lh, paysage.lw, paysage.lh);
+    poserCalque(paysage, 0, h - paysage.lh);
 
     // rafales de sable qui traversent la carte
     if (t >= d.prochain) {
@@ -12625,7 +12668,7 @@ const mondeSynthwave = {
     });
     halo(ctx, w / 2, horizon - 30, 120, 'rgba(255, 43, 214, 0.45)', 0.5 + Math.sin(t / 1800) * 0.15);
     ctx.globalAlpha = 0.6;
-    ctx.drawImage(soleil, w / 2 - 75, horizon - 115, soleil.lw, soleil.lh);
+    poserCalque(soleil, w / 2 - 75, horizon - 115);
 
     const montagnes = spriteDecor('synth-montagnes', w, 60, (c, mw, mh) => {
       c.fillStyle = '#1a0033';
@@ -12641,7 +12684,7 @@ const mondeSynthwave = {
       c.stroke();
     });
     ctx.globalAlpha = 0.8;
-    ctx.drawImage(montagnes, 0, horizon - montagnes.lh, montagnes.lw, montagnes.lh);
+    poserCalque(montagnes, 0, horizon - montagnes.lh);
 
     // sol sombre puis grille en perspective : les lignes horizontales arrivent vers le bas
     ctx.globalAlpha = 0.55;
@@ -12843,7 +12886,7 @@ const mondeHalloween = {
     });
     halo(ctx, w * 0.2, h * 0.17, 80, 'rgba(255, 245, 200, 0.35)', 0.6 + Math.sin(t / 2200) * 0.2);
     ctx.globalAlpha = 0.75;
-    ctx.drawImage(lune, w * 0.2 - 30, h * 0.17 - 30, lune.lw, lune.lh);
+    poserCalque(lune, w * 0.2 - 30, h * 0.17 - 30);
 
     const sol = spriteDecor('halloween-sol', w, 120, (c, sw, sh) => {
       c.fillStyle = '#0b0510';
@@ -12875,7 +12918,7 @@ const mondeHalloween = {
       c.fillRect(0, sh - 6, sw, 6);
     });
     ctx.globalAlpha = 0.9;
-    ctx.drawImage(sol, 0, h - sol.lh, sol.lw, sol.lh);
+    poserCalque(sol, 0, h - sol.lh);
 
     // brume qui dérive en deux nappes
     const brume = spriteDecor('halloween-brume', 300, 50, (c, bw, bh) => {
@@ -12890,7 +12933,7 @@ const mondeHalloween = {
     [[h * 0.62, 0.012, 0.7], [h * 0.85, -0.018, 1]].forEach(([y, v, alpha]) => {
       const x = ((t * v) % 300 + 300) % 300;
       ctx.globalAlpha = alpha;
-      for (let k = -1; k <= Math.ceil(w / 300); k++) ctx.drawImage(brume, x + k * 300 - 300, y - 25, brume.lw, brume.lh);
+      for (let k = -1; k <= Math.ceil(w / 300); k++) poserCalque(brume, x + k * 300 - 300, y - 25);
     });
 
     // chauves-souris qui traversent le ciel de temps en temps
@@ -18515,8 +18558,10 @@ function ajusterTaillePlateau() {
   // textes et boutons agrandis avec l'écran : 1,2 en 1080p, 1,6 en 1440p, 2,4 en 4K
   const zoom = adapte ? Math.max(1, Math.min(2.4, Math.min(innerHeight / 900, innerWidth / 1600))) : 1;
   corps.style.setProperty('--zoom-interface', zoom);
+  // toggle plutôt que add/remove : add et remove réécrivent l'attribut class même sans changement, ce qui
+  // relançait cet ajustement (observateur plus bas) à chaque image, avec un recalcul de la page à chaque fois
   if (!adapte) {
-    corps.classList.remove('plateau-large');
+    corps.classList.toggle('plateau-large', false);
     corps.style.removeProperty('--cote-plateau');
     majResolutionPlateau();
     return;
@@ -18529,12 +18574,12 @@ function ajusterTaillePlateau() {
   // HUD à gauche, plateau sur toute la hauteur : dès que la fenêtre est assez large
   const coteLarge = Math.floor(Math.min(hauteurDispo, largeurDispo - colonneInfos - ecart - boutons));
   if (coteLarge >= 440) {
-    corps.classList.add('plateau-large');
+    corps.classList.toggle('plateau-large', true);
     corps.style.setProperty('--colonne-infos', colonneInfos + 'px');
     corps.style.setProperty('--cote-plateau', (coteLarge - bordure) + 'px');
   } else {
     // fenêtre étroite : HUD au-dessus, comme avant, mais le plateau prend la place qui reste
-    corps.classList.remove('plateau-large');
+    corps.classList.toggle('plateau-large', false);
     const conteneur = document.getElementById('plateauConteneur');
     const haut = conteneur.getBoundingClientRect().top - document.getElementById('gameColumn').getBoundingClientRect().top;
     const reserveBas = 70; // message et bouton Rejouer sous le plateau

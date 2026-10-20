@@ -159,11 +159,6 @@ function drawSnakeConnections(positions) {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  if (currentTheme.glow) {
-    ctx.shadowColor = currentTheme.snakeBody;
-    ctx.shadowBlur = 8;
-  }
-
   // aux virages, arcTo arrondit le coude (rayon d'une demi-case) pour suivre l'arrondi des segments
   const rayonCoude = gridSize / 2;
   ctx.beginPath();
@@ -179,8 +174,29 @@ function drawSnakeConnections(positions) {
       ctx.lineTo(cx, cy);
     }
   });
+  if (currentTheme.glow) lueurTrait(currentTheme.snakeBody, 8);
   ctx.stroke();
   ctx.restore();
+}
+
+// lueur autour du trait en cours (comme shadowBlur = flou, couleur opaque), sans aucun flou : trois traits
+// plus larges et transparents reproduisent le dégradé de l'ombre floue. Un vrai flou sur un long trait
+// floute tout son rectangle englobant (le plateau entier pour un long serpent) : c'était le plus gros coût
+// d'une image, surtout avec une carte graphique ancienne. Le trait lui-même est dessiné ensuite par l'appelant.
+const bandesLueur = [[2.2, 0.045], [1.2, 0.16], [0.5, 0.254]]; // [demi-largeur en plus, en sigma ; opacité]
+function lueurTrait(couleur, flou) {
+  const m = ctx.getTransform();
+  const sigma = flou / 2 / (Math.hypot(m.a, m.b) || 1); // l'ombre floue se mesure en pixels de l'écran
+  const largeur = ctx.lineWidth, alpha = ctx.globalAlpha, style = ctx.strokeStyle;
+  ctx.strokeStyle = couleur;
+  bandesLueur.forEach(([ecart, opacite]) => {
+    ctx.lineWidth = largeur + ecart * sigma * 2;
+    ctx.globalAlpha = alpha * opacite;
+    ctx.stroke();
+  });
+  ctx.lineWidth = largeur;
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = style;
 }
 
 // dessine un segment carré du serpent avec dégradé + ombre + un léger motif d'écailles

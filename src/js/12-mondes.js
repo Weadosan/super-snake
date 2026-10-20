@@ -107,7 +107,7 @@ const mondeAurore = {
       c.stroke();
     });
     ctx.globalAlpha = 1;
-    ctx.drawImage(banquise, 0, h - banquise.lh, banquise.lw, banquise.lh);
+    poserCalque(banquise, 0, h - banquise.lh);
   },
   creerParticule(p, depuisBord) {
     // flocons qui tombent en se balançant
@@ -264,7 +264,7 @@ const mondeForet = {
       for (let x = 50; x < aw - 40; x += 45) sapin(x, ah + 8, 50 + (x % 30), 22, '#0d2416');
     });
     ctx.globalAlpha = 0.85;
-    ctx.drawImage(arbres, 0, 0, arbres.lw, arbres.lh);
+    poserCalque(arbres, 0, 0);
 
     // rayon de lune qui respire
     const rayon = spriteDecor('foret-rayon', 200, h, (c, rw, rh) => {
@@ -281,7 +281,7 @@ const mondeForet = {
       c.fill();
     });
     ctx.globalAlpha = 0.6 + Math.sin(t / 2600) * 0.3;
-    ctx.drawImage(rayon, w * 0.18, 0, rayon.lw, rayon.lh);
+    poserCalque(rayon, w * 0.18, 0);
 
     // champignons lumineux au pied des arbres, qui pulsent chacun à leur rythme
     [[22, h - 14, 0], [w - 30, h - 20, 2], [w * 0.5, h - 8, 4]].forEach(([x, y, ph]) => {
@@ -519,7 +519,7 @@ const mondeDesert = {
       });
     });
     ctx.globalAlpha = 0.6;
-    ctx.drawImage(paysage, 0, h - paysage.lh, paysage.lw, paysage.lh);
+    poserCalque(paysage, 0, h - paysage.lh);
 
     // rafales de sable qui traversent la carte
     if (t >= d.prochain) {
@@ -690,7 +690,7 @@ const mondeSynthwave = {
     });
     halo(ctx, w / 2, horizon - 30, 120, 'rgba(255, 43, 214, 0.45)', 0.5 + Math.sin(t / 1800) * 0.15);
     ctx.globalAlpha = 0.6;
-    ctx.drawImage(soleil, w / 2 - 75, horizon - 115, soleil.lw, soleil.lh);
+    poserCalque(soleil, w / 2 - 75, horizon - 115);
 
     const montagnes = spriteDecor('synth-montagnes', w, 60, (c, mw, mh) => {
       c.fillStyle = '#1a0033';
@@ -706,7 +706,7 @@ const mondeSynthwave = {
       c.stroke();
     });
     ctx.globalAlpha = 0.8;
-    ctx.drawImage(montagnes, 0, horizon - montagnes.lh, montagnes.lw, montagnes.lh);
+    poserCalque(montagnes, 0, horizon - montagnes.lh);
 
     // sol sombre puis grille en perspective : les lignes horizontales arrivent vers le bas
     ctx.globalAlpha = 0.55;
@@ -908,7 +908,7 @@ const mondeHalloween = {
     });
     halo(ctx, w * 0.2, h * 0.17, 80, 'rgba(255, 245, 200, 0.35)', 0.6 + Math.sin(t / 2200) * 0.2);
     ctx.globalAlpha = 0.75;
-    ctx.drawImage(lune, w * 0.2 - 30, h * 0.17 - 30, lune.lw, lune.lh);
+    poserCalque(lune, w * 0.2 - 30, h * 0.17 - 30);
 
     const sol = spriteDecor('halloween-sol', w, 120, (c, sw, sh) => {
       c.fillStyle = '#0b0510';
@@ -940,7 +940,7 @@ const mondeHalloween = {
       c.fillRect(0, sh - 6, sw, 6);
     });
     ctx.globalAlpha = 0.9;
-    ctx.drawImage(sol, 0, h - sol.lh, sol.lw, sol.lh);
+    poserCalque(sol, 0, h - sol.lh);
 
     // brume qui dérive en deux nappes
     const brume = spriteDecor('halloween-brume', 300, 50, (c, bw, bh) => {
@@ -955,7 +955,7 @@ const mondeHalloween = {
     [[h * 0.62, 0.012, 0.7], [h * 0.85, -0.018, 1]].forEach(([y, v, alpha]) => {
       const x = ((t * v) % 300 + 300) % 300;
       ctx.globalAlpha = alpha;
-      for (let k = -1; k <= Math.ceil(w / 300); k++) ctx.drawImage(brume, x + k * 300 - 300, y - 25, brume.lw, brume.lh);
+      for (let k = -1; k <= Math.ceil(w / 300); k++) poserCalque(brume, x + k * 300 - 300, y - 25);
     });
 
     // chauves-souris qui traversent le ciel de temps en temps

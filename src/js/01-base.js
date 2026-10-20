@@ -44,3 +44,30 @@ function echelleCaches() {
   return Math.max(1, Math.ceil(echelleRendu * 2) / 2);
 }
 
+// image en mémoire (lw x lh dans les coordonnées du plateau) aussi fine que l'écran : sans rotation ni
+// zoom, elle est recopiée pixel pour pixel, calée sur les pixels réels, au lieu d'être ré-échantillonnée
+// (un fond plein écran étiré coûtait plusieurs millisecondes par image sur un PC sans carte graphique)
+function creerCalque(lw, lh) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(lw * echelleRendu));
+  c.height = Math.max(1, Math.round(lh * echelleRendu));
+  c.lw = lw;
+  c.lh = lh;
+  c.echelle = echelleRendu;
+  const cctx = c.getContext('2d');
+  cctx.scale(c.width / lw, c.height / lh);
+  return c;
+}
+
+function poserCalque(img, x, y) {
+  const lw = img.lw || img.width, lh = img.lh || img.height;
+  const m = ctx.getTransform();
+  if (m.b === 0 && m.c === 0 && Math.abs(m.a * lw - img.width) < 1 && Math.abs(m.d * lh - img.height) < 1) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(img, Math.round(m.e + x * m.a), Math.round(m.f + y * m.d));
+    ctx.setTransform(m);
+  } else {
+    ctx.drawImage(img, x, y, lw, lh);
+  }
+}
+
