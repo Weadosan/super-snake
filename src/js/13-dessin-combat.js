@@ -210,7 +210,29 @@ function couleurBossEnrage(couleur, rage) {
   return `rgb(${m(r, 230)}, ${m(g, 20)}, ${m(b, 40)})`;
 }
 
+// contours des ennemis sans flou : le remplissage de la même forme en porte déjà la lueur ; flouter
+// aussi chaque contour doublait le travail pour un halo presque identique (gros ralentissement à
+// l'apparition des ennemis et du boss sur un vieux PC)
+const traitAvecOmbre = CanvasRenderingContext2D.prototype.stroke;
+const ombreFloue = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+function traitSansOmbre() {
+  const flou = ombreFloue.get.call(this);
+  if (!flou) return traitAvecOmbre.apply(this, arguments);
+  ombreFloue.set.call(this, 0);
+  traitAvecOmbre.apply(this, arguments);
+  ombreFloue.set.call(this, flou);
+}
+
 function drawEnemies() {
+  ctx.stroke = traitSansOmbre;
+  try {
+    dessinerEnnemis();
+  } finally {
+    delete ctx.stroke;
+  }
+}
+
+function dessinerEnnemis() {
   enemies.forEach(e => {
     const isFlashing = performance.now() < e.hitFlashUntil;
     const isFrozen = performance.now() < (e.frozenUntil || 0);

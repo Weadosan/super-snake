@@ -162,10 +162,10 @@ function dessinerEcranGameOver() {
   ctx.globalAlpha = apparition;
   ctx.fillStyle = 'rgba(10, 0, 4, 0.72)';
   ctx.fillRect(0, 0, w, h);
-  if (!vignetteGameOverCache) {
+  if (!vignetteGameOverCache || vignetteGameOverCache.echelle !== echelleRendu) {
     vignetteGameOverCache = creerVignette('rgba(255, 23, 68, 0)', 'rgba(255, 23, 68, 0.35)');
   }
-  ctx.drawImage(vignetteGameOverCache, 0, 0);
+  poserCalque(vignetteGameOverCache, 0, 0);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

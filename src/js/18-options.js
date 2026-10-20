@@ -13,6 +13,64 @@ let optionQualite = lireOption('qualite', 'haute'); // 'haute' | 'moyenne' | 'ba
 const echelleMaxQualite = {haute: 6, moyenne: 3, basse: 1};
 const echelleMaxEnLigne = 2; // l'hôte envoie au plus 800 x 800 à son ami
 
+// --- Mode Performances (auto) ---
+// Si les images mettent trop longtemps à se dessiner pendant une partie (moins de ~40 par seconde pendant
+// 2 secondes), le jeu s'allège tout seul, par paliers : 1 = plus d'ombres floues (lueurs des ennemis, pommes,
+// tirs...), 2 et 3 = image du plateau moins fine (bien moins de pixels à dessiner). Il ne remonte pas en cours de
+// session (pour ne pas osciller) et il est retenu pour les parties suivantes, qui ne ralentissent donc pas au
+// début ; repasser l'option sur Non puis Oui dans ⚙️ Options rend tous les effets.
+let optionPerfAuto = lireOption('perfAuto', true);
+// niveau retenu des parties précédentes ; la finesse du plateau suit au premier réglage (js/20-en-ligne.js)
+let niveauPerf = optionPerfAuto ? Math.min(Number(lireOption('niveauPerf', 0)) || 0, 3) : 0;
+const echelleMaxPerf = [99, 99, 2, 1.5];
+const seuilImageLente = 25; // ms : au-delà, l'image est jugée lente (moins de 40 images/s)
+const surveillancePerf = {debut: 0, images: 0, lentes: 0, pause: 0};
+const ombreFlouePrototype = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'shadowBlur');
+appliquerOmbresPerf();
+
+// appelé à chaque image d'une partie en cours (renderLoop, js/07-boucle.js)
+function surveillerPerformances(now, frameDelta) {
+  const s = surveillancePerf;
+  if (!optionPerfAuto || niveauPerf >= echelleMaxPerf.length - 1 || now < s.pause) return;
+  if (frameDelta > 250) { // onglet caché, chargement... : on recommence la mesure
+    s.debut = 0;
+    return;
+  }
+  if (!s.debut) {
+    s.debut = now;
+    s.images = s.lentes = 0;
+    return;
+  }
+  s.images++;
+  if (frameDelta > seuilImageLente) s.lentes++;
+  if (now - s.debut < 2000) return;
+  const tropLent = s.lentes > s.images * 0.5;
+  s.debut = 0;
+  if (tropLent) {
+    changerNiveauPerf(niveauPerf + 1);
+    s.pause = now + 1500; // laisse le temps au nouveau réglage de faire effet avant de remesurer
+  }
+}
+
+// niveau 1 et plus : les ombres floues du plateau sont ignorées (l'aperçu du menu, sur son propre canvas, les garde)
+function appliquerOmbresPerf() {
+  const ctxJeu = canvas.getContext('2d');
+  if (niveauPerf >= 1) {
+    ombreFlouePrototype.set.call(ctxJeu, 0);
+    Object.defineProperty(ctxJeu, 'shadowBlur', {configurable: true, get: () => 0, set: () => {}});
+  } else {
+    delete ctxJeu.shadowBlur;
+  }
+}
+
+function changerNiveauPerf(niveau) {
+  niveauPerf = niveau;
+  ecrireOption('niveauPerf', niveau);
+  appliquerOmbresPerf();
+  majResolutionPlateau();
+  if (typeof majMenuOptions === 'function' && optionsOuvertes) majMenuOptions();
+}
+
 // --- Taille du plateau ---
 function enPleinEcran() {
   return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -23,6 +81,7 @@ function majResolutionPlateau() {
   const cote = canvas.clientWidth;
   if (!cote) return; // plateau caché (menu ☰ ouvert) : on garde la résolution actuelle
   let max = echelleMaxQualite[optionQualite] || echelleMaxQualite.haute;
+  max = Math.min(max, echelleMaxPerf[niveauPerf]); // mode Performances : image moins fine si le PC peine
   if (enLigne && enLigne.role === 'hote') max = Math.min(max, echelleMaxEnLigne);
   const echelle = Math.min(max, Math.max(1, cote * (window.devicePixelRatio || 1) / largeurPlateau));
   const largeur = Math.round(largeurPlateau * echelle);
@@ -192,6 +251,10 @@ optionsMenuEl.innerHTML = `
           <button data-valeur="basse">Basse</button>
         </div>
       </div>
+      <div class="options-ligne">
+        <span>Performances auto</span>
+        <button id="optionsPerf" class="options-bascule"></button>
+      </div>
       <p class="options-note" id="optionsInfoAffichage"></p>
 
       <h3>👥 Coop</h3>
@@ -244,7 +307,8 @@ function majInfoAffichage() {
   const cote = canvas.clientWidth;
   info.textContent = cote
     ? 'Plateau : ' + cote + ' px à l\'écran, image de ' + canvas.width + ' px.' +
-      (optionQualite !== 'haute' ? ' Choisis Haute pour une image plus nette.' : ' Baisse la qualité si le jeu saccade.')
+      (niveauPerf ? ' Performances auto : effets allégés car le jeu ralentissait.' :
+        optionQualite !== 'haute' ? ' Choisis Haute pour une image plus nette.' : ' Baisse la qualité si le jeu saccade.')
     : '';
 }
 
@@ -263,6 +327,9 @@ function majMenuOptions() {
   collision.classList.toggle('actif', capacitesActives.collisionJoueurs);
   document.querySelectorAll('#optionsTaille button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionTaillePlateau));
   document.querySelectorAll('#optionsQualite button').forEach(b => b.classList.toggle('actif', b.dataset.valeur === optionQualite));
+  const perf = document.getElementById('optionsPerf');
+  perf.textContent = !optionPerfAuto ? 'Non' : niveauPerf ? '⚡ Allégé (' + niveauPerf + '/3)' : '✔ Oui';
+  perf.classList.toggle('actif', optionPerfAuto);
   optionsTouchesEl.querySelectorAll('button').forEach(b => {
     const action = b.dataset.action;
     b.textContent = action === actionEnAttente ? 'Appuie sur une touche…' : nomTouche(touches[action]);
@@ -374,6 +441,12 @@ document.querySelectorAll('#optionsQualite button').forEach(b => b.addEventListe
   majResolutionPlateau();
   majMenuOptions();
 }));
+document.getElementById('optionsPerf').addEventListener('click', () => {
+  optionPerfAuto = !optionPerfAuto;
+  ecrireOption('perfAuto', optionPerfAuto);
+  if (!optionPerfAuto) changerNiveauPerf(0); // tous les effets et toute la finesse reviennent
+  majMenuOptions();
+});
 document.getElementById('optionsTouchesDefaut').addEventListener('click', () => {
   touches = {...touchesParDefaut};
   actionEnAttente = null;
