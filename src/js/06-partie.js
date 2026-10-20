@@ -136,8 +136,14 @@ function majCompteurSegments() {
   ).join('<span class="separateur-joueurs">·</span>');
 }
 
+// appelé à chaque image : le HUD n'est réécrit que si son texte change (sinon la page est recalculée à chaque image)
+function ecrireTexte(el, texte) {
+  if (el.textContent !== texte) el.textContent = texte;
+}
+
 function updateShieldDisplay() {
-  shieldStatusEl.style.display = bouclierDisponible() ? '' : 'none';
+  const affichage = bouclierDisponible() ? '' : 'none';
+  if (shieldStatusEl.style.display !== affichage) shieldStatusEl.style.display = affichage;
   if (!bouclierDisponible()) return;
   const now = performance.now();
   if (enCoop()) {
@@ -154,12 +160,12 @@ function updateShieldDisplay() {
   }
   if (now < shieldActiveUntil) {
     const remaining = ((shieldActiveUntil - now) / 1000).toFixed(1);
-    shieldStatusEl.textContent = '🛡️ Bouclier ACTIF : ' + remaining + 's';
+    ecrireTexte(shieldStatusEl, '🛡️ Bouclier ACTIF : ' + remaining + 's');
   } else if (now < shieldReadyAt) {
     const remaining = Math.ceil((shieldReadyAt - now) / 1000);
-    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : recharge ' + remaining + 's';
+    ecrireTexte(shieldStatusEl, 'Bouclier (' + nomToucheBouclierSolo() + ') : recharge ' + remaining + 's');
   } else {
-    shieldStatusEl.textContent = 'Bouclier (' + nomToucheBouclierSolo() + ') : Prêt';
+    ecrireTexte(shieldStatusEl, 'Bouclier (' + nomToucheBouclierSolo() + ') : Prêt');
   }
 }
 
@@ -194,8 +200,13 @@ function updateBuffStatusDisplay() {
     );
   });
 
+  // les pastilles ne sont refaites que si leur texte change (une fois par seconde au plus)
+  const actifs = activeBuffs.filter(b => now < b.until);
+  const cle = actifs.map(b => b.icon + ' ' + Math.ceil((b.until - now) / 1000)).join('|');
+  if (cle === buffStatusEl.dataset.cle) return;
+  buffStatusEl.dataset.cle = cle;
   buffStatusEl.innerHTML = '';
-  activeBuffs.filter(b => now < b.until).forEach(b => {
+  actifs.forEach(b => {
     const el = document.createElement('span');
     const remaining = Math.ceil((b.until - now) / 1000);
     el.className = 'buff-icon' + (remaining <= 3 ? ' buff-expiring' : '');

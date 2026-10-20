@@ -4,33 +4,27 @@ function drawBackgroundPattern() {
   const spacing = gridSize;
   const drift = (performance.now() / 3000) % spacing;
   const largeurFond = largeurPlateau + spacing * 2, hauteurFond = hauteurPlateau + spacing * 2;
-  const echelle = echelleCaches();
-  if (!fondCache || fondCacheTheme !== currentThemeName || fondCache.echelle !== echelle) {
-    fondCache = document.createElement('canvas');
-    fondCache.width = largeurFond * echelle;
-    fondCache.height = hauteurFond * echelle;
-    fondCache.echelle = echelle;
-    const fctx = fondCache.getContext('2d');
-    fctx.scale(echelle, echelle);
-    dessinerFondTheme(fctx, largeurFond, hauteurFond, spacing);
+  if (!fondCache || fondCacheTheme !== currentThemeName || fondCache.echelle !== echelleRendu) {
+    fondCache = creerCalque(largeurFond, hauteurFond);
+    dessinerFondTheme(fondCache.getContext('2d'), largeurFond, hauteurFond, spacing);
     fondCacheTheme = currentThemeName;
   }
-  ctx.drawImage(fondCache, -spacing + drift, -spacing + drift, largeurFond, hauteurFond);
+  poserCalque(fondCache, -spacing + drift, -spacing + drift);
 
   // lave : la lumière des fissures pulse doucement
   if (currentThemeName === 'lave') {
-    if (!lueurLaveCache) lueurLaveCache = creerVignette('rgba(255, 61, 0, 0.18)', 'rgba(255, 61, 0, 0)');
+    if (!lueurLaveCache || lueurLaveCache.echelle !== echelleRendu) lueurLaveCache = creerVignette('rgba(255, 61, 0, 0.18)', 'rgba(255, 61, 0, 0)');
     ctx.save();
     ctx.globalAlpha = 0.5 + Math.sin(performance.now() / 900) * 0.5;
-    ctx.drawImage(lueurLaveCache, 0, 0, largeurPlateau, hauteurPlateau);
+    poserCalque(lueurLaveCache, 0, 0);
     ctx.restore();
   }
 
   // vignette : bords légèrement assombris pour donner de la profondeur
-  if (!vignetteCache) {
+  if (!vignetteCache || vignetteCache.echelle !== echelleRendu) {
     vignetteCache = creerVignette('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.45)');
   }
-  ctx.drawImage(vignetteCache, 0, 0, largeurPlateau, hauteurPlateau);
+  poserCalque(vignetteCache, 0, 0);
 }
 
 // dessine le décor fixe du thème (appelé une seule fois par thème, dans le canvas en mémoire)
@@ -135,17 +129,9 @@ function dessinerFondTheme(fctx, w, h, spacing) {
 // sprite dessiné une seule fois puis réutilisé (nom unique par thème)
 // (plus fin sur grand écran : c.lw / c.lh gardent sa taille dans les coordonnées du plateau)
 function spriteDecor(nom, largeur, hauteur, dessiner) {
-  const echelle = echelleCaches();
-  if (!spritesDecor[nom] || spritesDecor[nom].echelle !== echelle) {
-    const c = document.createElement('canvas');
-    c.width = Math.ceil(largeur * echelle);
-    c.height = Math.ceil(hauteur * echelle);
-    c.lw = largeur;
-    c.lh = hauteur;
-    c.echelle = echelle;
-    const sctx = c.getContext('2d');
-    sctx.scale(echelle, echelle);
-    dessiner(sctx, largeur, hauteur);
+  if (!spritesDecor[nom] || spritesDecor[nom].echelle !== echelleRendu) {
+    const c = creerCalque(largeur, hauteur);
+    dessiner(c.getContext('2d'), largeur, hauteur);
     spritesDecor[nom] = c;
   }
   return spritesDecor[nom];
@@ -199,7 +185,7 @@ function decorNeon(d, w, h) {
     c.fillRect(0, 0, bw, bh);
   });
   ctx.globalAlpha = 0.09;
-  ctx.drawImage(bande, 0, (d.temps / 14) % (h + 160) - 80, bande.lw, bande.lh);
+  poserCalque(bande, 0, (d.temps / 14) % (h + 160) - 80);
 
   const drift = (performance.now() / 3000) % gridSize;
   if (d.temps >= d.prochain) {
@@ -271,7 +257,7 @@ function decorEspace(d, w, h) {
   ctx.translate(w * 0.2, h * 0.78);
   ctx.scale(1, 0.55);
   ctx.rotate(t / 20000);
-  ctx.drawImage(galaxie, -45, -45, galaxie.lw, galaxie.lh);
+  poserCalque(galaxie, -45, -45);
   ctx.restore();
 
   const planete = spriteDecor('espace-planete', 100, 100, (c) => {
@@ -301,7 +287,7 @@ function decorEspace(d, w, h) {
   };
   if (Math.sin(angleLune) < 0) dessinerLune(); // la lune passe derrière la planète
   ctx.globalAlpha = 0.55;
-  ctx.drawImage(planete, px - 50, py - 50, planete.lw, planete.lh);
+  poserCalque(planete, px - 50, py - 50);
   if (Math.sin(angleLune) >= 0) dessinerLune();
 
   if (t >= d.prochain) {
@@ -342,7 +328,7 @@ function decorLave(d, w, h) {
     c.fillRect(0, 0, cw, ch);
   });
   ctx.globalAlpha = 0.55 + Math.sin(t / 1300) * 0.45;
-  ctx.drawImage(chaleur, 0, h - 90, chaleur.lw, chaleur.lh);
+  poserCalque(chaleur, 0, h - 90);
 
   const decalage = -gridSize + (performance.now() / 3000) % gridSize; // suit le léger glissement du fond
   if (t >= d.prochain && pointsFissuresLave.length && d.elements.length < 7) {
@@ -408,7 +394,7 @@ function decorOcean(d, w, h) {
   });
   for (let i = 0; i < 3; i++) {
     ctx.globalAlpha = 0.35 + 0.35 * Math.sin(t / 1700 + i * 2.1);
-    ctx.drawImage(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0, rayon.lw, rayon.lh);
+    poserCalque(rayon, w * (0.05 + i * 0.32) - 80 + Math.sin(t / 4000 + i) * 18, 0);
   }
 
   // algues : une seule trace pour toutes, l'ondulation grandit vers le haut
@@ -455,7 +441,7 @@ function decorOcean(d, w, h) {
         ctx.save();
         ctx.translate(xTete + m.dx * e.sens, e.y + m.dy + Math.sin(t / 300 + m.phase) * 1.5);
         ctx.scale(e.sens, 1);
-        ctx.drawImage(poisson, -8, -5, poisson.lw, poisson.lh);
+        poserCalque(poisson, -8, -5);
         ctx.restore();
       });
     } else {
@@ -486,11 +472,9 @@ function decorOcean(d, w, h) {
 
 // canvas en mémoire avec un dégradé radial du centre (couleurCentre) vers les bords (couleurBord)
 function creerVignette(couleurCentre, couleurBord) {
-  const c = document.createElement('canvas');
-  c.width = largeurPlateau;
-  c.height = hauteurPlateau;
+  const c = creerCalque(largeurPlateau, hauteurPlateau);
   const vctx = c.getContext('2d');
-  const w = c.width, h = c.height;
+  const w = largeurPlateau, h = hauteurPlateau;
   const grad = vctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) / 2);
   grad.addColorStop(0, couleurCentre);
   grad.addColorStop(1, couleurBord);

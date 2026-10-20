@@ -582,26 +582,31 @@ function drawPixelEnemy(cx, cy, radius, color, etat) {
   const image2 = etat && Math.floor(etat.temps / 350 + etat.phase) % 2 === 1;
   const motif = image2 ? pixelEnemyPattern2 : pixelEnemyPattern;
 
+  // tous les pixels en un seul tracé (comme le boss) : un seul flou de lueur au lieu d'un par pixel
   ctx.fillStyle = color;
+  ctx.beginPath();
   for (let row = 0; row < 5; row++) {
     for (let col = 0; col < 5; col++) {
       if (motif[row][col]) {
-        ctx.fillRect(startX + col * cell, startY + row * cell, cell + 0.5, cell + 0.5);
+        ctx.rect(startX + col * cell, startY + row * cell, cell + 0.5, cell + 0.5);
       }
     }
   }
+  ctx.fill();
   // yeux pixel : blancs (rouges en colère) avec une pupille d'un pixel tournée vers le serpent
   if (etat) {
     const p = cell / 2;
     const dx = Math.round(etat.regardX) * p / 2;
     const dy = Math.round(etat.regardY) * p / 2;
-    [1, 3].forEach(col => {
-      const x = startX + col * cell, y = startY + 2 * cell;
-      ctx.fillStyle = etat.colere ? '#ff5252' : '#ffffff';
-      ctx.fillRect(x, y, cell, cell);
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(x + cell / 4 + dx, y + cell / 4 + dy, p, p);
-    });
+    const y = startY + 2 * cell;
+    ctx.fillStyle = etat.colere ? '#ff5252' : '#ffffff';
+    ctx.beginPath();
+    [1, 3].forEach(col => ctx.rect(startX + col * cell, y, cell, cell));
+    ctx.fill();
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    [1, 3].forEach(col => ctx.rect(startX + col * cell + cell / 4 + dx, y + cell / 4 + dy, p, p));
+    ctx.fill();
   }
 }
 

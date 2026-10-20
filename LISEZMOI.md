@@ -12,6 +12,13 @@ Le jeu se modifie dans `src/`, puis on régénère le fichier unique `snake.html
     python3 outils/test_icones.py snake.html [captures] # aucun emoji affiché, icônes pixel partout, polices chargées
     python3 outils/test_options.py snake.html [captures] # plateau 1080p/1440p/4K net, menu ⚙️ Options, touches
     python3 outils/test_skins_serpent.py snake.html [captures] # skins du serpent et de la tourelle : achat, choix gardé
+    python3 outils/mesure_fps.py snake.html [--cpu 4] [--gpu] [--detail]  # temps de dessin d'une image, par thème et skin
+    python3 outils/compare_rendu.py ancien.html snake.html dossier       # même image dessinée par les deux versions, et l'écart
+
+Rendu rapide sur un vieux PC : les grandes images en mémoire (fond, vignette, décors) ont la finesse exacte de l'écran
+et sont posées calées sur ses pixels (`creerCalque` / `poserCalque`, js/01-base.js) ; éviter `shadowBlur` sur un long
+trait ou une grande forme (le flou couvre tout son rectangle englobant) : `lueurTrait` (js/08-dessin-serpent.js) imite
+la lueur avec trois traits transparents ; et regrouper les petits morceaux d'un même flou en un seul tracé.
 
 Dans le dépôt GitHub, le jeu publié est `index.html` à la racine : voir « Version en ligne » plus bas.
 

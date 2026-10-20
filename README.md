@@ -33,6 +33,7 @@ Chaque test prend le fichier construit et échoue s'il voit une erreur JavaScrip
     python3 outils/test_progression.py snake.html
     python3 outils/test_skins_serpent.py snake.html
     node outils/simu_progression.js         # rythme de la progression (Écailles) selon la difficulté
+    python3 outils/mesure_fps.py snake.html --cpu 4   # temps de dessin d'une image (processeur bridé 4 fois)
 
 Ajouter un dossier en second argument d'un test (`… snake.html captures`) y enregistre des captures d'écran.
 Pour utiliser un autre Chrome / Chromium : variable `CHROME_PATH`.
