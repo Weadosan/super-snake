@@ -13,6 +13,7 @@ Le jeu se modifie dans `src/`, puis on régénère le fichier unique `snake.html
     python3 outils/test_options.py snake.html [captures] # plateau 1080p/1440p/4K net, menu ⚙️ Options, touches
     python3 outils/test_skins_serpent.py snake.html [captures] # skins du serpent et de la tourelle : achat, choix gardé
     python3 outils/test_artifice.py snake.html [captures] # feu d'artifice de victoire : un style par thème, nombre d'éclats borné
+    python3 outils/test_sons_ennemis.py snake.html       # sons : mort de chaque skin d'ennemi, boss touché, son coupé, pas trop de sons à la fois
     python3 outils/mesure_fps.py snake.html [--cpu 4] [--gpu] [--detail]  # temps de dessin d'une image, par thème et skin
     python3 outils/compare_rendu.py ancien.html snake.html dossier       # même image dessinée par les deux versions, et l'écart
 
@@ -29,7 +30,7 @@ Dans le dépôt GitHub, le jeu publié est `index.html` à la racine : voir « V
 - `js/` : le script, découpé en modules concaténés dans l'ordre des numéros
   (même portée globale qu'avant, donc l'ordre compte) :
   00 icônes pixel (remplacent les emojis) · 01 base (canvas, éléments du HUD) · 02 thèmes (dont couleurs du J2) · 03 état de la partie et constantes ·
-  04 joueurs (solo / coop) · 05 sons · 06 partie (init, HUD, pommes, ennemis, combat) ·
+  04 joueurs (solo / coop) · 05 sons (dont 05-sons-ennemis : mort de chaque skin d'ennemi, boss touché) · 06 partie (init, HUD, pommes, ennemis, combat) ·
   07 boucle (tick, pause, renderLoop) · 08 dessin du serpent · 09 dessin de la scène, overlays, tutoriels ·
   10 dessin des ennemis et boss · 11 dessin des pommes · 12 décor animé ·
   13 dessin du combat (tourelle, yeux, langue) · 14 fin de partie et meilleurs scores · 15 commandes (clavier, souris) ·
