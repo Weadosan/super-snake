@@ -53,6 +53,9 @@ score, pommes, ennemis et cœurs sont partagés.
   (commandes selon l'appareil, pommes du thème, ennemis du skin, buffs, survie, modes) ; il met la partie en pause.
 - Astuces : une bulle la première fois qu'une chose apparaît (pomme en or, boss, ennemi gelé...), mémorisée dans
   `snakeAstucesVues`. « 💡 Astuces » dans l'aide les coupe, et les rallumer les fait toutes revoir.
+  La bulle (`#astuceCote`, HTML) glisse depuis le bord de l'écran, hors du plateau : à droite sur ordinateur s'il y a
+  la place, sinon à gauche sous les infos ; en haut à gauche sur téléphone (sans capter les touchers). Sur le plateau,
+  un cercle qui pulse montre la chose dont elle parle. Mode Performances ou qualité basse : apparition sans glissement.
 - Tutoriel : T sur l'écran de départ, « 🎓 Tutoriel » du menu ☰ ou le bouton de l'aide. Partie solo en 12 étapes
   (`etapesTuto`) qui avancent dès que la consigne est réussie ; pas d'ennemi ni de butin au hasard, et on ne perd
   pas (`tutoSauverJoueur`). `init()` l'arrête et remet le mode Solo / Coop du joueur.

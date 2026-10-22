@@ -79,7 +79,23 @@ with sync_playwright() as p:
     page.evaluate("astucesVues = astuces.map(a => a.cle).filter(c => c !== 'pommeOr'); goldenApples.push({x: 300, y: 100, vx: 0.02, vy: 0.01, radius: goldenAppleRadius, changeDirTimer: 9999}); astuceEnCours = null; finDerniereAstuce = 0")
     page.wait_for_timeout(400)
     print('astuce :', page.evaluate('astuceEnCours && astuceEnCours.cle'))
-    capture(page, 'astuce_pomme_or')
+    capture(page, 'astuce_pomme_or', plein=True)
+    # la bulle glisse depuis le bord de l'écran, à côté du plateau, sans le recouvrir
+    page.evaluate('lives = 9')  # un mur pendant le test : rollback au lieu de la fin de partie
+    page.wait_for_timeout(400)
+    bulle = page.evaluate("(() => { const r = document.getElementById('astuceCote').getBoundingClientRect(); return {visible: document.getElementById('astuceCote').classList.contains('visible'), g: r.left, d: r.right, h: r.top, b: r.bottom}; })()")
+    plateau = page.evaluate("(() => { const r = canvas.getBoundingClientRect(); return {g: r.left, d: r.right}; })()")
+    assert bulle['visible'], "la bulle d'astuce n'est pas affichée"
+    assert bulle['g'] <= 1 or bulle['d'] >= page.viewport_size['width'] - 1, "la bulle n'est pas collée au bord de l'écran : %s" % bulle
+    assert bulle['d'] <= plateau['g'] or bulle['g'] >= plateau['d'], 'la bulle recouvre le plateau : %s / %s' % (bulle, plateau)
+    assert 'Astuce' in page.inner_text('#astuceCote'), "la bulle n'a pas son titre"
+    page.evaluate('togglePause()')
+    page.wait_for_timeout(100)
+    assert page.evaluate('isPaused'), "la partie ne s'est pas mise en pause"
+    assert not page.evaluate("document.getElementById('astuceCote').classList.contains('visible')"), 'la bulle reste affichée pendant la pause'
+    page.evaluate('togglePause()')
+    page.wait_for_timeout(100)
+    assert page.evaluate("document.getElementById('astuceCote').classList.contains('visible')"), 'la bulle ne revient pas après la pause : %s' % page.evaluate('JSON.stringify({a: astuceEnCours && astuceEnCours.cle, isPaused, countdownActive, gameOver})')
     vues = page.evaluate('astucesVues.slice()')
     assert 'tir' in vues and 'pommeOr' in vues, 'astuces non mémorisées : %s' % vues
     page.evaluate('lives = 1; endGame()')

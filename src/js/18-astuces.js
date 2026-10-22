@@ -165,90 +165,86 @@ function couperTexte(texte, largeurMax) {
   return lignes;
 }
 
-// bulle arrondie avec une pointe vers (cibleX, cibleY) ; options : titre, couleur, largeur, apparition (0 à 1)
-function dessinerBulle(texte, cibleX, cibleY, options = {}) {
-  const largeur = options.largeur || 230;
-  const couleur = options.couleur || '#ffd54f';
-  const marge = 10;
-  ctx.save();
-  ctx.font = '13px ' + currentTheme.fontFamily;
-  const lignes = couperTexte(texte, largeur - 2 * marge);
-  const hauteurLigne = 17;
-  const hauteurTitre = options.titre ? 20 : 0;
-  const h = lignes.length * hauteurLigne + hauteurTitre + 2 * marge - 2;
-  const w = largeur;
+// --- Bulle sur le côté de l'écran ---
+// L'astuce n'est plus dessinée sur le plateau : elle glisse depuis le bord de l'écran, dans la place libre à côté
+// du plateau (à droite sur ordinateur, sinon à gauche sous les infos ; en haut à gauche sur téléphone, par-dessus
+// le score, loin du pad et du stick). Sur le plateau, seul un cercle qui pulse montre la chose dont elle parle.
+const astuceCoteEl = document.getElementById('astuceCote');
+const astuceTexteEl = document.getElementById('astuceTexte');
+let astuceAffichee = null; // astuce montrée dans la bulle (null : bulle cachée)
 
-  // au-dessus de la cible s'il y a la place, sinon en dessous ; toujours dans le plateau
-  const distance = 26;
-  let enHaut = cibleY - distance - h > 4;
-  if (options.position === 'bas') enHaut = false;
-  let x = Math.max(4, Math.min(largeurPlateau - w - 4, cibleX - w / 2));
-  let y = enHaut ? cibleY - distance - h : cibleY + distance;
-  y = Math.max(4, Math.min(hauteurPlateau - h - 4, y));
-
-  const apparition = options.apparition === undefined ? 1 : options.apparition;
-  ctx.globalAlpha = apparition;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = 'rgba(12, 14, 26, 0.92)';
-  ctx.strokeStyle = couleur;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8);
-  else ctx.rect(x, y, w, h);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.stroke();
-
-  // pointe vers la cible (si la cible n'est pas sous la bulle)
-  if (options.pointe !== false && (cibleY < y - 4 || cibleY > y + h + 4)) {
-    const px = Math.max(x + 14, Math.min(x + w - 14, cibleX));
-    const bord = cibleY < y ? y : y + h;
-    const sens = cibleY < y ? -1 : 1;
-    ctx.beginPath();
-    ctx.moveTo(px - 7, bord);
-    ctx.lineTo(px + 7, bord);
-    ctx.lineTo(px + (cibleX - px) * 0.3, bord + sens * 11);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(12, 14, 26, 0.92)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(px - 7, bord + sens);
-    ctx.lineTo(px + (cibleX - px) * 0.3, bord + sens * 11);
-    ctx.lineTo(px + 7, bord + sens);
-    ctx.stroke();
-    // petit cercle qui pulse autour de la cible
-    ctx.globalAlpha = apparition * (0.5 + Math.sin(performance.now() / 150) * 0.3);
-    ctx.beginPath();
-    ctx.arc(cibleX, cibleY, 16 + Math.sin(performance.now() / 150) * 3, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = apparition;
+function placerAstuceCote() {
+  const el = astuceCoteEl;
+  const plateau = canvas.getBoundingClientRect();
+  const marge = 12;
+  let gauche = false;
+  let largeur;
+  let haut;
+  if (document.body.classList.contains('mode-tactile')) {
+    gauche = true;
+    largeur = innerHeight >= innerWidth ? Math.min(innerWidth - 70, 340) : Math.max(160, plateau.left - 8);
+    haut = 4;
+  } else {
+    // place libre à droite : après le plateau et ses boutons (☰, ❓, ⚙️...)
+    let bordDroit = plateau.right;
+    document.querySelectorAll('#plateauConteneur > button').forEach(b => {
+      if (b.offsetParent) bordDroit = Math.max(bordDroit, b.getBoundingClientRect().right);
+    });
+    const libreDroite = innerWidth - bordDroit - marge;
+    const libreGauche = plateau.left - marge;
+    if (libreDroite >= 170 || libreDroite >= libreGauche) {
+      largeur = Math.min(280, Math.max(170, libreDroite));
+      haut = plateau.top + plateau.height * 0.25;
+    } else {
+      // à gauche, sous les infos (score, cœurs...)
+      gauche = true;
+      largeur = Math.min(280, libreGauche);
+      const hud = document.getElementById('hud').getBoundingClientRect();
+      haut = Math.max(hud.bottom + 16, plateau.top + plateau.height * 0.25);
+    }
   }
-
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  let ty = y + marge;
-  if (options.titre) {
-    ctx.fillStyle = couleur;
-    ctx.font = 'bold 14px ' + currentTheme.fontFamily;
-    ctx.fillText(options.titre, x + marge, ty);
-    ty += hauteurTitre;
-    ctx.font = '13px ' + currentTheme.fontFamily;
-  }
-  ctx.fillStyle = '#ffffff';
-  lignes.forEach(l => {
-    ctx.fillText(l, x + marge, ty);
-    ty += hauteurLigne;
-  });
-  ctx.restore();
-  return {x, y, w, h};
+  el.classList.toggle('gauche', gauche);
+  el.style.width = Math.round(largeur) + 'px';
+  el.style.top = '0px';
+  haut = Math.max(4, Math.min(innerHeight - el.offsetHeight - 4, haut));
+  el.style.top = Math.round(haut) + 'px';
 }
 
+function afficherAstuceCote(a) {
+  if (a === astuceAffichee) return;
+  astuceAffichee = a;
+  if (!a) {
+    astuceCoteEl.classList.remove('visible');
+    return;
+  }
+  astuceTexteEl.textContent = a.texte;
+  // mode Performances (js/18-options.js) ou qualité basse : pas de glissement ni d'ombre
+  astuceCoteEl.classList.toggle('sobre', niveauPerf >= 1 || optionQualite === 'basse');
+  placerAstuceCote();
+  astuceCoteEl.classList.add('visible');
+}
+
+window.addEventListener('resize', () => {
+  if (astuceAffichee) placerAstuceCote();
+});
+
+// appelé à chaque image (même en pause) : montre ou cache la bulle, et dessine le repère sur le plateau
 function dessinerAstuce() {
   const a = astuceEnCours;
-  if (!a || gameOver) return;
+  const visible = a && astucesActives && !gameOver && !hasWon && !isPaused && !waitingToStart && !tutoActif();
+  afficherAstuceCote(visible ? a : null);
+  if (!visible) return;
   const age = performance.now() - a.debut;
   const apparition = Math.min(1, age / 250, (dureeAstuce - age) / 400);
   if (apparition <= 0) return;
-  dessinerBulle(a.texte, a.x, a.y, {titre: '💡 Astuce', apparition});
+  // cercle qui pulse autour de la chose dont parle l'astuce
+  const pulsation = Math.sin(performance.now() / 150);
+  ctx.save();
+  ctx.strokeStyle = '#ffd54f';
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = apparition * (0.5 + pulsation * 0.3);
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 16 + pulsation * 3, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
