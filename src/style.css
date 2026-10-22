@@ -1474,6 +1474,54 @@
   #aideTuto, #aideFermer { background: var(--accent) !important; color: #14141f !important; font-weight: bold; }
   #aideAstuces:not(.actif) { opacity: 0.6; }
 
+  /* --- Astuce en partie (js/18-astuces.js) : bulle collée au bord de l'écran, hors du plateau ---
+     Elle glisse depuis le bord (transform + opacity seulement : le navigateur l'anime sans redessiner la page)
+     et ne capte aucun toucher, pour ne jamais gêner les commandes tactiles. */
+  #astuceCote {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 260px;
+    box-sizing: border-box;
+    z-index: 1000;
+    pointer-events: none;
+    padding: 10px 12px;
+    background: rgba(12, 14, 26, 0.92);
+    border: 2px solid #ffd54f;
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.35;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(105%);
+    transition: transform 0.3s ease-out, opacity 0.3s, visibility 0s 0.3s;
+  }
+  #astuceCote.gauche {
+    right: auto;
+    left: 0;
+    border-right: 2px solid #ffd54f;
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    transform: translateX(-105%);
+  }
+  #astuceCote.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: transform 0.3s ease-out, opacity 0.3s;
+  }
+  #astuceTitre { color: #ffd54f; font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+  body.mode-tactile #astuceCote { font-size: 12px; padding: 7px 10px; }
+  body.mode-tactile #astuceTitre { font-size: 12px; margin-bottom: 2px; }
+  /* mode Performances ou qualité basse : la bulle apparaît d'un coup, sans ombre */
+  #astuceCote.sobre, #astuceCote.sobre.visible { transition: none; box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) {
+    #astuceCote, #astuceCote.visible { transition: opacity 0.2s; transform: none; }
+  }
+
   /* --- Succès (js/18-succes.js) --- */
   #succesBannieres {
     position: fixed;

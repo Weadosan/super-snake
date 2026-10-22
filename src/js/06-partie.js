@@ -343,6 +343,7 @@ function awardEnemyKill(e, facon) {
     spawnShockwave(e.x, e.y, '#ff1744', 220);
     triggerShake(10);
     playExplosionBuffSound();
+    playBossDeathSound();
     // butin garanti à 100 % : pomme bleue (buff x2), pomme en or et 5 pommes ; le cœur bonus reste aussi
     dropBossLoot(e.x, e.y);
     if (!heartPickup) spawnHeartPickup();
@@ -363,7 +364,7 @@ function awardEnemyKill(e, facon) {
     }
   } else {
     spawnParticles(e.x, e.y, e.color, 12);
-    playExplosionSound();
+    playEnemyDeathSound(e); // un bruit différent selon le skin d'ennemis (js/05-sons-ennemis.js)
   }
 
   // pendant le tutoriel, chaque étape place elle-même ses pommes : pas de butin au hasard
@@ -750,7 +751,7 @@ function damageEnemyByIndex(index) {
   } else {
     e.hitFlashUntil = performance.now() + 100;
     spawnPopup(e.x, e.y, 'touché !', '#ffd54f');
-    if (estGele(e)) playIceHitSound(); else playHitSound();
+    if (e.isBoss) playBossHitSound(e); else if (estGele(e)) playIceHitSound(); else playHitSound();
   }
 }
 
@@ -1047,7 +1048,7 @@ function updateCombat(deltaMs) {
           // touché mais pas encore détruit : petit flash blanc + son + popup
           e.hitFlashUntil = performance.now() + 100;
           spawnPopup(e.x, e.y, 'touché !', '#ffd54f');
-          if (estGele(e)) playIceHitSound(); else playHitSound();
+          if (e.isBoss) playBossHitSound(e); else if (estGele(e)) playIceHitSound(); else playHitSound();
         }
       }
     });

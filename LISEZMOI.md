@@ -13,6 +13,7 @@ Le jeu se modifie dans `src/`, puis on régénère le fichier unique `snake.html
     python3 outils/test_options.py snake.html [captures] # plateau 1080p/1440p/4K net, menu ⚙️ Options, touches
     python3 outils/test_skins_serpent.py snake.html [captures] # skins du serpent et de la tourelle : achat, choix gardé
     python3 outils/test_artifice.py snake.html [captures] # feu d'artifice de victoire : un style par thème, nombre d'éclats borné
+    python3 outils/test_sons_ennemis.py snake.html       # sons : mort de chaque skin d'ennemi, boss touché, son coupé, pas trop de sons à la fois
     python3 outils/mesure_fps.py snake.html [--cpu 4] [--gpu] [--detail]  # temps de dessin d'une image, par thème et skin
     python3 outils/compare_rendu.py ancien.html snake.html dossier       # même image dessinée par les deux versions, et l'écart
 
@@ -29,7 +30,7 @@ Dans le dépôt GitHub, le jeu publié est `index.html` à la racine : voir « V
 - `js/` : le script, découpé en modules concaténés dans l'ordre des numéros
   (même portée globale qu'avant, donc l'ordre compte) :
   00 icônes pixel (remplacent les emojis) · 01 base (canvas, éléments du HUD) · 02 thèmes (dont couleurs du J2) · 03 état de la partie et constantes ·
-  04 joueurs (solo / coop) · 05 sons · 06 partie (init, HUD, pommes, ennemis, combat) ·
+  04 joueurs (solo / coop) · 05 sons (dont 05-sons-ennemis : mort de chaque skin d'ennemi, boss touché) · 06 partie (init, HUD, pommes, ennemis, combat) ·
   07 boucle (tick, pause, renderLoop) · 08 dessin du serpent · 09 dessin de la scène, overlays, tutoriels ·
   10 dessin des ennemis et boss · 11 dessin des pommes · 12 décor animé ·
   13 dessin du combat (tourelle, yeux, langue) · 14 fin de partie et meilleurs scores · 15 commandes (clavier, souris) ·
@@ -53,6 +54,9 @@ score, pommes, ennemis et cœurs sont partagés.
   (commandes selon l'appareil, pommes du thème, ennemis du skin, buffs, survie, modes) ; il met la partie en pause.
 - Astuces : une bulle la première fois qu'une chose apparaît (pomme en or, boss, ennemi gelé...), mémorisée dans
   `snakeAstucesVues`. « 💡 Astuces » dans l'aide les coupe, et les rallumer les fait toutes revoir.
+  La bulle (`#astuceCote`, HTML) glisse depuis le bord de l'écran, hors du plateau : à droite sur ordinateur s'il y a
+  la place, sinon à gauche sous les infos ; en haut à gauche sur téléphone (sans capter les touchers). Sur le plateau,
+  un cercle qui pulse montre la chose dont elle parle. Mode Performances ou qualité basse : apparition sans glissement.
 - Tutoriel : T sur l'écran de départ, « 🎓 Tutoriel » du menu ☰ ou le bouton de l'aide. Partie solo en 12 étapes
   (`etapesTuto`) qui avancent dès que la consigne est réussie ; pas d'ennemi ni de butin au hasard, et on ne perd
   pas (`tutoSauverJoueur`). `init()` l'arrête et remet le mode Solo / Coop du joueur.

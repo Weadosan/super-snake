@@ -209,6 +209,7 @@ function renderLoop(now) {
   if (isPaused) {
     draw(1);
     dessinerTuto();
+    dessinerAstuce(); // cache la bulle d'astuce pendant la pause
     drawPauseOverlay();
     animationFrameId = requestAnimationFrame(renderLoop);
     return;
@@ -241,6 +242,7 @@ function renderLoop(now) {
     drawSlowMotionOverlay();
     drawEndgameTransitionMessage();
     dessinerTuto();
+    dessinerAstuce();
     animationFrameId = requestAnimationFrame(renderLoop);
     return;
   }
